@@ -1,8 +1,7 @@
 {
-  "generated_at": "2026-09-10T19:56:00.532834Z",
+  "generated_at": "2026-09-14T15:11:05.562317Z",
   "parser_version": 9,
   "window": [
-    "2026-09-11",
     "2026-09-14",
     "2026-09-15",
     "2026-09-16",
@@ -13,7 +12,8 @@
     "2026-09-23",
     "2026-09-24",
     "2026-09-25",
-    "2026-09-28"
+    "2026-09-28",
+    "2026-09-29"
   ],
   "by_date": {
     "2026-09-15": {
@@ -423,7 +423,7 @@
           },
           "3": {
             "coram": "HON'BLE MR. JUSTICE M.M. SUNDRESH HON'BLE MR. JUSTICE PRASANNA B. VARALE",
-            "total": "60",
+            "total": "61",
             "fresh": "",
             "items": {
               "1": "SLP(Crl) No. 9397/2026 KAMARGANI ALIAS ARMANMIYA HABIBUDDIN VERSUS STATE OF GUJARAT",
@@ -499,7 +499,8 @@
               "57": "Diary No. 54331-2026 ASHRAF KHAN VERSUS STATE OF UP AND ANR.",
               "58": "Diary No. 54556-2026 FAIZAL VERSUS STATE OF KARNATAKA",
               "59": "SLP(Crl) No. IMRAN MEHANDI @ DILAWAR VERSUS THE STATE OF MAHARASHTRA",
-              "60": "SLP(C) No. 32694/2026 RADHE SHYAM AND ORS. VERSUS THE STATE OF HARYANA AND ORS."
+              "60": "SLP(C) No. 32694/2026 RADHE SHYAM AND ORS. VERSUS THE STATE OF HARYANA AND ORS.",
+              "61": "SLP(C) No. 32819/2026 JAI KUMAR AND ANR. VERSUS MUNICIPAL CORPORATION OF DELHI"
             },
             "advocates": {
               "1": {
@@ -746,11 +747,14 @@
               },
               "60": {
                 "pet": "SHIVIKA MEHRA"
+              },
+              "61": {
+                "pet": "ANUPAM CHAUDHARY"
               }
             },
             "times": {},
             "main": 55,
-            "supp": 5
+            "supp": 6
           },
           "4": {
             "coram": "HON'BLE MR. JUSTICE PAMIDIGHANTAM SRI NARASIMHA HON'BLE MR. JUSTICE ALOK ARADHE",
@@ -17517,7 +17521,7 @@
   "sources": {
     "2026-09-15": {
       "M_J_1": 903477,
-      "M_J_2": 673516,
+      "M_J_2": 675241,
       "M_C_1": 571487,
       "M_S_1": 539323,
       "M_R_1": 528957
