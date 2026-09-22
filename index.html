@@ -1165,7 +1165,7 @@ const RC_VC_LINKS = {"1":"https://sci-vc.webex.com/meet/registrarcourt01","2":"h
 // (fetch_causelist.py + .github/workflows/causelist.yml). Read same-origin first (no CORS),
 // with this repo's raw URL as a fallback. No dependency on the chamber app.
 const COURT_UPDATES_URLS = ["court-updates.json",
-  "https://raw.githubusercontent.com/sdentertainmentservices1234/CourtReach/main/court-updates.json"];
+  "https://raw.githubusercontent.com/courtreach/CourtReach/main/court-updates.json"];
 let courtUpdates=null, courtUpdatesAt=0;
 async function loadCourtUpdates(){
   if(courtUpdates && Date.now()-courtUpdatesAt < 10*60000) return;
