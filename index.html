@@ -378,6 +378,16 @@ main#main{flex:1;min-height:0;overflow-y:auto;padding:8px 12px 12px;-webkit-over
 .status-sel.has-status.passover{background-color:#33507e}
 .status-sel.has-status.not_taken{background-color:#6b7787}
 .status-sel.has-status option{color:var(--ink);background:var(--panel)}
+/* a time the court has fixed for this case — minutes, not items, from then on */
+.time-row{display:flex;align-items:center;gap:8px;margin-top:9px}
+.time-row .cr-lab2{margin:0;flex:none}
+.time-inp{flex:1;min-width:0;font-family:inherit;font-size:13px;font-weight:600;color:var(--ink);padding:7px 10px;
+  border-radius:9px;border:1px solid var(--line);background:var(--panel)}
+.time-inp.has-time{border-color:#c9a227;color:#8a6d14;background:#fdf8ea}
+.time-clear{flex:none;border:none;background:none;color:var(--mut);font-size:15px;padding:4px 2px}
+/* the court sheet's passover row: each chip carries its own distance, and a line says when */
+.cs-chips span small{font-weight:600;opacity:.8;margin-left:3px}
+.cs-plan{display:block;font-size:11.5px;color:var(--mut);margin-top:7px;line-height:1.45}
 .case-title{font-family:Fraunces,serif;font-weight:600;font-size:15.5px;color:var(--ink);margin-top:0;line-height:1.28}
 .case-meta{font-size:12.5px;color:var(--mut);margin-top:4px;line-height:1.35}
 .case-meta .cm-k{font-weight:700;color:var(--ink);opacity:.65;text-transform:uppercase;font-size:9.5px;letter-spacing:.4px;margin-right:6px}
@@ -1923,7 +1933,7 @@ const statusByName = m => { const r=statusBag(m)[statusKey(m)]; return (r && r.b
    collection is a rules change plus a one-line scope swap.
 
    Keyed date_court, so yesterday's typed sequence never silently governs today. */
-let courtsOwn={}, courtsOrg={};
+let courtsOwn={}, courtsOrg={}, timesOwn={}, timesOrg={};
 const courtKey = (court,date) => (date||todayISO())+"_"+String(court);
 const courtBag = () => (me?.orgId ? courtsOrg : courtsOwn);
 const courtScope = () => me?.orgId || me?.uid || "";
@@ -1985,12 +1995,56 @@ function statusMarks(){
 // Full context for the shared proximity engine: sequence order, passovers (remark
 // column + live-observed), OVER items, Misc totals, item-high — everything the SD
 // display board feeds its own classifier, so distances match.
-function classify(e){ const bc=boardByCourt()[String(e.courtNo)];
+/* ONE context for the engine, built the same way for every caller — the island, My cases, the
+   court sheet's passover plan and progress bar all read the same facts, so they cannot disagree. */
+function courtCtx(){
   const {done,po}=statusMarks();
-  return ENG.classify({courtNo:String(e.courtNo),itemNo:String(e.itemNo),listType:e.listType||""}, bc, {
-    nowMins:nowMinsIST(), boardByCourt:boardByCourt(),
+  return { nowMins:nowMinsIST(), boardByCourt:boardByCourt(),
     seqByCourt:effSeqByCourt(), remarksByCourt, boardPO:boardPO.marks, recalledPO:recalledPO.set, poMarks:po, doneMarks:done,
-    miscTotalByCourt:miscTotalByCourt(), itemHi:itemHi.max }); }
+    miscTotalByCourt:miscTotalByCourt(), itemHi:itemHi.max };
+}
+function classify(e){ const bc=boardByCourt()[String(e.courtNo)];
+  const ctx=courtCtx();
+  const ft=fixedTimeFor(e.courtNo,e.itemNo,todayISO());
+  if(ft) ctx.fixedTimes={[String(e.courtNo)+"_"+String(e.itemNo)]:ft};
+  return ENG.classify({courtNo:String(e.courtNo),itemNo:String(e.itemNo),listType:e.listType||""}, bc, ctx); }
+// Where this court's passovers will be taken, and in what order — the engine's own answer.
+function courtPlan(court){ return ENG.passoverPlan(courtCtx(), String(court), boardByCourt()[String(court)]); }
+/* A TIME FIXED FOR A CASE (owner: "Many a times in the causelist or somewhere else we find out
+   that the case is fixed for a particular time ... Such a case ... should not show how far it is
+   because no sequence applies to it. Instead show how much time away the case is.").
+   Two sources, the typed one first: `times{}` on the same matterstatus document as status marks
+   (so a colleague sitting in court can set it on a chamber case — same scope rule, same
+   document, no rules change), then the causelist's own Special Bench time. An explicit null in
+   the store means "typed and then cleared" and falls back to the causelist. Returns the raw
+   time text; the engine's clockMins() reads either form. */
+const timeKey = (court,item,date) => ((date||todayISO())+"_"+String(court)+"_"+String(item)).replace(/\./g,"-");
+function manualTimeFor(court,item,date){
+  const k=timeKey(court,item,date);
+  const r = timesOrg[k]!==undefined ? timesOrg[k] : timesOwn[k];
+  return (r && r.t) || "";
+}
+function fixedTimeFor(court,item,date){
+  const t=manualTimeFor(court,item,date); if(t) return t;
+  const sb=specialBenchTimeFor(court,item,date);
+  return ENG.clockMins(sb)!=null ? sb : "";
+}
+// What to PRINT for a timed case: a typed time as a clock ("2:30 PM"); a causelist note verbatim.
+function fixedLabelFor(court,item,date){
+  const t=manualTimeFor(court,item,date); if(t){ const m=ENG.clockMins(t); return m!=null ? ENG.fmtClock(m) : t; }
+  return specialBenchTimeFor(court,item,date);
+}
+// The words for the court sheet's passover row — built from the engine's plan, so the sentence
+// and the distances on the chips can never say two different things.
+function passoverPlanText(plan){
+  const q=(plan&&plan.queue)||[]; if(!q.length) return "";
+  const order = q.length>1 ? `, in that order (${q.join(", ")})` : "";
+  const toGo = n => `${n} item${n===1?"":"s"} to go`;
+  if(plan.at==="now") return `Being taken now — ${q[0]} next${q.length>1?`, then ${q.slice(1).join(", ")}`:""}.`;
+  if(plan.at==="sequence") return `Taken after the announced sequence${plan.after!=null?` (after item ${plan.after})`:""} — ${toGo(plan.gap)}${order}.`;
+  if(plan.at==="end") return `Taken at the end of the Miscellaneous list — ${toGo(plan.gap)}${order}.`;
+  return `When they will be taken has not been announced — usually at the end of the list${order}.`;
+}
 // The raw remark-column text for one of OUR items — "DISMISSED", "OVER", "LIST ON 25.08.2026",
 // "AFTER 4 WEEKS", "PASS OVER", whatever the Supreme Court's own board is currently showing
 // against that exact item (owner: "Sometimes the Supreme Court Display Board show information
@@ -2451,7 +2505,7 @@ function boardCell(c, mini){
   if(!ours.length && !mine){ return `<div class="cell${stk}${mini?" mini":""}${idle?" idle":""}" ${dc}>${head}</div>`; }
   // in a "your case" court, track MY item(s); otherwise the peer's / my own tracked matters
   const src = mine ? myCaseItemsIn(c.court).map(it=>({courtNo:c.court,itemNo:it})) : ours;
-  const ks=src.map(e=>({e,k:classify(e), sbTime:specialBenchTimeFor(c.court,e.itemNo,todayISO())}));
+  const ks=src.map(e=>({e,k:classify(e), sbTime:fixedLabelFor(c.court,e.itemNo,todayISO())}));
   // A time-fixed Special Bench matter doesn't have a meaningful "N away" — the causelist
   // already says exactly when it sits, and computing one from its raw item number would be
   // actively misleading, not just redundant (owner: "When it is time fixed case remove how
@@ -2460,7 +2514,10 @@ function boardCell(c, mini){
   // share a court, the OTHER (non-time-fixed) cases still get their own distance, exactly as
   // before (owner: "when there are multiple cases in that court calculate how far away other
   // cases are and provide at what time the special bench case is at").
-  const normalKs = ks.filter(x=>!x.sbTime);
+  // A timed case the engine could read as a clock IS banded — by minutes (classify's fixed
+  // branch) — so "in 12 min" colours the island like "2 away" would. Only a causelist note it
+  // cannot read as a time ("...after ... is over") stays out of the banding, as before.
+  const normalKs = ks.filter(x=>!x.sbTime || x.k.fixed);
   // colour/status label follow the MOST URGENT non-time-fixed case; display order is always
   // by item number so it never reshuffles as the court progresses (owner: "constant order").
   const best=normalKs.slice().sort((a,b)=>(TIER_RANK[a.k.tier]-TIER_RANK[b.k.tier])||((a.k.gap??999)-(b.k.gap??999)))[0];
@@ -2678,8 +2735,20 @@ function openCourtModal(court,_refetched){
      say what item is on and draw no bar, rather than inventing a number. */
   const curNum=parseFloat(bc?.item);
   const miscTotal=miscTotalByCourt()[court]||0;
-  const showProg=!idle && !isNaN(curNum) && curNum>0 && curNum<800 && miscTotal>0;
-  const pct=showProg ? Math.max(2, Math.min(100, Math.round(curNum/miscTotal*100))) : 0;
+  /* Progress is counted along the court's CALL ORDER, not by the item number on the board, and
+     a passed-over matter is not over — it is still to come (owner: "a case passed over will be
+     taken up as per sequence and you need to calculate that case ... how many cases remain").
+     reach = positions the court has visibly got to; the item on now and every outstanding
+     passover are subtracted from that to give what is actually finished. */
+  const plan=courtPlan(court);
+  const poOut=plan.queue.length;
+  const reach=(!idle && bc && !isNaN(curNum)) ? ENG.reachOf(courtCtx(), court, plan.seq||[], miscTotal||null, bc.item) : 0;
+  const doneN=Math.max(0, Math.min(reach, miscTotal||reach) - poOut - 1);
+  const onRegular = miscTotal>0 && curNum>=ENG.REG_BASE && reach>miscTotal;
+  const showProg=!idle && !isNaN(curNum) && curNum>0 && curNum<800 && miscTotal>0 && !onRegular;
+  const leftN=showProg ? Math.max(0, miscTotal-doneN) : 0;
+  const pct=showProg ? Math.max(2, Math.min(100, Math.round(doneN/miscTotal*100))) : 0;
+  const planLine=passoverPlanText(plan);
   $("modalRoot").innerHTML=`<div class="ovl" data-close><div class="sheet cs" data-court="${esc(court)}"><button class="sh-x" data-close>&times;</button>
     <div class="cs-hero">
       <div class="cs-idrow">
@@ -2689,7 +2758,8 @@ function openCourtModal(court,_refetched){
       <div class="cs-prog">
         <div class="cs-progline">
           <span class="cs-on ${idle?"idle":""}">${idle?"Not sitting":`On item ${esc(bc?.item||"·")}`}</span>
-          ${showProg?`<span class="cs-of">${esc(String(Math.floor(curNum)))} of ${miscTotal} · ${pct}%</span>`
+          ${showProg?`<span class="cs-of">${doneN} over · ${leftN} to go${poOut?` · ${poOut} passed over`:""}</span>`
+            :onRegular?`<span class="cs-of">Misc list done${poOut?` · ${poOut} passed over pending`:""} · Regular list on</span>`
             :(miscTotal?`<span class="cs-of">${miscTotal} listed</span>`:"")}
         </div>
         ${showProg?`<div class="cs-bar"><i style="width:${pct}%"></i></div>`:""}
@@ -2704,23 +2774,28 @@ function openCourtModal(court,_refetched){
       // one), the court sheet breaks it out per item (owner: "then in the pop up that comes
       // after clicking the court island").
       const rmk=remarkFor(court, e.itemNo);
-      const sbTime=specialBenchTimeFor(court, e.itemNo, todayISO());
+      const sbTime=fixedLabelFor(court, e.itemNo, todayISO());
       // Same rule as the island: a time-fixed item's "away" badge is not shown at all — the
       // causelist already says exactly when it sits, and an item-number-derived distance
       // would just be noise next to that. Struck for the same reason the island strikes it,
       // so the two can never disagree about whether a matter is finished.
       const done=!!k.over || remarkEndsToday(rmk);
       const band=proxBandOf(k);
-      return `<div class="cs-mine ${(sbTime||done)?"":esc(band)}">
+      // a timed case now carries its own distance IN MINUTES from the engine; only a time the
+      // engine could not read (a relative causelist note) still hides the item-based figure
+      const hideDist = done || (sbTime && !k.fixed);
+      return `<div class="cs-mine ${hideDist?"":esc(band)}">
         <span class="cs-it${done?" struck":""}">${esc(e.itemNo)}</span>
         <span class="cs-body"><span class="cs-title">${esc(e.caseTitle||("item "+e.itemNo))}${who?` <span class="cs-who">· ${esc(who)}</span>`:""}</span>${sbTime?`<span class="cs-note time"><i class="ti ti-clock"></i> ${esc(sbTime)}</span>`:""}${rmk?`<span class="cs-note rmk">${esc(rmk)}</span>`:""}</span>
-        ${(sbTime||done)?"":`<span class="cs-dist ${esc(band)}">${esc(k.short||"—")}</span>`}</div>`; }).join("")}`:""}
+        ${hideDist?"":`<span class="cs-dist ${esc(band)}">${esc(k.short||"—")}</span>`}</div>`; }).join("")}`:""}
     <div class="cs-reg">
       <div class="cs-row"><span class="cs-k">Sequence</span><span class="cs-val${seq.length?"":" dim"}">${seq.length
         ?esc(seqRanges(seq))+", then the rest":"Not declared yet"}${mSeq?`<span class="cs-by">Typed in${mBy?" by "+esc(mBy):""}</span>`:""}</span>
         <button class="cs-edit" data-cedit="seq"><i class="ti ti-pencil"></i>${mSeq?"Edit":"Add"}</button></div>
       <div class="cs-row"><span class="cs-k">Passed over</span><span class="cs-val${pass.length?"":" dim"}">${pass.length
-        ?`<span class="cs-chips">${pass.map(n=>`<span>${esc(n)}</span>`).join("")}</span>`:"None yet"}${mPo.length?`<span class="cs-by">${mPo.map(esc).join(", ")} typed in${mBy?" by "+esc(mBy):""}</span>`:""}</span>
+        ?`<span class="cs-chips">${pass.map(n=>{ const kk=classify({courtNo:court,itemNo:n});
+            const d=(kk&&!kk.over&&kk.gap!=null)?(kk.gap<=0?"on now":kk.gap===1?"next":kk.gap+" away"):(kk&&kk.over?"over":"");
+            return `<span>${esc(n)}${d?`<small>· ${esc(d)}</small>`:""}</span>`; }).join("")}</span>${planLine?`<span class="cs-plan">${esc(planLine)}</span>`:""}`:"None yet"}${mPo.length?`<span class="cs-by">${mPo.map(esc).join(", ")} typed in${mBy?" by "+esc(mBy):""}</span>`:""}</span>
         <button class="cs-edit" data-cedit="po"><i class="ti ti-pencil"></i>${mPo.length?"Edit":"Add"}</button></div>
       ${totals.length?`<div class="cs-row"><span class="cs-k">On the board</span><span class="cs-val">${totals.map(esc).join("<br>")}</span></div>`:""}
     </div>
@@ -2927,6 +3002,7 @@ function openDateCourtModal(court,date){
 /* ===== APPROACH FLASH — full-screen overlay when our matters are reaching (ported from the display board) ===== */
 const flashBand = g => g<=2 ? "red" : g<=4 ? "amber" : "green";   // 0-2 red · 3-4 amber · 5-7 green
 const _distLabel = g => g<=0 ? "ON NOW" : g===1 ? "NEXT" : g+" AWAY";
+const _fixedLabel = r => r.minsAway<=0 ? "TIME REACHED" : "IN "+r.minsAway+" MIN";
 let _flashSt={date:"", gaps:{}}, _flashTimer=null;
 // Deliberately NOT activeMatters() — that follows whichever board sub-tab happens to be open,
 // which used to mean flash fired for a COLLABORATING PARTNER's cases the moment you were
@@ -2944,10 +3020,19 @@ function inRangeMatters(){
   const bc=boardByCourt(); const seen={};
   for(const e of flashMatters()){
     const k=classify(e);
-    if(!k||k.ment||k.done||k.over||k.gap==null) continue;
+    if(!k||k.ment||k.done||k.over) continue;
+    const c=String(e.courtNo);
+    // A time-fixed case steps in minutes, not items: 20 → 15 → 10 → 5 → 0 minutes out, mapped
+    // onto the same 4..0 rungs the item-based flash climbs, so it flashes and alerts at each.
+    if(k.fixed){
+      if(k.minsAway==null || k.minsAway>20 || k.minsAway<-5) continue;
+      const g=Math.max(0,Math.ceil(k.minsAway/5));
+      if(!seen[c]||g<seen[c].gap) seen[c]={court:e.courtNo,item:e.itemNo,cur:bc[c]?.item,gap:g,fixed:true,at:k.at,minsAway:k.minsAway};
+      continue;
+    }
+    if(k.gap==null) continue;
     if(k.preStart) continue;                       // court hasn't started — no live flash yet
     if(k.gap<0||k.gap>7) continue;                 // within seven items
-    const c=String(e.courtNo);
     if(!seen[c]||k.gap<seen[c].gap) seen[c]={court:e.courtNo,item:e.itemNo,cur:bc[String(e.courtNo)]?.item,gap:k.gap};
   }
   return Object.values(seen).sort((a,b)=>a.gap-b.gap);
@@ -2979,7 +3064,7 @@ function showFlash(items){
   const cell=r=>{
     const body = r.gap<=0
       ? `<div class="flash-on">Our <b>${esc(r.item)}</b> is on</div>`
-      : `<div class="flash-dist">${esc(_distLabel(r.gap))}</div>
+      : `<div class="flash-dist">${esc(r.fixed?_fixedLabel(r):_distLabel(r.gap))}</div>
          <div class="flash-rows"><div><span class="fl-k">Ongoing</span><span class="fl-v">${esc(r.cur||"—")}</span></div>
            <div><span class="fl-k">Ours</span><span class="fl-v">${esc(r.item)}</span></div></div>`;
     return `<div class="flash-cell b-${flashBand(r.gap)}"><div class="flash-ct">Court <b>${esc(r.court)}</b></div>${body}</div>`;
@@ -3065,6 +3150,7 @@ function renderMine(){
     // and tagged to someone with no CourtReach account of their own to attribute to.
     const who = m._with ? "with "+m._with : (m.byLabel || (m._by&&m._by!==me?.uid ? memberName(m._by) : ""));
     const cur=statusFor(m), st=cur && CASE_STATUSES[cur], stBy=statusByName(m);
+    const ft=manualTimeFor(m.court,m.item,matterDate(m));   // a time typed for this case (24h)
     // Two different permissions, deliberately not one. `editable` is ownership: only the
     // person whose case it is may retitle it, delete it, or move it on and off the shared
     // board. `canMark` is presence: anyone actually working the chamber's board that day may
@@ -3097,6 +3183,9 @@ function renderMine(){
           ${Object.entries(CASE_STATUSES).map(([key,def])=>
             `<option value="${key}"${cur===key?" selected":""}>${esc(def.label)}</option>`).join("")}
         </select>
+        <div class="time-row"><span class="cr-lab2">Time fixed</span>
+          <input type="time" class="time-inp${ft?" has-time":""}" data-settime="${esc(m.id)}" value="${esc(ft)}" aria-label="Time the court has fixed for this case">
+          ${ft?`<button class="time-clear" data-cleartime="${esc(m.id)}" aria-label="Clear the fixed time"><i class="ti ti-x"></i></button>`:""}</div>
       </div>`:""}
       <div class="case-row-body">
         <div class="case-title">${esc(m.title||("Court "+m.court+" · item "+m.item))}</div>
@@ -3142,6 +3231,18 @@ function wireMine(){
       catch(e){}
     };
   });
+  // A time the court has fixed for the case. Lives beside the status mark, in the same shared
+  // store, so whoever is in court can set it on a chamber case. Empty / clear writes null.
+  const writeTime=async(id,t)=>{
+    const m=(mineShown||[]).find(r=>String(r.id)===id); if(!m) return;
+    const rec = t ? {t, by:me.uid, byName:me.name||"", at:db.now()} : null;
+    try{ await db.set("matterstatus/"+statusScope(m), {times:{[statusKey(m)]:rec}}, true); }catch(e){}
+  };
+  $("main").querySelectorAll("[data-settime]").forEach(x=>{
+    x.onclick=ev=>ev.stopPropagation();
+    x.onchange=ev=>{ ev.stopPropagation(); writeTime(x.dataset.settime, (x.value||"").trim()); };
+  });
+  $("main").querySelectorAll("[data-cleartime]").forEach(x=>x.onclick=ev=>{ ev.stopPropagation(); writeTime(x.dataset.cleartime, ""); });
   // flip a matter between the chamber board and your own private one
   $("main").querySelectorAll("[data-scope]").forEach(x=>x.onclick=async(ev)=>{
     ev.stopPropagation();
@@ -3160,6 +3261,7 @@ function addMatterForm(){
       <label class="am-fld">Item<input id="am_item" inputmode="decimal" placeholder="e.g. 32 or 40.1"></label>
     </div>
     <label class="am-fld">Appearing for<select id="am_party"><option>Petitioner</option><option>Respondent</option></select></label>
+    <label class="am-fld">Time fixed <span style="font-weight:400">(only if the court has fixed one — it is then counted in minutes, not items)</span><input type="time" id="am_time"></label>
     ${inOrg()?`<label class="am-fld">Show on<select id="am_scope">
       <option value="chamber">${esc(myOrg?.name||"Organisation")} board — the whole office sees it</option>
       <option value="personal">My board only — private to me</option>
@@ -3197,8 +3299,19 @@ function addMatterForm(){
     // de-dupe on court+item+DATE — the same item number in the same court on a different
     // day is a different listing, and must not overwrite the other one.
     const matters=[...(myOwn||[]).filter(m=>!(String(m.court)===f.court&&String(m.item)===f.item&&matterDate(m)===f.date)), rec];
-    try{ await db.set("usermatters/"+me.uid,{matters,updatedAt:db.now()},true); closeModal(); mineView="mine"; setTab("mine"); }
-    catch(e){ $("am_err").textContent="Could not save — "+(e.message||e); }
+    const t=(($("am_time")&&$("am_time").value)||"").trim();
+    /* Close FIRST, then write. Firestore applies the write locally at once — the case is on the
+       list the moment it is issued — but the promise only settles when the SERVER acknowledges
+       it, and on an iPhone that acknowledgement can be slow or never arrive while the app is in
+       the foreground with a sleepy connection. Waiting for it before closing is exactly what
+       left the sheet stuck open with the case already added (owner: "the add button gets stuck.
+       The case is added but the case detail tab ... doesnt drop down"). A failed write is now
+       reported after the fact instead of holding the sheet hostage. */
+    $("am_save").disabled=true;
+    closeModal(); mineView="mine"; setTab("mine");
+    db.set("usermatters/"+me.uid,{matters,updatedAt:db.now()},true)
+      .catch(e=>{ try{ alert("Could not save the case — "+(e.message||e)); }catch(_){ } });
+    if(t) db.set("matterstatus/"+statusScope(rec), {times:{[statusKey(rec)]:{t, by:me.uid, byName:me.name||"", at:db.now()}}}, true).catch(()=>{});
   };
   $("am_fetch").onclick=doFetch; $("am_save").onclick=save;
   $("am_item").onkeydown=e=>{ if(e.key==="Enter") doFetch(); };
@@ -4520,11 +4633,11 @@ function watchOrg(orgId){
   if(orgMembersUnsub){orgMembersUnsub();orgMembersUnsub=null;}
   if(statusOrgUnsub){statusOrgUnsub();statusOrgUnsub=null;}
   Object.values(orgMatterUnsubs).forEach(u=>u&&u()); orgMatterUnsubs={};
-  myOrg=null; orgMembers=[]; orgMatters={}; statusOrg={}; courtsOrg={};
+  myOrg=null; orgMembers=[]; orgMatters={}; statusOrg={}; courtsOrg={}; timesOrg={};
   if(!orgId){ applyGate(); return; }
   orgDocUnsub=db.watchDoc("orgs/"+orgId, d=>{ myOrg=d; applyGate(); });
   // The chamber's shared status marks — one document, every member reads and writes it.
-  statusOrgUnsub=db.watchDoc("matterstatus/"+orgId, d=>{ statusOrg=(d&&d.marks)||{}; courtsOrg=(d&&d.courts)||{}; render(); });
+  statusOrgUnsub=db.watchDoc("matterstatus/"+orgId, d=>{ statusOrg=(d&&d.marks)||{}; courtsOrg=(d&&d.courts)||{}; timesOrg=(d&&d.times)||{}; render(); });
   // The explicit 50 is not a product decision about chamber size — it is what the users list
   // rule requires (a query with no limit clause fails request.query.limit <= 50). A chamber
   // that ever outgrows it needs the cap raised in BOTH places, here and in firestore.rules.
@@ -4600,7 +4713,7 @@ function applyGate(){
     unsub.push(db.watchDoc("usermatters/"+uid, d=>{ myOwn=(d&&d.matters)||[]; if(curTab!=="collab"&&!peerBoardUid) render(); }));
     // Status marks on your PERSONAL matters. The chamber's live in matterstatus/{orgId} and
     // are watched by watchOrg() instead, so leaving an organisation drops that half cleanly.
-    unsub.push(db.watchDoc("matterstatus/"+uid, d=>{ statusOwn=(d&&d.marks)||{}; courtsOwn=(d&&d.courts)||{}; render(); }));
+    unsub.push(db.watchDoc("matterstatus/"+uid, d=>{ statusOwn=(d&&d.marks)||{}; courtsOwn=(d&&d.courts)||{}; timesOwn=(d&&d.times)||{}; render(); }));
     unsub.push(db.watchQuery("links","fromUid",uid, rows=>{ linksOut=rows||[]; recomputeLinks(); }));
     unsub.push(db.watchQuery("links","toUid",uid, rows=>{ linksIn=rows||[]; recomputeLinks(); }));
     // Read by EVERYONE, not just admin — this is what entitlementOf() checks to decide
@@ -4956,7 +5069,8 @@ function notifyReaching(items){
   if(!notifOn || typeof Notification==="undefined" || Notification.permission!=="granted") return;
   for(const r of items){ if(r.gap==null||r.gap>4) continue;
     const key=r.court+"|"+r.item+"|"+(r.gap<=1?"now":"soon"); if(_notified[key]) continue; _notified[key]=1;
-    const body = r.gap<=0 ? `Your item ${r.item} is on now in Court ${r.court}`
+    const body = r.fixed ? `Court ${r.court} — your item ${r.item} is fixed at ${r.at}${r.minsAway>0?` · in ${r.minsAway} min`:" — time reached"}`
+      : r.gap<=0 ? `Your item ${r.item} is on now in Court ${r.court}`
       : r.gap===1 ? `Next in Court ${r.court} — your item ${r.item}`
       : `Court ${r.court} — your item ${r.item} is ~${r.gap} away`;
     try{ new Notification("CourtReach", {body, tag:"cr-"+r.court, renotify:true}); }catch(e){}

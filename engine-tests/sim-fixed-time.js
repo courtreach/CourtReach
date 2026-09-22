@@ -1,0 +1,14 @@
+load("../board-engine.js"); const ENG=globalThis.BoardEngine; let f=0,c=0; const eq=(a,b,m)=>{ c++; if(JSON.stringify(a)!==JSON.stringify(b)){ f++; print("  FAIL "+m+" got "+JSON.stringify(a)+" want "+JSON.stringify(b)); } };
+eq(ENG.clockMins("14:30"),870,"24h"); eq(ENG.clockMins("2.30 PM"),870,"dotted pm"); eq(ENG.clockMins("2:30 pm"),870,"colon pm"); eq(ENG.clockMins("2 PM"),840,"bare hour pm");
+eq(ENG.clockMins("10:30"),630,"morning"); eq(ENG.clockMins("2.30"),870,"bare 2.30 -> afternoon"); eq(ENG.clockMins("12:15 PM"),735,"noon pm"); eq(ENG.clockMins("12:15 AM"),15,"midnight am");
+eq(ENG.clockMins("THIS SPECIAL BENCH WILL SIT IMMEDIATELY AFTER"),null,"verbatim note is not a time"); eq(ENG.clockMins(""),null,"empty"); eq(ENG.clockMins(870),870,"number passthrough");
+const bc={court:"5",item:"20",status:"IN SESSION"}; const base={boardByCourt:{"5":bc}, miscTotalByCourt:{"5":70}};
+let k=ENG.classify({courtNo:"5",itemNo:"32"}, bc, {...base, nowMins:800, fixedTimes:{"5_32":"14:30"}}); eq([k.tier,k.short,k.gap,k.minsAway],["later","at 2:30 PM",null,70],"70 min away -> later, clock shown");
+k=ENG.classify({courtNo:"5",itemNo:"32"}, bc, {...base, nowMins:845, fixedTimes:{"5_32":"14:30"}}); eq([k.tier,k.short],["soon","in 25 min"],"25 min -> soon");
+k=ENG.classify({courtNo:"5",itemNo:"32"}, bc, {...base, nowMins:865, fixedTimes:{"5_32":"14:30"}}); eq([k.tier,k.short],["now","in 5 min"],"5 min -> now");
+k=ENG.classify({courtNo:"5",itemNo:"32"}, bc, {...base, nowMins:880, fixedTimes:{"5_32":"14:30"}}); eq([k.tier,k.short,k.fixed],["now","NOW",true],"time reached");
+k=ENG.classify({courtNo:"5",itemNo:"32"}, {court:"5",item:"",status:"NOT IN SESSION"}, {...base, nowMins:600, fixedTimes:{"5_32":"14:30"}}); eq([k.tier,k.short],["later","at 2:30 PM"],"court not sitting yet, still a clock");
+k=ENG.classify({courtNo:"5",itemNo:"32"}, bc, {...base, nowMins:880, fixedTimes:{"5_32":"14:30"}, remarksByCourt:{"5":{items:{"32":"OVER"}}}}); eq([k.tier,!!k.over],["passed",true],"board OVER still wins");
+k=ENG.classify({courtNo:"5",itemNo:"32"}, bc, {...base, nowMins:880, fixedTimes:{"5_32":"14:30"}, doneMarks:{"5_32":{v:"att"}}}); eq([k.tier,!!k.done],["passed",true],"user mark still wins");
+k=ENG.classify({courtNo:"5",itemNo:"33"}, bc, {...base, nowMins:880, fixedTimes:{"5_32":"14:30"}}); eq([k.gap,k.fixed],[13,undefined],"the next item is unaffected");
+print(`sim3 fixed-time: ${c} checks, ${f} fails`);
