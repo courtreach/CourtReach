@@ -51,7 +51,7 @@ OUTPUT_FILE = "court-updates.json"
 # based change-detection reuses a cached parse when the PDF is unchanged; without
 # this, a parser FIX never reaches already-cached dates (their PDFs don't change).
 # A version mismatch forces a full re-parse of every date in the window.
-PARSER_VERSION = 10  # bumped: capture "TO BE TAKEN UP ALONG WITH ITEM NO. X" notes
+PARSER_VERSION = 11  # bumped: also capture operational NOTE:- blocks (bench/sitting notes)
 HEADERS = {"User-Agent": "Mozilla/5.0 (compatible; courtreach-causelist-bot/1.0)"}
 
 COURT_RE = re.compile(r"COURT\s*NO\.?\s*[:\-]?\s*([0-9]+)", re.I)
@@ -105,6 +105,88 @@ BRACKET_NOTE_START_RE = re.compile(r"\[\s*(THIS SPECIAL BENCH WILL SIT.*)$", re.
 # this parser drops), so matching it back to an item number is not reliable yet.
 WITH_ITEM_RE = re.compile(r"\bALONG\s*WITH\s+ITEM\s+NO\.?\s*([0-9]{1,4}(?:\.[0-9]{1,3})?)", re.I)
 WITH_NOTE_START_RE = re.compile(r"\[([^\]]*\bALONG\s*WITH\b.*)$", re.I)
+
+# --- operational day notes (bench composition / sittings) -------------------------------
+# The lists themselves carry the day's operational notices as "NOTE:-" blocks at the foot
+# of a court's section — real examples, 25 Sep 2026: "[ HON'BLE MRS JUSTICE V. MOHANA WILL
+# SIT IN COURT NO. 17 TO TAKE UP SINGLE JUDGE BENCH/CHAMBER MATTERS AFTER THE NORMAL WORK
+# OF THIS COURT IS OVER ]" and "HON'BLE MR. JUSTICE K.V. VISWANATHAN WILL SIT IN SPECIAL
+# BENCH IN COURT NO. 6 AT 2:00 P.M." (the latter repeated at the foot of several courts).
+# There is no separate daily notices feed for these (the sci.gov.in notices page carries
+# only occasional circulars), so this is the authoritative source. A block ends at the
+# "NEW DELHI / ADDITIONAL REGISTRAR" sign-off; the KEEP/SKIP filters separate a real
+# operational note (a judge sitting elsewhere, a bench change, a court not sitting) from
+# the listing-circular boilerplate every page repeats.
+NOTE_LINE_RE = re.compile(r"^NOTE\s*:-\s*(.*)$", re.I)
+NOTE_END_RE = re.compile(r"^NEW DELHI\b|^ADDITIONAL REGISTRAR|^SUPREME COURT OF INDIA", re.I)
+NOTE_KEEP_RE = re.compile(
+    r"WILL\s+(?:NOT\s+)?SIT|NOT\s+SITTING|SHALL\s+(?:NOT\s+)?SIT|SPECIAL\s+BENCH|"
+    r"ASSEMBLE|COMPOSITION|ON\s+LEAVE|WILL\s+PRESIDE|WILL\s+TAKE\s+UP", re.I)
+NOTE_SKIP_RE = re.compile(r"AS\s+PER\s+CIRCULAR|FRESH\s+MATTERS|APPRECIATED|LISTING\s+IS\s+AUTOMATIC", re.I)
+NOTE_COURT_RE = re.compile(r"COURT\s*NOS?\.?\s*:?\s*([0-9]{1,2})", re.I)
+
+
+def parse_day_notes(text):
+    """[{'text': ..., 'courts': ['17', ...]}] — deduped operational NOTE:- blocks. A note
+    that names no court ("THIS BENCH WILL RE-ASSEMBLE ... OF THIS COURT") belongs to the
+    court whose section it is printed in, so the section court is tracked and used."""
+    out, seen, acc, taken, cur = [], set(), None, 0, None
+    def flush():
+        nonlocal acc
+        t = re.sub(r"\s+", " ", acc or "").strip(" []-·")
+        acc = None
+        if not t or len(t) < 15:
+            return
+        if NOTE_SKIP_RE.search(t) or not NOTE_KEEP_RE.search(t):
+            return
+        courts = sorted(set(str(int(c)) for c in NOTE_COURT_RE.findall(t)))
+        if not courts and cur:
+            courts = [cur]
+        key = ",".join(courts) + "|" + re.sub(r"[^A-Z0-9]", "", t.upper())
+        if key in seen:
+            return
+        seen.add(key)
+        out.append({"text": t[:300], "courts": courts})
+    struct = re.compile(r"^(MISCELLANEOUS\s+HEARING|SUPPLEMENTARY\s+LIST|SNo\.|Petitioner\s*/\s*Respondent|Advocate$)", re.I)
+    for raw in text.splitlines():
+        line = raw.strip()
+        if not line:
+            continue
+        if acc is None:
+            cm = REG_RE.search(line) or COURT_RE.search(line)
+            if cm:
+                cur = cm.group(1)
+            elif CJ_RE.search(line):
+                cur = "1"
+        if acc is not None:
+            # a bracketed note's real terminator is its closing "]" — without cutting there,
+            # a page-top note ran straight into "MISCELLANEOUS HEARING Petitioner/Respondent
+            # SNo. ..." section headers before the line budget was spent
+            close = line.find("]")
+            if close >= 0:
+                acc += " " + line[:close]
+                flush()
+                continue
+            # a note is a few lines at most — a block that runs on is list content, not a note
+            if NOTE_END_RE.match(line) or NOTE_LINE_RE.match(line) or struct.match(line) or taken >= 6:
+                flush()
+            else:
+                acc += " " + line
+                taken += 1
+                continue
+        m = NOTE_LINE_RE.match(line)
+        if m:
+            frag = m.group(1) or ""
+            close = frag.find("]")
+            if close >= 0:
+                acc = frag[:close]
+                flush()
+            else:
+                acc, taken = frag, 0
+    if acc is not None:
+        flush()
+    return out
+
 
 # Page-header boilerplate repeated at the top of every page. When an item's
 # "Versus" sits at the foot of a page, this line is the first thing after it and
@@ -559,7 +641,7 @@ def n_matters(items):
 
 
 def build_for_date(date_str, prev_day=None, prev_sizes=None):
-    """Returns (lists_found, lists, sizes, reused). Probes every list URL with a
+    """Returns (lists_found, lists, notes, sizes, reused). Probes every list URL with a
     1KB ranged GET first; if the sizes all match the previous run, the previous
     parse is reused wholesale — no PDF is downloaded."""
     sizes = {}
@@ -570,8 +652,10 @@ def build_for_date(date_str, prev_day=None, prev_sizes=None):
                 sizes[suffix] = s
             time.sleep(0.15)
     if prev_day is not None and sizes == (prev_sizes or {}):
-        return prev_day.get("lists_found", []), prev_day.get("lists", {}), sizes, True
+        return (prev_day.get("lists_found", []), prev_day.get("lists", {}),
+                prev_day.get("notes", []), sizes, True)
     lists_found, lists = [], {}
+    notes, note_keys = [], set()
     for human, variants in LIST_TYPES.items():
         merged = {}
         for suffix, variant in variants:
@@ -584,6 +668,13 @@ def build_for_date(date_str, prev_day=None, prev_sizes=None):
             if not text.strip():
                 continue
             lists_found.append("{} ({})".format(human, variant))
+            # operational NOTE:- blocks (a judge sitting elsewhere, a changed bench, a
+            # court not sitting) — deduped across every list and variant of the day
+            for n in parse_day_notes(text):
+                k = re.sub(r"[^A-Z0-9]", "", n["text"].upper())
+                if k not in note_keys:
+                    note_keys.add(k)
+                    notes.append(n)
             parsed = parse_courts(text)
             advs = parse_advocates(data, {c: set(parsed[c]["items"]) for c in parsed})
             for court, info in parsed.items():
@@ -624,7 +715,7 @@ def build_for_date(date_str, prev_day=None, prev_sizes=None):
             c["total"] = str(n_matters(c["items"]))
         if merged:
             lists[human] = merged
-    return lists_found, lists, sizes, False
+    return lists_found, lists, notes, sizes, False
 
 
 def main():
@@ -646,15 +737,15 @@ def main():
     prev_by, prev_src = ({}, {}) if stale_parser else (prev.get("by_date", {}), prev.get("sources", {}))
     by_date, sources = {}, {}
     for date_str in dates:
-        lists_found, lists, sizes, reused = build_for_date(
+        lists_found, lists, notes, sizes, reused = build_for_date(
             date_str, prev_by.get(date_str), prev_src.get(date_str))
         if sizes:
             sources[date_str] = sizes
         if lists_found or lists:
-            by_date[date_str] = {"lists_found": lists_found, "lists": lists}
+            by_date[date_str] = {"lists_found": lists_found, "lists": lists, "notes": notes}
             ncourts = sum(len(v) for v in lists.values())
-            print("  {}: {} list(s), {} courts{}".format(
-                date_str, len(lists), ncourts, "  [unchanged — reused]" if reused else "  [FETCHED]"))
+            print("  {}: {} list(s), {} courts, {} note(s){}".format(
+                date_str, len(lists), ncourts, len(notes), "  [unchanged — reused]" if reused else "  [FETCHED]"))
     # Nothing new anywhere -> leave the file untouched so the workflow commits
     # nothing and Pages doesn't rebuild. (generated_at = time of last CHANGE.)
     if prev and not stale_parser \

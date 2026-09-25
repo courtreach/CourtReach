@@ -431,6 +431,13 @@ main#main{flex:1;min-height:0;overflow-y:auto;padding:8px 12px 12px;-webkit-over
 .cs-id b{font-weight:700}
 .cs-coram{font-size:12.5px;line-height:1.5;color:#aab4c0;margin-top:7px}
 .cs-coram b{color:#e8ecf1;font-weight:600}
+/* The causelist's own operational note — a judge sitting elsewhere, a changed bench, a
+   court not sitting. Gold-edged like the join button: present and findable in the navy
+   hero, quoting the list verbatim, without shouting over the case being checked. */
+.cs-notice{display:flex;gap:7px;align-items:flex-start;font-size:11.5px;line-height:1.5;
+  color:#e7d9b0;margin-top:9px;padding:7px 10px;background:rgba(194,168,106,.10);
+  border:1px solid rgba(194,168,106,.35);border-radius:10px}
+.cs-notice i{flex:none;margin-top:1px}
 /* The one action. Gold-edged rather than filled: present and findable, but it never
    out-shouts the case you came to check. */
 /* Centred on its own row (owner: "Center the Join hearing button") rather than pinned to
@@ -2622,6 +2629,31 @@ function courtCoram(court){
   for(const t of CAUSELIST_TYPES){ const rec=lists[t]?.[String(court)]; if(rec&&rec.coram) return cleanCoram(rec.coram); }
   return "";
 }
+/* Operational notes the causelist ITSELF publishes — a judge sitting in another court, a
+   changed bench composition, a special sitting, a court not sitting (owner: "i want the
+   expanded court island to show the note about changed composition of the bench if any and
+   i want our app to take into account the non sitting of any court"). There is no separate
+   daily notices feed for these on sci.gov.in — the NOTE:- blocks in the list PDFs are the
+   authoritative source; fetch_causelist.py captures them, keyed to the courts each note
+   names (or the section it was printed in). Quoted verbatim, house style. */
+function courtNotes(court, date){
+  const c=String(parseInt(court,10));
+  return (courtUpdates?.by_date?.[date||todayISO()]?.notes||[])
+    .filter(n=>(n.courts||[]).includes(c)).map(n=>n.text);
+}
+/* The MENTIONING series' place in this court's day (owner: "calculate the mentioning
+   series which will be always taken up before the miscellaneous and regular lists and
+   after pronouncement"). Everything here is from the live board — the series has no
+   published list of its own — and when the court is already into its numbered lists the
+   series is simply over, which is said plainly rather than guessed around. */
+function mentioningLine(court, bc, idle){
+  const cur=parseFloat(bc?.item);
+  if(!idle && cur>=800 && cur<900) return `On now — item ${esc(bc.item)}`;
+  if(!idle && cur>=1500 && cur<1600) return "After the pronouncements, before the Miscellaneous / Regular lists";
+  if((idle || isNaN(cur)) && nowMinsIST()<ENG.MENT_END) return "Taken up first when the court assembles — before the Miscellaneous / Regular lists";
+  if(!idle && !isNaN(cur) && cur<800) return "Over for the day — the court is into its lists";
+  return "";
+}
 /* Cases listed before this court today, per list type, with the MAIN and SUPPLEMENTARY split
    spelled out (owner: "The app is not showing the total miscellaneous matters from both the
    main and supplementary lists. Same with the Regular lists").
@@ -2745,12 +2777,18 @@ function openCourtModal(court,_refetched){
   const idle=bc?/not in session/i.test(bc.status||""):true;
   const mineHere=activeMatters().filter(e=>String(e.courtNo)===court);   // our tracked case(s) in this court
   const coram=courtCoram(court);
-  const seq=(ENG.seqInfo?ENG.seqInfo(effSeqByCourt()[court]||""):{seq:[]}).seq||[];
+  const notes=courtNotes(court);
+  const mentLine=mentioningLine(court, bc, idle);
+  const seqParse=ENG.seqInfo?ENG.seqInfo(effSeqByCourt()[court]||""):{seq:[],withMap:{}};
+  const seq=seqParse.seq||[];
+  // Linked pairs the sequence itself declared ("...23 WITH 58") — no longer separate slots
+  // in the printed order, so spell them out or the row reads as if 58 were never mentioned.
+  const withPairs=Object.entries(seqParse.withMap||{}).map(([a,b])=>`${a} with ${b}`);
   const pass=courtPassovers(court), totals=courtTotals(court);
   // what somebody has typed in for this court today, so each row can say so rather than
   // passing off a colleague's entry as the board's own word
   const mSeq=manualSeq(court), mPo=manualPO(court), mBy=courtEnteredBy(court);
-  const nothing=!mineHere.length&&!coram&&!seq.length&&!pass.length&&!totals.length;
+  const nothing=!mineHere.length&&!coram&&!seq.length&&!pass.length&&!totals.length&&!notes.length;
   /* How far through its list is this court? Only meaningful against the Miscellaneous total,
      and only while the court is actually working that list: the reserved series are a court
      PHASE, not a position (800s mentioning, 1500s judgments, 1600s Single Judge, 1700s
@@ -2767,7 +2805,10 @@ function openCourtModal(court,_refetched){
   const poOut=plan.queue.length;
   const reach=(!idle && bc && !isNaN(curNum)) ? ENG.reachOf(courtCtx(), court, plan.seq||[], miscTotal||null, bc.item) : 0;
   const doneN=Math.max(0, Math.min(reach, miscTotal||reach) - poOut - 1);
-  const onRegular = miscTotal>0 && curNum>=ENG.REG_BASE && reach>miscTotal;
+  // curNum<800: a reserved-series item (803 = mentioning) is a PHASE, not a Regular-list
+  // position — without the gate the hero read "Misc list done · Regular list on" while the
+  // court was actually doing its morning mentioning.
+  const onRegular = miscTotal>0 && curNum>=ENG.REG_BASE && curNum<800 && reach>miscTotal;
   const showProg=!idle && !isNaN(curNum) && curNum>0 && curNum<800 && miscTotal>0 && !onRegular;
   const leftN=showProg ? Math.max(0, miscTotal-doneN) : 0;
   const pct=showProg ? Math.max(2, Math.min(100, Math.round(doneN/miscTotal*100))) : 0;
@@ -2778,6 +2819,7 @@ function openCourtModal(court,_refetched){
         <span class="cs-id">Court <b>${esc(court)}</b></span>
       </div>
       ${coram?`<div class="cs-coram">${coramHTML(coram)}</div>`:""}
+      ${notes.length?`<div class="cs-notice"><i class="ti ti-info-circle"></i> <span>${notes.map(esc).join("<br>")}</span></div>`:""}
       <div class="cs-prog">
         <div class="cs-progline">
           <span class="cs-on ${idle?"idle":""}">${idle?"Not sitting":`On item ${esc(bc?.item||"·")}`}</span>
@@ -2790,19 +2832,37 @@ function openCourtModal(court,_refetched){
       ${VC_LINKS[court]?`<div class="cs-joinrow"><button class="cs-join" data-vc="${esc(court)}"><i class="ti ti-video"></i> Join hearing</button></div>`:""}
     </div>
     ${mineHere.length?`<div class="cs-sec">${inOrg()?"Chamber case":"Your case"}${mineHere.length>1?"s":""} here</div>${mineHere.map(e=>{ const k=classify(e);
+      const rmk=remarkFor(court, e.itemNo);
+      const sbTime=fixedLabelFor(court, e.itemNo, todayISO());
+      const done=!!k.over || remarkEndsToday(rmk);
+      return {e,k,rmk,sbTime,done};
+    })
+    /* Ordered along the court's CALL ORDER, nearest first — NOT by item number (owner: "The
+       cases closer should be on top even though their item number is greater in number ...
+       show the cases in the expanded court island as per their sequence"). The island TILE
+       keeps its constant item-number order (a separate, earlier decision — it must never
+       reshuffle as the court progresses); the sheet is where the day's actual order lives.
+       Time-fixed cases have no sequence slot, so they follow the sequenced ones (soonest
+       clock first), and anything finished sinks, struck, to the bottom. */
+    .sort((a,b)=>{
+      const it=x=>parseFloat(x.e.itemNo)||0;
+      const rank=x=> x.done ? 3e9+it(x)
+        : (x.k.fixed && x.k.minsAway!=null) ? 2e9+x.k.minsAway
+        : (x.k.gap!=null) ? x.k.gap
+        : 1e9+it(x);
+      return (rank(a)-rank(b)) || (it(a)-it(b));
+    })
+    .map(x=>{ const {e,k,rmk,sbTime,done}=x;
       // on a chamber board, say whose matter each item is
       const who = inOrg() ? (e.byName||"") : "";   // already resolved by shape() — byLabel first, then account name
       // the board's own remark for THIS specific item — a multi-case court can have a
       // different remark per item, so unlike the island (which only shows the most urgent
       // one), the court sheet breaks it out per item (owner: "then in the pop up that comes
       // after clicking the court island").
-      const rmk=remarkFor(court, e.itemNo);
-      const sbTime=fixedLabelFor(court, e.itemNo, todayISO());
       // Same rule as the island: a time-fixed item's "away" badge is not shown at all — the
       // causelist already says exactly when it sits, and an item-number-derived distance
       // would just be noise next to that. Struck for the same reason the island strikes it,
       // so the two can never disagree about whether a matter is finished.
-      const done=!!k.over || remarkEndsToday(rmk);
       const band=proxBandOf(k);
       // a timed case now carries its own distance IN MINUTES from the engine; only a time the
       // engine could not read (a relative causelist note) still hides the item-based figure
@@ -2813,13 +2873,14 @@ function openCourtModal(court,_refetched){
         ${hideDist?"":`<span class="cs-dist ${esc(band)}">${esc(k.short||"—")}</span>`}</div>`; }).join("")}`:""}
     <div class="cs-reg">
       <div class="cs-row"><span class="cs-k">Sequence</span><span class="cs-val${seq.length?"":" dim"}">${seq.length
-        ?esc(seqRanges(seq))+", then the rest":"Not declared yet"}${mSeq?`<span class="cs-by">Typed in${mBy?" by "+esc(mBy):""}</span>`:""}</span>
+        ?esc(seqRanges(seq))+(withPairs.length?` (${esc(withPairs.join(", "))})`:"")+", then the rest":"Not declared yet"}${mSeq?`<span class="cs-by">Typed in${mBy?" by "+esc(mBy):""}</span>`:""}</span>
         <button class="cs-edit" data-cedit="seq"><i class="ti ti-pencil"></i>${mSeq?"Edit":"Add"}</button></div>
       <div class="cs-row"><span class="cs-k">Passed over</span><span class="cs-val${pass.length?"":" dim"}">${pass.length
         ?`<span class="cs-chips">${pass.map(n=>{ const kk=classify({courtNo:court,itemNo:n});
             const d=(kk&&!kk.over&&kk.gap!=null)?(kk.gap<=0?"on now":kk.gap===1?"next":kk.gap+" away"):(kk&&kk.over?"over":"");
             return `<span>${esc(n)}${d?`<small>· ${esc(d)}</small>`:""}</span>`; }).join("")}</span>${planLine?`<span class="cs-plan">${esc(planLine)}</span>`:""}`:"None yet"}${mPo.length?`<span class="cs-by">${mPo.map(esc).join(", ")} typed in${mBy?" by "+esc(mBy):""}</span>`:""}</span>
         <button class="cs-edit" data-cedit="po"><i class="ti ti-pencil"></i>${mPo.length?"Edit":"Add"}</button></div>
+      ${mentLine?`<div class="cs-row"><span class="cs-k">Mentioning</span><span class="cs-val">${mentLine}</span></div>`:""}
       ${totals.length?`<div class="cs-row"><span class="cs-k">On the board</span><span class="cs-val">${totals.map(esc).join("<br>")}</span></div>`:""}
     </div>
     ${nothing?`<div class="cs-empty">No sequence, coram or passover published for this court yet — it fills in as the bench updates the list. If you are in the court and know the order, type it in above.</div>`:""}
@@ -3001,6 +3062,7 @@ function openDateCourtModal(court,date){
         <span class="cs-id">Court <b>${esc(court)}</b></span>
       </div>
       ${coram?`<div class="cs-coram">${coramHTML(coram)}</div>`:""}
+      ${courtNotes(court,date).length?`<div class="cs-notice"><i class="ti ti-info-circle"></i> <span>${courtNotes(court,date).map(esc).join("<br>")}</span></div>`:""}
       <div class="cs-prog"><div class="cs-progline">
         <span class="cs-on idle">${esc(fmtDateLong(date))}</span>
         ${totals.length?`<span class="cs-of">${esc(totals.map(t=>t.split(": ")[1]).join(" · "))} listed</span>`:""}

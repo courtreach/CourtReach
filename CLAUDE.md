@@ -99,6 +99,31 @@ internally (`bc.sequence` then `ctx.seqByCourt`) — so it can never disagree wi
 rest of classify() sees for that court, and needs no extra courtreach.html/worker.js
 wiring: both already pass `seqByCourt` into ctx for other reasons.
 
+**Mentioning series (800s) as OUR item** — a tracked 800-series matter is measured inside
+its own series (owner: "the mentioning series ... will be always taken up before the
+miscellaneous and regular lists and after pronouncement"): series arithmetic while the
+board is in the 800s, "after the pronouncements" while it is in the 1500s, and finished
+once the board is into the numbered lists. The court sheet carries a "Mentioning" row
+(`mentioningLine()`) saying where the series stands — live-board-derived only, since the
+SC publishes no separate daily mentioning list any more (last "List of oral mentioning
+matters" notice: Jan 2026; verified 25 Sep 2026). The sheet's `onRegular` check gates on
+`curNum<800` for the same reason the progress bar always did — item 803 is a phase, not a
+Regular-list position.
+
+**Operational day notes** — the causelist PDFs' own "NOTE:-" blocks (a judge sitting in
+another court, a changed bench, a special sitting, a court not sitting) are captured by
+`fetch_causelist.py parse_day_notes()` (parser v11) into `by_date[date].notes`
+(`[{text, courts}]`), deduped, attributed to the courts named in the text or the section
+they were printed in ("THIS COURT"). The court sheet quotes them verbatim in a gold
+`.cs-notice` box under the coram — today's sheet and the picked-date sheet both. There is
+no separate daily notices feed on sci.gov.in for these; the list PDFs are the source.
+
+**Court sheet case order** — the sheet's "Your/Chamber cases here" list is sorted along
+the call order, nearest first (owner: "The cases closer should be on top even though their
+item number is greater"); time-fixed cases follow (soonest clock first), finished ones
+sink struck to the bottom. The island TILE keeps its constant item-number order — that
+was a separate, earlier decision and still stands.
+
 **Passover "after item X"** — `passoverPlan()`'s `after` field (the item the sequence's own
 "passovers" marker sits right after, e.g. "1-10, 25-50 and then passovers" → after item 50)
 used to be set ONLY on the `at:"sequence"` branch — the moment the court actually reached
@@ -207,11 +232,9 @@ not distance; the day-sheet sync runs at his six times only.
 
 ## Pending (as of 25 Sep 2026)
 
-1. **worker.js paste** (owner) — last handed over 25 Sep with the sequence-parser
-   hardening batch, the causelist "taken up along with item N" link support, the
-   sequence-declared "X WITH Y" link support, and the passover "after item X" fix. Until
-   pasted, push alerts use old maths (no C-prefixed sequences, no item-link redirect,
-   inflated distances for a "WITH"-linked matter's own push alert).
+1. **worker.js paste** (owner) — last handed over 25 Sep (second batch of the day): the
+   sequence-parser hardening, both item-link forms, the passover "after item X" fix, AND
+   the mentioning-series (800s) classification. Until pasted, push alerts use old maths.
 2. KV list-op → index key in `crTick` (designed, not built).
 3. SD-Chamber's `sd-board` worker still has an unauthenticated `/push-send` (other repo).
 4. GitHub Support request to GC the purged worker.js objects.

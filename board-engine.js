@@ -431,6 +431,26 @@
       }
       return { tier: "later", label: (oursSingle ? "Single Judge" : "Chamber Judge") + " list — after the board", short: "after board", reg: true };
     }
+    /* OUR OWN matter in the MENTIONING series (800s). The series sits in a fixed place in
+       the court's day: pronouncements (1500s) first, then mentioning, then the
+       Miscellaneous and Regular lists (owner: "the mentioning series ... will be always
+       taken up before the miscellaneous and regular lists and after pronouncement").
+       While the board is inside the series, distance is series arithmetic, same shape as
+       the Single/Chamber phases above; once the board is into the numbered lists the
+       series is finished for the day. */
+    const oursMent = oursNum >= 800 && oursNum < 900;
+    if (oursMent) {
+      if (curBoardNum >= 800 && curBoardNum < 900) {
+        const g = Math.floor(oursNum) - Math.floor(curBoardNum);
+        if (g < 0) return { tier: "passed", label: "mentioning item is over", short: "over", over: true, gap: g, ment: true };
+        if (g <= 1) return { tier: "now", label: g === 0 ? "MENTIONING — ON NOW" : "mentioning — NEXT", short: g === 0 ? "NOW" : "NEXT", gap: g, ment: true };
+        if (g <= 4) return { tier: "soon", label: "~" + g + " mentioning items away", short: g + " away", gap: g, ment: true };
+        return { tier: "later", label: g + " mentioning items away", short: g + " away", gap: g, ment: true };
+      }
+      if (curBoardNum >= 1500 && curBoardNum < 1600) return { tier: "soon", label: "mentioning — after the pronouncements", short: "after pronouncement", ment: true };
+      if (!isNaN(curBoardNum) && curBoardNum < 800) return { tier: "passed", label: "mentioning is over — the lists are running", short: "closed", ment: true };
+      return { tier: "soon", label: "mentioning — taken up before the lists", short: "mentioning", ment: true };
+    }
     if (curBoardNum >= 800 && curBoardNum < 900) return { tier: "soon", label: "mentioning is on", short: "mentioning", ment: true };
     if (curBoardNum >= 1500 && curBoardNum < 1600) return { tier: "soon", label: "pronouncement is on", short: "pronouncement" };
     if (curBoardNum >= 1600 && curBoardNum < 1700) return { tier: "soon", label: "Single Judge matters on", short: "single judge" };
