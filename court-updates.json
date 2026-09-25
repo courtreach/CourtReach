@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-09-24T21:45:44.180684Z",
-  "parser_version": 9,
+  "generated_at": "2026-09-25T05:40:39.589324Z",
+  "parser_version": 10,
   "window": [
     "2026-09-25",
     "2026-09-28",
@@ -839,6 +839,10 @@
               }
             },
             "times": {},
+            "withItem": {
+              "58": "23",
+              "59": "13"
+            },
             "main": 58,
             "supp": 3
           },
@@ -849,6 +853,7 @@
             "items": {},
             "advocates": {},
             "times": {},
+            "withItem": {},
             "main": 0,
             "supp": 0
           },
@@ -1245,6 +1250,10 @@
               }
             },
             "times": {},
+            "withItem": {
+              "53": "11",
+              "54": "11"
+            },
             "main": 51,
             "supp": 8
           },
@@ -1441,6 +1450,10 @@
               }
             },
             "times": {},
+            "withItem": {
+              "28": "12",
+              "29": "5"
+            },
             "main": 27,
             "supp": 2
           },
@@ -1799,6 +1812,9 @@
               "301.1": "2:00 PM",
               "301.2": "2:00 PM"
             },
+            "withItem": {
+              "56": "11"
+            },
             "main": 58,
             "supp": 3
           },
@@ -2099,6 +2115,10 @@
               }
             },
             "times": {},
+            "withItem": {
+              "53": "43",
+              "55": "43"
+            },
             "main": 50,
             "supp": 7
           },
@@ -2503,6 +2523,10 @@
               }
             },
             "times": {},
+            "withItem": {
+              "52": "3",
+              "58": "33.3"
+            },
             "main": 51,
             "supp": 7
           },
@@ -2854,6 +2878,12 @@
               "301": "2:00 PM",
               "53": "10:30 AM",
               "53.1": "10:30 AM"
+            },
+            "withItem": {
+              "53": "5",
+              "54": "10.1",
+              "55": "10",
+              "56": "16"
             },
             "main": 53,
             "supp": 7
@@ -3231,6 +3261,11 @@
               }
             },
             "times": {},
+            "withItem": {
+              "53": "40",
+              "54": "28",
+              "55": "28"
+            },
             "main": 51,
             "supp": 14
           },
@@ -3578,6 +3613,9 @@
               }
             },
             "times": {},
+            "withItem": {
+              "53": "15"
+            },
             "main": 51,
             "supp": 3
           },
@@ -3872,6 +3910,7 @@
               }
             },
             "times": {},
+            "withItem": {},
             "main": 50,
             "supp": 8
           },
@@ -4142,6 +4181,9 @@
               }
             },
             "times": {},
+            "withItem": {
+              "55": "24"
+            },
             "main": 50,
             "supp": 6
           },
@@ -4430,6 +4472,9 @@
               }
             },
             "times": {},
+            "withItem": {
+              "55": "16"
+            },
             "main": 49,
             "supp": 6
           },
@@ -4566,6 +4611,7 @@
               }
             },
             "times": {},
+            "withItem": {},
             "main": 27,
             "supp": 2
           },
@@ -4729,6 +4775,9 @@
               }
             },
             "times": {},
+            "withItem": {
+              "33": "7"
+            },
             "main": 32,
             "supp": 1
           },
@@ -4992,6 +5041,9 @@
               }
             },
             "times": {},
+            "withItem": {
+              "54.3": "40"
+            },
             "main": 50,
             "supp": 5
           },
@@ -5286,6 +5338,10 @@
               }
             },
             "times": {},
+            "withItem": {
+              "52": "25",
+              "54": "46"
+            },
             "main": 50,
             "supp": 5
           }
@@ -5432,6 +5488,7 @@
               }
             },
             "times": {},
+            "withItem": {},
             "main": 29,
             "supp": 0
           },
@@ -5562,6 +5619,7 @@
               }
             },
             "times": {},
+            "withItem": {},
             "main": 29,
             "supp": 0
           },
@@ -5711,6 +5769,7 @@
               }
             },
             "times": {},
+            "withItem": {},
             "main": 29,
             "supp": 0
           },
@@ -5826,6 +5885,7 @@
               }
             },
             "times": {},
+            "withItem": {},
             "main": 28,
             "supp": 1
           }
@@ -5937,6 +5997,7 @@
               }
             },
             "times": {},
+            "withItem": {},
             "main": 23,
             "supp": 0
           },
@@ -6042,6 +6103,7 @@
               }
             },
             "times": {},
+            "withItem": {},
             "main": 23,
             "supp": 1
           },
@@ -6161,6 +6223,7 @@
               }
             },
             "times": {},
+            "withItem": {},
             "main": 24,
             "supp": 1
           },
@@ -6260,6 +6323,7 @@
               }
             },
             "times": {},
+            "withItem": {},
             "main": 20,
             "supp": 0
           },
@@ -6276,6 +6340,7 @@
             },
             "advocates": {},
             "times": {},
+            "withItem": {},
             "main": 3,
             "supp": 2
           }
@@ -6445,6 +6510,7 @@
               }
             },
             "times": {},
+            "withItem": {},
             "main": 34,
             "supp": 0
           },
@@ -6641,6 +6707,7 @@
               }
             },
             "times": {},
+            "withItem": {},
             "main": 33,
             "supp": 2
           },
@@ -6655,6 +6722,7 @@
             },
             "advocates": {},
             "times": {},
+            "withItem": {},
             "main": 0,
             "supp": 1
           }
@@ -6952,6 +7020,7 @@
               }
             },
             "times": {},
+            "withItem": {},
             "main": 71,
             "supp": 0
           },
@@ -7196,6 +7265,7 @@
               }
             },
             "times": {},
+            "withItem": {},
             "main": 63,
             "supp": 0
           },
@@ -7454,6 +7524,7 @@
               }
             },
             "times": {},
+            "withItem": {},
             "main": 50,
             "supp": 0
           },
@@ -7694,6 +7765,7 @@
               "301": "2:00 PM",
               "302": "2:00 PM"
             },
+            "withItem": {},
             "main": 58,
             "supp": 0
           },
@@ -7940,6 +8012,7 @@
               }
             },
             "times": {},
+            "withItem": {},
             "main": 58,
             "supp": 0
           },
@@ -8332,6 +8405,7 @@
               }
             },
             "times": {},
+            "withItem": {},
             "main": 85,
             "supp": 0
           },
@@ -8611,12 +8685,13 @@
               "3": "10:30 AM",
               "301": "2:00 PM"
             },
+            "withItem": {},
             "main": 65,
             "supp": 0
           },
           "7": {
             "coram": "HON'BLE MR. JUSTICE DIPANKAR DATTA HON'BLE MR. JUSTICE SHEEL NAGU",
-            "total": "58",
+            "total": "50",
             "fresh": "",
             "items": {
               "1": "SLP(Crl) No. 7504/2026 SENIOR INTELLIGENCE OFFICER VERSUS MOHAMMED KAMRAN",
@@ -8676,16 +8751,6 @@
               "44.8": "Connected MEERUT DEVELOPMENT AUTHORITY VERSUS RAMA CO-OPERATIVE INDUSTRIAL STATE LTD AND",
               "44.9": "Connected MEERUT DEVELOPMENT AUTHORITY SECRETARY VERSUS MANISH GUPTA AND ORS.",
               "0": "Diary No. 29869-2026 VERSUS MANISH GUPTA AND ORS.",
-              "45": "SLP(Crl) No. X VERSUS THE STATE OF MAHARASHTRA AND ANR.",
-              "46": "SLP(C) No. IDBI BANK LTD AND ANR. VERSUS VIMAL SERVICES",
-              "47": "SLP(C) No. 30470/2026 EDELWEISS ASSET RECONSTRUCTION COMPANY VERSUS THE SECRETARY (INDUSTRIES AND COMMERCE)",
-              "48": "Diary No. 54417-2026 NISHANTH R.S. VERSUS B. RAJGOPAL",
-              "49": "SLP(C) No. 33319/2026 SANJAY PRASAD VERSUS MADHUSUDAN DWIVEDI AND ORS.",
-              "50": "SLP(C) No. 10744/2025 SUKHWINDER SINGH SIDHU VERSUS GURPREET SINGH BRAR AND ORS.",
-              "50.1": "Connected SUKHWINDER SINGH SIDHU VERSUS GURPREET SINGH BRAR AND ORS.",
-              "51": "SLP(Crl) No. RAJNIKANT DUDHABHAI PARMAR VERSUS STATE OF GUJARAT AND ORS.",
-              "52": "C.A. No. MAXIMAL INFRASTRUCTURE PVT. LTD. VERSUS GANGA RAM AGARWAL RP",
-              "52.1": "Connected PARCELA REAL ESTATE PVT. LTD. VERSUS GANGA RAM AGARWAL RP AND ANR.",
               "53": "T.P.(C) No. 2305/2026 AARZOO SAXENA AND ANR. VERSUS PRASHANT SRIVASTAVA YASHASVI VIRENDRA",
               "54": "SLP(Crl) No. SITARAM AND ORS. VERSUS STATE OF RAJASTHAN",
               "54.1": "Connected MUKESH KUMAR VERSUS SITARAM AND ORS.",
@@ -8823,30 +8888,6 @@
               "0": {
                 "resp": "MITHU JAIN"
               },
-              "46": {
-                "pet": "ANAND VARMA",
-                "resp": "K. SHIVA"
-              },
-              "47": {
-                "pet": "VIGNESH SINGH"
-              },
-              "48": {
-                "pet": "SHISHIR PINAKI"
-              },
-              "49": {
-                "pet": "RUCHIRA GOEL"
-              },
-              "50": {
-                "pet": "RITIKA VOHRA",
-                "resp": "SACHIN SHARMA NAVEEN NAGARJUNA"
-              },
-              "50.1": {
-                "pet": "RITIKA VOHRA",
-                "resp": "SACHIN SHARMA NAVEEN NAGARJUNA"
-              },
-              "52.1": {
-                "pet": "S. LAKSHMI IYER"
-              },
               "53": {
                 "pet": "DEEPAK GOEL"
               },
@@ -8866,7 +8907,10 @@
               }
             },
             "times": {},
-            "main": 58,
+            "withItem": {
+              "4": "14"
+            },
+            "main": 50,
             "supp": 0
           },
           "8": {
@@ -9164,6 +9208,7 @@
               }
             },
             "times": {},
+            "withItem": {},
             "main": 58,
             "supp": 0
           },
@@ -9413,6 +9458,7 @@
               }
             },
             "times": {},
+            "withItem": {},
             "main": 58,
             "supp": 0
           },
@@ -9616,6 +9662,7 @@
               }
             },
             "times": {},
+            "withItem": {},
             "main": 59,
             "supp": 0
           },
@@ -9832,6 +9879,7 @@
               }
             },
             "times": {},
+            "withItem": {},
             "main": 58,
             "supp": 0
           },
@@ -10084,6 +10132,7 @@
               }
             },
             "times": {},
+            "withItem": {},
             "main": 57,
             "supp": 0
           },
@@ -10253,6 +10302,7 @@
               }
             },
             "times": {},
+            "withItem": {},
             "main": 40,
             "supp": 0
           },
@@ -10488,6 +10538,7 @@
               }
             },
             "times": {},
+            "withItem": {},
             "main": 58,
             "supp": 0
           },
@@ -10690,6 +10741,7 @@
               }
             },
             "times": {},
+            "withItem": {},
             "main": 58,
             "supp": 0
           }
@@ -10805,6 +10857,7 @@
               }
             },
             "times": {},
+            "withItem": {},
             "main": 28,
             "supp": 0
           },
@@ -10903,6 +10956,7 @@
               }
             },
             "times": {},
+            "withItem": {},
             "main": 29,
             "supp": 0
           },
@@ -11003,6 +11057,7 @@
               }
             },
             "times": {},
+            "withItem": {},
             "main": 27,
             "supp": 0
           }
@@ -11111,6 +11166,7 @@
               }
             },
             "times": {},
+            "withItem": {},
             "main": 28,
             "supp": 0
           },
@@ -11208,6 +11264,7 @@
               }
             },
             "times": {},
+            "withItem": {},
             "main": 28,
             "supp": 0
           },
@@ -11312,6 +11369,7 @@
               }
             },
             "times": {},
+            "withItem": {},
             "main": 28,
             "supp": 0
           }
@@ -11501,6 +11559,7 @@
               }
             },
             "times": {},
+            "withItem": {},
             "main": 35,
             "supp": 0
           },
@@ -11667,6 +11726,7 @@
               }
             },
             "times": {},
+            "withItem": {},
             "main": 36,
             "supp": 0
           }
