@@ -26,6 +26,13 @@
      fixedTimes       {"court_item": "HH:MM" | minutes}  a matter the court has fixed for a
                                                           particular time — no sequence applies
                                                           to it, so it is measured in minutes
+     withItem         {"court_item": "otherItem"}  the CAUSELIST's own word that this item
+                                                     will be heard together with a different
+                                                     item in the same court ("TO BE TAKEN UP
+                                                     ALONG WITH ITEM NO. 23") — not a
+                                                     passover, nothing typed in; classify()
+                                                     measures the matter as if it WERE that
+                                                     other item
    ============================================================================ */
 (function (root) {
   "use strict";
@@ -37,7 +44,7 @@
   function isMentioning(item) { const s = String(item || "").trim(); return s !== "" && !/^\d/.test(s); }
 
   function seqInfo(text) {
-    if (!text) return { seq: [], passIdx: null };
+    if (!text) return { seq: [], passIdx: null, withMap: {} };
     // A number written hard against the word before it — "Item Nos.1 to 4", "item no.6
     // onwards" — is how the Supreme Court actually writes these lines, and it used to cost us
     // the number entirely: "NOS.1" matches nothing numeric, so the token was skipped, and
@@ -53,25 +60,61 @@
       .replace(/([A-Za-z])\.?(\d)/g, "$1 $2");
     const toks = norm.toUpperCase().replace(/[^0-9A-Z. ]/g, " ").split(/\s+/).filter(Boolean);
     const out = [], seen = new Set(); let passIdx = null;
+    const withMap = {};   // {"58": "23"} — heard TOGETHER with the item that precedes "WITH",
+                           // not a separate call-order position of its own (real example,
+                           // Court 1's own published sequence today: "...14 TO 23 WITH 58...").
     const push = n => { if (!seen.has(n)) { seen.add(n); out.push(n); } };
     for (let i = 0; i < toks.length; i++) {
       const t = toks[i];
       if (passIdx == null && (t === "PASSOVER" || t === "PASSOVERS" || t === "PO" || (t === "PASS" && (toks[i + 1] === "OVER" || toks[i + 1] === "OVERS")))) passIdx = out.length;
-      const num = t.match(/^(\d+)(?:\.\d+)?$/); if (!num) continue;
+      // A sequence line's last item routinely ends the sentence right against it — "...59
+      // 60." — leaving a bare trailing period with no digit after it (unlike a real decimal
+      // sub-item, "62.1", which must still be read as item 62 and left unsplit). The old
+      // "\.\d+" required at least one digit after the period, so end-of-sentence punctuation
+      // failed the whole token and the final number vanished outright — Court 7's declared
+      // 60 and Court 12's declared 58 both dropped off the end of the sequence entirely.
+      // "\.\d*" accepts zero digits after the period too, so a trailing "." is just punctuation.
+      const num = t.match(/^(\d+)(?:\.\d*)?$/); if (!num) continue;
+      // A CLOCK TIME inside the line — "item no 1 at 12pm", "item 41 AT 2 PM", "item 16 at
+      // 3.30 pm" — must not be read as an item: "3.30" and "2" both pass the number test, so
+      // "at 3.30 pm" was injecting a phantom item 3 into the middle of the call order (the
+      // published samples only escaped because the time's digits happened to already be
+      // declared items, and the dedup absorbed them). A number is a time, not an item, when
+      // it follows "AT" or when the next token says AM/PM. Glued forms ("12PM", "3PM") never
+      // matched the number test and were already inert.
+      if (toks[i - 1] === "AT" || /^[AP]\.?M\.?$/.test(toks[i + 1] || "")) continue;
       const a = parseInt(num[1], 10);
-      if (toks[i + 1] === "TO" && /^\d+$/.test(toks[i + 2] || "")) {
+      // "TO" is published truncated as a bare "T" too ("SEQUENCE 34 1 T 17 31 TO 33") —
+      // without it, 1 and 17 stand as singletons and items 2–16 fall out of the declared
+      // order entirely.
+      if ((toks[i + 1] === "TO" || toks[i + 1] === "T") && /^\d+$/.test(toks[i + 2] || "")) {
         const b = parseInt(toks[i + 2], 10);
         if (b >= a && b - a < 600) { for (let k = a; k <= b; k++) push(k); } else push(a); i += 2;
+      } else if (toks[i - 1] === "WITH" && out.length) {
+        // Linked to whatever was pushed immediately before "WITH" (a range's own last item,
+        // for "1 TO 13 WITH 59") — recorded, not pushed: it must NOT occupy its own slot in
+        // the call order, or it inflates every position after it and "23 with 58" would read
+        // as two items apart instead of the same one (owner: "both will be at similar
+        // position despite being far away in numbers ... 58 [should not be] a separate item
+        // for the purposes of ... how far away calculation and also ... the progress bar").
+        // classify()'s withItem redirect (fed from this map) handles a tracked matter ON 58
+        // itself; excluding it from `seq` here is what handles everyone ELSE's distance and
+        // the progress bar not double-counting the pair as two call-order positions.
+        const link = String(out[out.length - 1]);
+        if (!(String(a) in withMap)) withMap[String(a)] = link;
       } else push(a);
     }
-    return { seq: out, passIdx };
+    return { seq: out, passIdx, withMap };
   }
 
   function parseSequenceLine(text) {
     const out = {};
     if (!text) return out;
     const T = " " + String(text).toUpperCase().replace(/\s+/g, " ") + " ";
-    const re = /COURT\s*(?:NO\.?|NUMBER|ROOM)?\s*(\d{1,2})\b/g;
+    // The board also labels courts with a C prefix — "Court C7: sequence item nos. …" — and
+    // without accepting it the anchor failed on every court, so a whole marquee line in that
+    // style parsed to NOTHING and every court showed "Not declared yet".
+    const re = /COURT\s*(?:NO\.?|NUMBER|ROOM)?\s*(?:C\.?\s*)?(\d{1,2})\b/g;
     const anchors = []; let m;
     while ((m = re.exec(T))) anchors.push({ court: String(parseInt(m[1], 10)), afterNum: re.lastIndex });
     for (let i = 0; i < anchors.length; i++) {
@@ -179,12 +222,21 @@
     const cur = bc ? bc.item : null, curP = cur != null ? callPos(seq, cur) : null;
     const reach = bc ? reachOf(ctx, court, seq, total, cur) : 0;
     const recalled = hasRecalledPO(ctx, court);
-    if (!bc || curP == null) return { at: null, queue, gap: null, seq, passIdx, end };
-    if (passIdx != null && (reach < passIdx || (reach === passIdx && !recalled))) return { at: "sequence", queue, gap: passIdx - curP, after: seq[passIdx - 1], seq, passIdx, end };
-    if (passIdx == null && recalled) return { at: "now", queue, gap: 1, seq, passIdx, end };
-    if (end != null && reach < end && !(passIdx != null && recalled && reach === passIdx)) return { at: "end", queue, gap: end - curP, seq, passIdx, end };
-    if (end != null || recalled) return { at: "now", queue, gap: 1, seq, passIdx, end };
-    return { at: null, queue, gap: null, seq, passIdx, end };
+    // The item the sequence's own "passovers" marker sits right after — "1 TO 10 25 TO 50
+    // PASSOVERS" declares them after item 50 — known the moment passIdx is, independent of
+    // which branch below the plan resolves to. It used to live ONLY on the "sequence" branch,
+    // so the moment the court finished its declared list (reach reaching passIdx — which,
+    // since passIdx routinely equals the list's own end, is almost immediately), the plan
+    // fell to the "end" branch and this already-known fact vanished from the court sheet
+    // (owner: "the passover section ... not showing when the passovers will be taken up" —
+    // "1-10, 25-50 and then passovers" should say "after 50" regardless of which branch).
+    const after = (passIdx != null && passIdx > 0) ? seq[passIdx - 1] : null;
+    if (!bc || curP == null) return { at: null, queue, gap: null, after, seq, passIdx, end };
+    if (passIdx != null && (reach < passIdx || (reach === passIdx && !recalled))) return { at: "sequence", queue, gap: passIdx - curP, after, seq, passIdx, end };
+    if (passIdx == null && recalled) return { at: "now", queue, gap: 1, after, seq, passIdx, end };
+    if (end != null && reach < end && !(passIdx != null && recalled && reach === passIdx)) return { at: "end", queue, gap: end - curP, after, seq, passIdx, end };
+    if (end != null || recalled) return { at: "now", queue, gap: 1, after, seq, passIdx, end };
+    return { at: null, queue, gap: null, after, seq, passIdx, end };
   }
 
   // Items the board has already marked OVER that sit between the court and us IN CALL ORDER —
@@ -310,7 +362,33 @@
   }
 
   // ---- the classifier — faithful port of board.html classify(e,bc) ----
+  // Public entry point: a thin wrapper around classifyRaw() below, which is otherwise
+  // untouched (still the exact "simulator-proven" logic, exercised byte-for-byte the same
+  // way by every existing test — none of their ctx objects carry a withItem entry, and their
+  // seqByCourt text never contains "WITH", so this wrapper is a no-op for all of them). It
+  // only ever does ONE thing: when this item is heard together with a different one — either
+  // the CAUSELIST says so (ctx.withItem, a published note) or the court's own SEQUENCE
+  // announcement does ("...14 TO 23 WITH 58...", real example, Court 1, 25 Sep 2026) —
+  // redirect entirely to that item: its remark, its sequence position, its passover status
+  // all govern, and the result is tagged so the caller can still say which item was asked
+  // about. The sequence check reads the exact same seqTxt classifyRaw derives internally
+  // (bc.sequence first, else ctx.seqByCourt), so this can never disagree with what
+  // classifyRaw itself would see for that court.
   function classify(e, bc, ctx) {
+    ctx = ctx || {};
+    const seqTxt = (bc && bc.sequence && bc.sequence.trim()) ? bc.sequence : ((ctx.seqByCourt || {})[String(e.courtNo)] || "");
+    const withRef = seqInfo(seqTxt).withMap[String(e.itemNo)] || (ctx.withItem || {})[poKey(e.courtNo, e.itemNo)];
+    // Rule 1 stays rule 1: a user's own mark on THEIR item wins outright, checked against
+    // the ORIGINAL item — not the one being redirected to. Without this guard, marking your
+    // own linked matter "over" would get silently overridden by the OTHER item's live
+    // status the moment classifyRaw ran on it instead.
+    if (withRef && withRef !== e.itemNo && !doneOf(ctx, e.courtNo, e.itemNo)) {
+      const r = classifyRaw(Object.assign({}, e, { itemNo: withRef }), bc, ctx);
+      return Object.assign({}, r, { withItem: withRef });
+    }
+    return classifyRaw(e, bc, ctx);
+  }
+  function classifyRaw(e, bc, ctx) {
     ctx = ctx || {};
     const ours = e.itemNo;
     const dn = doneOf(ctx, e.courtNo, ours);

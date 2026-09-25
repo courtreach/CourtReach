@@ -51,7 +51,7 @@ OUTPUT_FILE = "court-updates.json"
 # based change-detection reuses a cached parse when the PDF is unchanged; without
 # this, a parser FIX never reaches already-cached dates (their PDFs don't change).
 # A version mismatch forces a full re-parse of every date in the window.
-PARSER_VERSION = 9   # bumped: capture Special Bench (300-series) declared sitting time
+PARSER_VERSION = 10  # bumped: capture "TO BE TAKEN UP ALONG WITH ITEM NO. X" notes
 HEADERS = {"User-Agent": "Mozilla/5.0 (compatible; courtreach-causelist-bot/1.0)"}
 
 COURT_RE = re.compile(r"COURT\s*NO\.?\s*[:\-]?\s*([0-9]+)", re.I)
@@ -88,6 +88,24 @@ TIME_RE = re.compile(r"\(\s*TIME\s*:\s*([\d.:]+\s*[AP]\.?M\.?)\s*\)", re.I)
 # this line OPEN the note (with or without also closing it), and — while one is
 # open — does a later line CLOSE it.
 BRACKET_NOTE_START_RE = re.compile(r"\[\s*(THIS SPECIAL BENCH WILL SIT.*)$", re.I)
+
+# --- "taken up with another item" note --------------------------------------------------
+# The causelist itself sometimes says an item will be heard TOGETHER with a different item
+# number in the SAME court — real example, Court 1 today: item 58 carries
+# "[TO BE TAKEN UP ALONG WITH ITEM NO. 23 I.E. SLP(C) No. 33394-33395/2026]". That is not a
+# passover and nobody types it in — it is a published fact, and measuring item 58 by its own
+# raw position would show it far away when it is actually called the moment item 23 is
+# (owner: "our app needs to take into account such information"). Wraps across lines the
+# same way the Special Bench note does — "...SLP(C) No.\n32577/2026 ]" — so it is
+# accumulated the same way, but attached to whichever ITEM the note physically sits inside
+# (last_item below), not to a forward-looking section like the Special Bench time is.
+# Only the ITEM NO. form is resolved to a position; a case-number form ("...ALONG WITH
+# SLP(C) No. 32577/2026", no item number given) is left unhandled for now — the stored item
+# text often doesn't carry the case number at all (it can fall on its own wrapped line that
+# this parser drops), so matching it back to an item number is not reliable yet.
+WITH_ITEM_RE = re.compile(r"\bALONG\s*WITH\s+ITEM\s+NO\.?\s*([0-9]{1,4}(?:\.[0-9]{1,3})?)", re.I)
+WITH_NOTE_START_RE = re.compile(r"\[([^\]]*\bALONG\s*WITH\b.*)$", re.I)
+
 # Page-header boilerplate repeated at the top of every page. When an item's
 # "Versus" sits at the foot of a page, this line is the first thing after it and
 # was wrongly captured as the respondent ("… VERSUS DAILY CAUSE LIST FOR DATED …").
@@ -225,6 +243,27 @@ def parse_courts(text):
     cur_time = ""              # that section's declared time (clock time, or a
                                 # verbatim relative-timing note) — "" if undeclared
     note_acc = None            # mid-accumulation of a bracketed note split across lines
+    last_item = None           # the item the CURRENT line's text belongs to — a "taken up
+                                # along with" note appears well after the item/Versus/
+                                # respondent lines are already consumed, so this is the only
+                                # way to know which item a later note is still about
+    with_acc = None            # mid-accumulation of a "...ALONG WITH..." note split across lines
+
+    def record_with_note(text):
+        if not last_item:
+            return
+        mi = WITH_ITEM_RE.search(text)
+        if mi:
+            ref = mi.group(1)
+            wi = courts[cur].setdefault("withItem", {})
+            # A serial number can legitimately repeat for two DIFFERENT matters within the
+            # same court/list (real example, Court 6 supp: two unrelated items both "54") —
+            # the same irregularity courts[cur]["items"] already resolves by keeping the
+            # FIRST occurrence's case title. Overwriting here would pair that kept title with
+            # the SECOND occurrence's note instead, so first occurrence wins here too.
+            if ref != last_item and last_item not in wi:
+                wi[last_item] = ref
+
     for raw in text.splitlines():
         line = raw.strip()
         if not line:
@@ -238,8 +277,9 @@ def parse_courts(text):
         elif CJ_RE.search(line):
             court = "1"
         if court is not None:
+            same_court = (court == cur)
             cur = court
-            courts.setdefault(cur, {"coram": "", "total": "", "fresh": "", "items": {}, "times": {}})
+            courts.setdefault(cur, {"coram": "", "total": "", "fresh": "", "items": {}, "times": {}, "withItem": {}})
             # collect the bench only until we have it; page headers repeat the
             # court + coram on every page, so re-collecting would duplicate it.
             in_header = not courts[cur]["coram"]
@@ -252,6 +292,17 @@ def parse_courts(text):
             in_special_bench = False
             cur_time = ""
             note_acc = None
+            # last_item/with_acc are NOT reset on a same-court repeat — unlike the
+            # special-bench state above, an item's own block routinely SPANS a page break
+            # (real example, Court 2 item 54: "...Versus" / page-header repeat / "COURT NO.
+            # : 2" / the respondent / then its "ALONG WITH ITEM NO." note). Clearing
+            # last_item there silently dropped that note — item 53 right above it, whose
+            # block didn't cross a page boundary, kept its identical one. Only a genuine
+            # transition to a DIFFERENT court means the note that follows can't be about
+            # the previous item anymore.
+            if not same_court:
+                last_item = None
+                with_acc = None
             continue
         if cur is None:
             continue
@@ -265,6 +316,26 @@ def parse_courts(text):
                 note_acc = None
             else:
                 note_acc += " " + line
+            continue
+        # Same accumulation for a "...ALONG WITH..." note — independent of the timing note
+        # above (the two never nest; a bracket is one or the other).
+        if with_acc is not None:
+            close = line.find("]")
+            if close >= 0:
+                with_acc += " " + line[:close]
+                record_with_note(with_acc)
+                with_acc = None
+            else:
+                with_acc += " " + line
+            continue
+        ws = WITH_NOTE_START_RE.search(line)
+        if ws:
+            frag = ws.group(1)
+            close = frag.find("]")
+            if close >= 0:
+                record_with_note(frag[:close])
+            else:
+                with_acc = frag
             continue
         if SPECIAL_BENCH_RE.search(line):
             in_special_bench = True
@@ -304,6 +375,7 @@ def parse_courts(text):
             sm = SUBINDEX_RE.match(line)
             if sm:
                 key = pending_conn["main"] + "." + sm.group(1)
+                last_item = key
                 caseline = (sm.group(2).strip() + " " + pending_conn["party"]).strip()
                 if key not in courts[cur]["items"]:
                     courts[cur]["items"][key] = re.sub(r"\s+", " ", caseline).strip()[:70]
@@ -320,6 +392,7 @@ def parse_courts(text):
         if im and re.search(r"[A-Za-z]{3}", im.group(2)):
             in_header = False
             it = im.group(1)
+            last_item = it
             if it not in courts[cur]["items"]:
                 courts[cur]["items"][it] = re.sub(r"\s+", " ", im.group(2)).strip()[:70]
                 if cur_time and in_special_bench:
@@ -521,10 +594,17 @@ def build_for_date(date_str, prev_day=None, prev_sizes=None):
                 # Track how many of the court's matters came from main vs supp so the
                 # printout can show the breakup ("Main 50 · Supp 10").
                 ex = merged.setdefault(court, {"coram": "", "total": "", "fresh": "",
-                                               "items": {}, "advocates": {}, "times": {}, "main": 0, "supp": 0})
+                                               "items": {}, "advocates": {}, "times": {},
+                                               "withItem": {}, "main": 0, "supp": 0})
                 before = n_matters(ex["items"])
                 ex["items"].update(info.get("items", {}))
                 ex["times"].update(info.get("times", {}))
+                # a "taken up with item N" note is self-contained (N is just a number, not
+                # a lookup into the OTHER list) — union it the same way, even though the
+                # noted item and the item it references can live in different lists (real
+                # example: item 58's note is in the supplementary PDF, item 23 it points to
+                # is in the main one).
+                ex["withItem"].update(info.get("withItem", {}))
                 # count only the NEW serial matters this list added (not sub-items)
                 ex[variant] = ex.get(variant, 0) + (n_matters(ex["items"]) - before)
                 # merge the AoR names for this court's items (don't overwrite a name

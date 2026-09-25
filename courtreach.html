@@ -1862,6 +1862,18 @@ function miscTotalByCourt(){
     if(!isNaN(t)&&t>0) out[String(court)]=t; }
   return out;
 }
+// Items the CAUSELIST ITSELF says are heard together with a different item in the same
+// court — "item 58 ... TO BE TAKEN UP ALONG WITH ITEM NO. 23" — a published fact, not a
+// passover and nothing anyone types in. Keyed "court_item" so it drops straight into ctx
+// the same way fixedTimes/doneMarks/poMarks already are; classify() measures the matter as
+// if it WERE the referenced item. Misc list only for now — the Regular list's own such
+// notes aren't wired up yet.
+function withItemByCourt(){
+  const out={}, lists=courtUpdates?.by_date?.[todayISO()]?.lists?.["Miscellaneous"]||{};
+  for(const court in lists){ const w=lists[court]&&lists[court].withItem;
+    if(w) for(const item in w) out[court+"_"+item]=w[item]; }
+  return out;
+}
 // A case status the OWNER declares by hand, independent of anything the live board itself
 // says (owner: "Allow users to mark status in my cases for individual cases. The status can
 // be case over - attended, case over - not attended, passover, not taken up"). over_att/
@@ -2001,7 +2013,7 @@ function courtCtx(){
   const {done,po}=statusMarks();
   return { nowMins:nowMinsIST(), boardByCourt:boardByCourt(),
     seqByCourt:effSeqByCourt(), remarksByCourt, boardPO:boardPO.marks, recalledPO:recalledPO.set, poMarks:po, doneMarks:done,
-    miscTotalByCourt:miscTotalByCourt(), itemHi:itemHi.max };
+    miscTotalByCourt:miscTotalByCourt(), itemHi:itemHi.max, withItem:withItemByCourt() };
 }
 function classify(e){ const bc=boardByCourt()[String(e.courtNo)];
   const ctx=courtCtx();
@@ -2042,7 +2054,11 @@ function passoverPlanText(plan){
   const toGo = n => `${n} item${n===1?"":"s"} to go`;
   if(plan.at==="now") return `Being taken now — ${q[0]} next${q.length>1?`, then ${q.slice(1).join(", ")}`:""}.`;
   if(plan.at==="sequence") return `Taken after the announced sequence${plan.after!=null?` (after item ${plan.after})`:""} — ${toGo(plan.gap)}${order}.`;
-  if(plan.at==="end") return `Taken at the end of the Miscellaneous list — ${toGo(plan.gap)}${order}.`;
+  // Same "after item X" fact as the sequence branch above — the court's OWN declared
+  // sequence still says where the passovers point sits, it's just that the court has
+  // already reached it (owner: "1-10, 25-50 and then passovers ... this means that passover
+  // will be taken up after 50" — that fact doesn't stop being true once the court gets there).
+  if(plan.at==="end") return `Taken at the end of the Miscellaneous list${plan.after!=null?` (after item ${plan.after})`:""} — ${toGo(plan.gap)}${order}.`;
   return `When they will be taken has not been announced — usually at the end of the list${order}.`;
 }
 // The raw remark-column text for one of OUR items — "DISMISSED", "OVER", "LIST ON 25.08.2026",
@@ -2114,7 +2130,14 @@ function recordBoardPO(){
 }
 function noteItemHi(){
   if(itemHi.date!==todayISO()) itemHi={date:todayISO(),max:{}};
-  for(const c of board){ const n=parseInt(c.item,10); if(!isNaN(n)) itemHi.max[c.court]=Math.max(itemHi.max[c.court]||0,n); }
+  // Reserved-series numbers (800s mentioning, 1500s judgments, 1600s Single Judge, 1700s
+  // Chamber) are a court PHASE, not a position in the numbered list — same reason showProg()
+  // stops drawing the bar past curNum 800. Left unfiltered, one glimpse of the board sitting
+  // in mentioning before Misc starts latches itemHi onto e.g. 850 for the rest of the day
+  // (it only resets at midnight), which reachOf() then folds into "reach" as if the court had
+  // gotten 850 items into a ~60-item Misc list — doneN saturates at miscTotal and the progress
+  // bar collapses to just outstanding-passovers-plus-one "to go", however much is really left.
+  for(const c of board){ const n=parseInt(c.item,10); if(!isNaN(n) && n<800) itemHi.max[c.court]=Math.max(itemHi.max[c.court]||0,n); }
 }
 // Is a court's CURRENT item one that was passed over and has now been recalled (owner: "if a
 // case number 6 which was passed over ... is called again after some time it should show

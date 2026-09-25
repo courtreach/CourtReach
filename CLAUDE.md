@@ -69,14 +69,62 @@ Rendering is imperative: `render()` → `renderBoard()` (islands + route rail) /
 6. Being past the item in call order with nothing posted = over (`over:true`, `approx` when
    no sequence exists).
 
+**Causelist-published item links** ("TO BE TAKEN UP ALONG WITH ITEM NO. 23" — a fact the
+SC's own list states, not a passover, nothing typed in; owner: "our app needs to take into
+account such information", 25 Sep 2026 real example, Court 1 item 58). `classify()` is a
+thin wrapper (`classifyRaw` underneath, untouched) that reads `ctx.withItem["court_item"]`
+and, if set, measures the matter entirely as the REFERENCED item — its remark, position,
+passover status all govern — then tags the result `withItem:"23"`. This sits ABOVE rule 1
+in effect but not in authority: the user's own mark on their OWN item (58) is checked
+FIRST and wins outright before any redirect, so marking your own linked matter done can
+never be silently overridden by the other item's live status. Only the "ITEM NO. X" form
+is resolved this way; a causelist note linking by CASE NUMBER instead ("...ALONG WITH
+SLP(C) No. 32577/2026") is parsed but left unresolved — the stored item text often doesn't
+carry the case number at all (SC lists sometimes print it on its own wrapped line that
+`parse_courts` drops), so matching it back to an item number isn't reliable yet. Misc list
+only for now; the Regular list's own such notes aren't wired into the app's ctx.
+
+**Sequence-declared item links** — the SAME idea, second source: the court's own SEQUENCE
+announcement can say two items are linked too, not just the causelist ("...14 TO 23 WITH
+58...", Court 1's actual published sequence, 25 Sep 2026; owner: "both will be at similar
+position despite being far away in numbers ... 58 [should not be] a separate item for the
+purposes of ... how far away calculation and also ... the progress bar"). `seqInfo()` now
+returns a third field, `withMap` (`{"58":"23"}`) — an item named right after the word
+"WITH" is recorded there and does NOT get pushed into `seq` as its own call-order slot, so
+every OTHER item's position and the progress bar's `reach` naturally compress by one slot
+per linked pair, with no separate fix needed anywhere reach/doneN is computed (they all
+derive `seq` from `seqInfo()`, one source of truth). `classify()`'s wrapper checks this
+BEFORE `ctx.withItem`, deriving it from the exact same `seqTxt` `classifyRaw` uses
+internally (`bc.sequence` then `ctx.seqByCourt`) — so it can never disagree with what the
+rest of classify() sees for that court, and needs no extra courtreach.html/worker.js
+wiring: both already pass `seqByCourt` into ctx for other reasons.
+
+**Passover "after item X"** — `passoverPlan()`'s `after` field (the item the sequence's own
+"passovers" marker sits right after, e.g. "1-10, 25-50 and then passovers" → after item 50)
+used to be set ONLY on the `at:"sequence"` branch — the moment the court actually reached
+that point and the plan fell to `at:"end"` instead (which, since the marker routinely sits
+right at the end of the declared list, happens almost immediately), the already-known fact
+silently vanished from the court sheet (owner: "the passover section in the Court island
+not showing when the passovers will be taken up"). Now computed once from `passIdx`/`seq`
+and carried on every branch; `passoverPlanText()`'s "end" message shows it the same way the
+"sequence" one always did.
+
 The simulator (`engine-tests/`) found five real defects in Sep 2026 and is the only
 acceptable proof for an engine change. After ANY engine edit: run the three tests, then
 **re-embed the whole file into worker.js** between the `>>> BEGIN board-engine.js >>>` /
 `<<< END board-engine.js <<<` markers programmatically (a hand-maintained partial copy is
 exactly how the worker once drifted three fixes behind).
 
-Sequence parser gotcha fixed once: "Item Nos.1 to 4" — a digit glued to a letter must be
-split (`([A-Za-z])\.?(\d)`) or items vanish; "62.1" must NOT be split.
+Sequence parser gotchas fixed so far (each from real published lines the owner supplied —
+25 Sep 2026 batch): "Item Nos.1 to 4" — a digit glued to a letter must be split
+(`([A-Za-z])\.?(\d)`) or items vanish; "62.1" must NOT be split. "...59 60." — a bare
+trailing period after the last item failed the number regex and dropped that item (`\.\d+`
+→ `\.\d*`). "1 T 17" — TO published truncated as bare "T", else items 2–16 fall out of the
+order. "item 41 AT 2 PM" / "at 3.30 pm" — a clock time inside the line passes the number
+test and injects a phantom item; a number after "AT" or before an AM/PM token is a time.
+"Court C7: …" — the marquee labels courts with a C prefix, and parseSequenceLine's anchor
+missed it, parsing the whole line to NOTHING. Prose-only lines ("Bail and fresh matters …
+taken up immediately") have no items and correctly degrade to no sequence.
 
 ## Firestore model (project courtreach-ee02b)
 
@@ -157,14 +205,22 @@ links only inside the court sheet); "no result" is not a status — quote the bo
 over when past in sequence; a passed-over case is never over; time-fixed cases show time,
 not distance; the day-sheet sync runs at his six times only.
 
-## Pending (as of 22 Sep 2026)
+## Pending (as of 25 Sep 2026)
 
-1. **worker.js paste** (owner) — last handed over 22 Sep with the corrected engine,
-   sequence line, typed-in sequences/passovers and fixed times. Until pasted, push alerts
-   use old maths.
+1. **worker.js paste** (owner) — last handed over 25 Sep with the sequence-parser
+   hardening batch, the causelist "taken up along with item N" link support, the
+   sequence-declared "X WITH Y" link support, and the passover "after item X" fix. Until
+   pasted, push alerts use old maths (no C-prefixed sequences, no item-link redirect,
+   inflated distances for a "WITH"-linked matter's own push alert).
 2. KV list-op → index key in `crTick` (designed, not built).
 3. SD-Chamber's `sd-board` worker still has an unauthenticated `/push-send` (other repo).
 4. GitHub Support request to GC the purged worker.js objects.
 5. Optional: move contact fields out of `users` into a lookup collection (enumeration).
 6. Regular-list numbering assumes Misc < 101 items (`REG_BASE`); a 100+ Misc list would
    collide — known, unaddressed.
+7. "Taken up along with" notes that link by CASE NUMBER rather than item number ("...ALONG
+   WITH SLP(C) No. 32577/2026") aren't resolved to a position — parsed and then dropped,
+   `fetch_causelist.py` comments explain why. ~3 of the ~26 real examples in the 25 Sep
+   causelist were this form; the rest resolved fine.
+8. `fetch_causelist.py`'s `PARSER_VERSION` bump (10) forces a full re-parse on the next
+   `causelist.yml` run to pick up the item-link fields for already-cached dates.
