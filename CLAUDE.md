@@ -110,13 +110,26 @@ matters" notice: Jan 2026; verified 25 Sep 2026). The sheet's `onRegular` check 
 `curNum<800` for the same reason the progress bar always did — item 803 is a phase, not a
 Regular-list position.
 
-**Operational day notes** — the causelist PDFs' own "NOTE:-" blocks (a judge sitting in
-another court, a changed bench, a special sitting, a court not sitting) are captured by
-`fetch_causelist.py parse_day_notes()` (parser v11) into `by_date[date].notes`
-(`[{text, courts}]`), deduped, attributed to the courts named in the text or the section
-they were printed in ("THIS COURT"). The court sheet quotes them verbatim in a gold
-`.cs-notice` box under the coram — today's sheet and the picked-date sheet both. There is
-no separate daily notices feed on sci.gov.in for these; the list PDFs are the source.
+**Operational day notes — two sources, one channel** (`by_date[date].notes`,
+`[{text, courts}]`, quoted verbatim in the sheet's gold `.cs-notice` box under the coram,
+today's and picked-date sheets both):
+1. The causelist PDFs' own "NOTE:-" blocks (`parse_day_notes()`, parser v11), attributed
+   to the courts named or the section they sit in ("THIS COURT").
+2. The sci.gov.in **HOMEPAGE's "Listing Notices" strip** — NOT the notices-and-circulars
+   archive, which only carries occasional circulars (a wrong earlier conclusion; the owner
+   supplied the live links). `fetch_home_notices()` reads the homepage anchors (title +
+   uploaded-PDF url — the urls themselves are an unpredictable upload counter, the
+   homepage is the only stable index), matches each notice to the date(s) its TITLE names,
+   and `notice_note()` stores the PDF's body text (or the title, if the PDF is a scan)
+   with every court it names (`courts_in()` handles "Court Nos. 9, 13 & 15" runs and the
+   Chief Justice's Court = 1). Bench cancellations / "will not sit" notices arrive here.
+   Fetched fresh every run in main() — notices land intraday; their PDFs never change.
+
+**The daily MENTIONING LIST is real and published** — same homepage strip, "List of oral
+mentioning matters before Hon'ble Courts on <date>". Its entries are numbered
+"<court>.<801+>" ("2.801", "16.801") — court and 800-series item in one token —
+parsed by `parse_mentioning()` into `by_date[date].mentioning = {court: {item: line}}`.
+The sheet's Mentioning row appends "· N listed" from it.
 
 **Court sheet case order** — the sheet's "Your/Chamber cases here" list is sorted along
 the call order, nearest first (owner: "The cases closer should be on top even though their

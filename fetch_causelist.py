@@ -188,6 +188,96 @@ def parse_day_notes(text):
     return out
 
 
+# --- homepage "Listing Notices" (mentioning lists, bench changes, cancellations) --------
+# The DAILY operational notices are indexed on the sci.gov.in HOMEPAGE's "Listing Notices"
+# strip, NOT on the notices-and-circulars archive (which carries only occasional circulars)
+# — owner supplied two live examples, 25 Sep 2026: "List of oral mentioning matters before
+# Hon'ble Courts on 25.09.2026" and "Notice regarding cancellation of Special Bench in
+# Court No.9 and Single Judge Bench in Court No. 8". The upload URLs are unpredictable
+# (an upload counter), so the homepage anchors are the one stable discovery point: title +
+# PDF link, with the effective DATE in the title.
+SC_HOME = "https://www.sci.gov.in/"
+# A mentioning list numbers matters "<court>.<801+>" ("2.801", "16.801") — court and
+# 800-series item in one self-identifying token at the start of the entry's line.
+MENT_ITEM_RE = re.compile(r"^\s*([0-9]{1,2})\.(8[0-9]{2})\b\s*(.*)$")
+
+
+def parse_home_notices(html):
+    """[{'title':..., 'url':...}] — every homepage anchor to an uploaded notice PDF."""
+    out, seen = [], set()
+    for m in re.finditer(r'<a[^>]+href="(https://cdn[^"]+/uploads/[^"]+\.pdf)"[^>]*>(.*?)</a>',
+                         html, re.S | re.I):
+        url = m.group(1)
+        title = re.sub(r"<[^>]+>", " ", m.group(2))
+        title = title.replace("&#8217;", "'").replace("&#8216;", "'").replace("&amp;", "&")
+        title = re.sub(r"\s+", " ", title).strip()
+        title = re.sub(r"^Listing\s+Notices\s*", "", title, flags=re.I)
+        title = re.sub(r"\s*-\s*\d{1,2}\s+\w+,\s*\d{4}\s*$", "", title).strip()
+        if not title or url in seen:
+            continue
+        seen.add(url)
+        out.append({"title": title, "url": url})
+    return out
+
+
+def fetch_home_notices():
+    try:
+        req = urllib.request.Request(SC_HOME, headers=HEADERS)
+        with urllib.request.urlopen(req, timeout=60) as resp:
+            return parse_home_notices(resp.read().decode("utf-8", "replace"))
+    except Exception:
+        return []
+
+
+def title_dates(title):
+    """ISO dates a notice title names — '25.09.2026', '25.9.26', '25-09-2026' all count."""
+    out = set()
+    for d, mn, y in re.findall(r"\b(\d{1,2})[./-](\d{1,2})[./-](\d{2,4})\b", title):
+        y = int(y) + (2000 if int(y) < 100 else 0)
+        try:
+            out.add(datetime.date(y, int(mn), int(d)).strftime("%Y-%m-%d"))
+        except ValueError:
+            pass
+    return out
+
+
+def parse_mentioning(text):
+    """{court: {'801': 'case line...'}} from a mentioning-list PDF's text."""
+    out = {}
+    for line in (text or "").splitlines():
+        m = MENT_ITEM_RE.match(line)
+        if m:
+            court, item = str(int(m.group(1))), m.group(2)
+            rest = re.sub(r"\s+", " ", m.group(3)).strip()
+            out.setdefault(court, {}).setdefault(item, rest[:80])
+    return out
+
+
+def courts_in(text):
+    """Every court a notice names — handles 'Court Nos. 9, 13 & 15' runs and the Chief
+    Justice's Court (court 1), which is never given a number."""
+    courts = set()
+    for run in re.findall(r"COURT\s*NOS?\.?\s*:?\s*((?:\d{1,2}\s*[,&]?\s*(?:and\s+)?)+)", text, re.I):
+        for c in re.findall(r"\d{1,2}", run):
+            courts.add(str(int(c)))
+    if CJ_RE.search(text):
+        courts.add("1")
+    return sorted(courts, key=int)
+
+
+def notice_note(title, text):
+    """One note entry from a notice PDF — the body when it extracts as text, the (already
+    informative) homepage title when it does not (a scanned notice)."""
+    body = ""
+    if text:
+        drop = re.compile(r"^(SUPREME COURT OF INDIA|NOTICE$|Dated this|By order|sd/?-?$|"
+                          r"Additional Registrar|Assistant Registrar|Copy to|Page \d+)", re.I)
+        keep = [l.strip() for l in text.splitlines() if l.strip() and not drop.match(l.strip())]
+        body = re.sub(r"\s+", " ", " ".join(keep)).strip()
+    t = body if len(body) >= 30 else title
+    return {"text": t[:450], "courts": courts_in(t + " " + title)}
+
+
 # Page-header boilerplate repeated at the top of every page. When an item's
 # "Versus" sits at the foot of a page, this line is the first thing after it and
 # was wrongly captured as the respondent ("… VERSUS DAILY CAUSE LIST FOR DATED …").
@@ -746,6 +836,44 @@ def main():
             ncourts = sum(len(v) for v in lists.values())
             print("  {}: {} list(s), {} courts, {} note(s){}".format(
                 date_str, len(lists), ncourts, len(notes), "  [unchanged — reused]" if reused else "  [FETCHED]"))
+    # Homepage "Listing Notices" — the daily mentioning list and bench-change /
+    # cancellation notices. Fetched fresh every run (they arrive intraday and their PDFs
+    # are immutable once uploaded); a notice joins the notes of every date its TITLE
+    # names, deduped against what the causelist PDFs' own NOTE:- blocks already said.
+    web = fetch_home_notices()
+    if web:
+        print("Homepage listing notices:", len(web))
+    note_key = lambda n: ",".join(n.get("courts", [])) + "|" + re.sub(r"[^A-Z0-9]", "", n["text"].upper())
+    pdf_text_cache = {}
+    for date_str in dates:
+        day = by_date.get(date_str)
+        if day is None:
+            continue
+        want = [n for n in web if date_str in title_dates(n["title"])]
+        if not want:
+            continue
+        notes = day.setdefault("notes", [])
+        keys = set(note_key(n) for n in notes)
+        for n in want:
+            if n["url"] not in pdf_text_cache:
+                data = fetch_pdf(n["url"])
+                pdf_text_cache[n["url"]] = pdf_to_text(data) if data else ""
+                time.sleep(0.2)
+            text = pdf_text_cache[n["url"]]
+            if re.search(r"oral\s+mentioning", n["title"], re.I):
+                ment = parse_mentioning(text)
+                if ment:
+                    day["mentioning"] = ment
+                    print("  {}: mentioning list — {} matters across {} courts".format(
+                        date_str, sum(len(v) for v in ment.values()), len(ment)))
+                continue
+            note = notice_note(n["title"], text)
+            k = note_key(note)
+            if k not in keys:
+                keys.add(k)
+                notes.append(note)
+                print("  {}: notice — {}".format(date_str, note["text"][:80]))
+
     # Nothing new anywhere -> leave the file untouched so the workflow commits
     # nothing and Pages doesn't rebuild. (generated_at = time of last CHANGE.)
     if prev and not stale_parser \

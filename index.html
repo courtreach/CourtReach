@@ -2647,10 +2647,14 @@ function courtNotes(court, date){
    published list of its own — and when the court is already into its numbered lists the
    series is simply over, which is said plainly rather than guessed around. */
 function mentioningLine(court, bc, idle){
+  // The published mentioning list (homepage "Listing Notices" → fetch_causelist.py) numbers
+  // matters "<court>.<801+>", so the count of THIS court's 800-series is known when it is.
+  const ml=courtUpdates?.by_date?.[todayISO()]?.mentioning?.[String(parseInt(court,10))];
+  const listed=ml?` · ${Object.keys(ml).length} listed`:"";
   const cur=parseFloat(bc?.item);
-  if(!idle && cur>=800 && cur<900) return `On now — item ${esc(bc.item)}`;
-  if(!idle && cur>=1500 && cur<1600) return "After the pronouncements, before the Miscellaneous / Regular lists";
-  if((idle || isNaN(cur)) && nowMinsIST()<ENG.MENT_END) return "Taken up first when the court assembles — before the Miscellaneous / Regular lists";
+  if(!idle && cur>=800 && cur<900) return `On now — item ${esc(bc.item)}${listed}`;
+  if(!idle && cur>=1500 && cur<1600) return `After the pronouncements, before the Miscellaneous / Regular lists${listed}`;
+  if((idle || isNaN(cur)) && nowMinsIST()<ENG.MENT_END) return `Taken up first when the court assembles — before the Miscellaneous / Regular lists${listed}`;
   if(!idle && !isNaN(cur) && cur<800) return "Over for the day — the court is into its lists";
   return "";
 }
