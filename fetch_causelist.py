@@ -824,7 +824,17 @@ def main():
     if stale_parser and prev:
         print("Parser version changed ({} -> {}) — forcing a full re-parse."
               .format(prev.get("parser_version"), PARSER_VERSION))
-    prev_by, prev_src = ({}, {}) if stale_parser else (prev.get("by_date", {}), prev.get("sources", {}))
+    # The file this run actually found on disk, UNCONDITIONALLY — kept regardless of
+    # stale_parser, as the fallback below needs it. A forced re-parse (or a probe that
+    # simply can't reach api.sci.gov.in this run) does real network fetching with no cache
+    # shortcut, and a bad run once wrote an all-but-empty file straight over good cached
+    # data live (25 Sep 2026: a version bump's forced re-parse hit an hour of fetch
+    # trouble, came back with 0 dates, and — because stale_parser skipped the "nothing
+    # changed, leave the file alone" check below — that emptiness got committed and pushed
+    # to the live app). A date whose live fetch comes back with nothing, where the file
+    # already had real content for it, now keeps that old content instead of losing it.
+    prev_by_raw, prev_src_raw = prev.get("by_date", {}), prev.get("sources", {})
+    prev_by, prev_src = ({}, {}) if stale_parser else (prev_by_raw, prev_src_raw)
     by_date, sources = {}, {}
     for date_str in dates:
         lists_found, lists, notes, sizes, reused = build_for_date(
@@ -836,6 +846,12 @@ def main():
             ncourts = sum(len(v) for v in lists.values())
             print("  {}: {} list(s), {} courts, {} note(s){}".format(
                 date_str, len(lists), ncourts, len(notes), "  [unchanged — reused]" if reused else "  [FETCHED]"))
+        elif prev_by_raw.get(date_str, {}).get("lists"):
+            by_date[date_str] = prev_by_raw[date_str]
+            if date_str in prev_src_raw:
+                sources[date_str] = prev_src_raw[date_str]
+            print("  {}: fetch came back with NOTHING — keeping the file's existing data "
+                  "for this date rather than losing it".format(date_str))
     # Homepage "Listing Notices" — the daily mentioning list and bench-change /
     # cancellation notices. Fetched fresh every run (they arrive intraday and their PDFs
     # are immutable once uploaded); a notice joins the notes of every date its TITLE

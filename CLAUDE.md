@@ -131,6 +131,22 @@ mentioning matters before Hon'ble Courts on <date>". Its entries are numbered
 parsed by `parse_mentioning()` into `by_date[date].mentioning = {court: {item: line}}`.
 The sheet's Mentioning row appends "· N listed" from it.
 
+**Production incident, 25 Sep 2026 — a version bump wiped the live causelist file for
+~1 hour.** Bumping `PARSER_VERSION` forces a full re-parse (`stale_parser`), which also
+SKIPS the "nothing changed, leave the file alone" safety check — by design, since the
+point is to force a rewrite even when the PDFs themselves haven't changed. Triggering the
+workflow right after that push, the forced re-parse hit real fetch trouble against
+api.sci.gov.in (the run took over an hour) and came back with data for ZERO dates. With no
+network-failure safety net, that emptiness got written and pushed straight over the live
+file real users depend on — `court-updates.json` went from thousands of lines to a few.
+Scheduled runs later that day recovered it on their own (a fresh, unforced fetch succeeded
+normally). Fixed in `main()`: the file's on-disk content is now kept unconditionally (not
+discarded just because `stale_parser`), and per date, if THIS run's fetch comes back with
+nothing while the file already had real content for that date, the old content is kept
+rather than lost. A genuine fresh fetch still overwrites normally — verified both
+directions. Lesson for next time: don't trigger `workflow_dispatch` on a `PARSER_VERSION`
+bump without watching the run to completion.
+
 **Court sheet case order** — the sheet's "Your/Chamber cases here" list is sorted along
 the call order, nearest first (owner: "The cases closer should be on top even though their
 item number is greater"); time-fixed cases follow (soonest clock first), finished ones
