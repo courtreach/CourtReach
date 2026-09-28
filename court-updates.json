@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-26T13:20:20.775060Z",
+  "generated_at": "2026-09-28T08:54:56.725146Z",
   "parser_version": 11,
   "window": [
     "2026-09-28",
@@ -320,7 +320,7 @@
           },
           "2": {
             "coram": "HON'BLE MR. JUSTICE VIKRAM NATH HON'BLE MR. JUSTICE SANDEEP MEHTA",
-            "total": "73",
+            "total": "74",
             "fresh": "",
             "items": {
               "1": "SLP(Crl) No. AMIT KUMAR VERSUS STATE OF HARYANA AND ANR.",
@@ -403,6 +403,7 @@
               "60.8": "Connected OKHLA ENCLAVE PLOT HOLDERS WELFARE VERSUS UNION OF INDIA THROUGH SECRETARY AND ORS.",
               "60.9": "Connected OKHLA ENCLAVE PLOT HOLDERS WEL. ASON. VERSUS UNION OF INDIA AND ORS.",
               "0": "Diary No. 35139-2026 VERSUS UNION OF INDIA THROUGH SECRETARY AND ORS.",
+              "1501": "W.P.(C) No. 932/2022 BIHAR STATE ARDH SARKARI ARAJPATI VERSUS STATE OF BIHAR AND ORS.",
               "61": "SLP(Crl) No. NAVDEEP SINGH VERSUS THE STATE OF PUNJAB",
               "62": "Diary No. 53346-2026 STATE OF GUJARAT AND ANR. VERSUS RAMESHBHAI SHIVABHAI PATEL",
               "63": "SLP(C) No. 33723/2026 JYOTSNA NAVNEET DHADADE AND ANR. VERSUS THE NAGPUR IMPROVEMENT TRUST AND ORS.",
@@ -568,6 +569,9 @@
               "60.7": {
                 "pet": "PIYUSH SHARMA"
               },
+              "1501": {
+                "pet": "CHANDRA BHUSHAN"
+              },
               "61": {
                 "pet": "HARSIMRAN KAUR RAI"
               },
@@ -589,11 +593,11 @@
               "62": "21"
             },
             "main": 63,
-            "supp": 10
+            "supp": 11
           },
           "3": {
             "coram": "HON'BLE MRS. JUSTICE B.V. NAGARATHNA HON'BLE MR. JUSTICE R. MAHADEVAN",
-            "total": "55",
+            "total": "56",
             "fresh": "",
             "items": {
               "1": "SLP(Crl) No. V ARUN KUMAR VERSUS VINOD KRISHNAMURTHY",
@@ -667,7 +671,8 @@
               "52": "SLP(C) No. 34200/2026 KONARK INFRASTRUCTURE LIMITED VERSUS M/S P. GOPINATHA REDDY AND ORS.",
               "53": "C.A. No. M/S THDC INDIA LIMITED VERSUS BHARAT JHUNJHUNWALA AND ORS.",
               "53.1": "Connected BHARAT JHUNJHUNWALA AND ANR. VERSUS UNION OF INDIA AND ORS.",
-              "54": "SLP(C) No. 2113/2025 STATE OF HIMACHAL PRADESH VERSUS PUSHPENDER SINGH (DEAD) THROUGH LRS AND"
+              "54": "SLP(C) No. 2113/2025 STATE OF HIMACHAL PRADESH VERSUS PUSHPENDER SINGH (DEAD) THROUGH LRS AND",
+              "55": "SLP(C) No. 29252/2026 BILESHWAR CORPORATION VERSUS HARIJITSINGH DILBAGSINGH KOCHAR AND ANR."
             },
             "advocates": {
               "1": {
@@ -857,7 +862,7 @@
             "times": {},
             "withItem": {},
             "main": 50,
-            "supp": 5
+            "supp": 6
           },
           "9": {
             "coram": "HON'BLE MR. JUSTICE AHSANUDDIN AMANULLAH HON'BLE MR. JUSTICE MANMOHAN",
@@ -889,14 +894,14 @@
               "20": "SLP(C) No. 7499/2025 KARMCHARI BHAVISHYA NIDHI SANGATHAN VERSUS PRANTIYA RAJYA PARIVAHAN KARMCHARI SANGH",
               "21": "SLP(C) No. 6441/2025 KARMCHARI BHAVISYA NIDHI SANGATHAN VERSUS PRANTIYA RAJYA PARIVAHAN KARMCHARI SANGH",
               "21.1": "Connected COMMISSIONER, KARMCHARI BHAVISHYA NIDHI VERSUS PRANTIYA RAJYA PARIVAHAN KARMCHARI SANGH",
-              "22": "SLP(Crl) No. 4787/2025 HARISH L. RAO VERSUS SHIVSHANKAR BHAT",
-              "23": "SLP(C) No. 5293/2026 M/S BHARAT EARTH MOVERS LIMITED AND ANR. VERSUS AUDHYOGIK KESHETRA MAZDOOR SANGH AND KAUSTUBH SHUK",
+              "22": "SLP(Crl) No. 4787/2025 HARISH L. RAO VERSUS SHIVSHANKAR BHAT VISHNU SHARMA- 1423 [R-1]",
+              "23": "SLP(C) No. 5293/2026 M/S BHARAT EARTH MOVERS LIMITED AND ANR. VERSUS AUDHYOGIK KESHETRA MAZDOOR SANGH AND",
               "24": "SLP(C) No. 27204/2025 SHAHROJ IQBAL VERSUS STATE OF U.P. AND ORS.",
               "25": "SLP(Crl) No. JAGDISH MOTILAL SHETH VERSUS STATE OF GUJARAT AND ANR.",
               "26": "SLP(C) No. 32039/2025 HARYANA STAFF SELECTION COMMISSION AND VERSUS RAJANI",
               "27": "SLP(C) No. 17828/2026 NEELAM AND ORS. VERSUS VAS DEV WADHWA AND ANR.",
               "28": "Diary No. 37386-2026 M. SATHISH @ A.M. KRISHNAMURTHY VERSUS K. RAJESHKUMAR",
-              "29": "SLP(Crl) No. SHIVDUTT PANDEY @ SHIVDUTT RAM LOTAN VERSUS STATE OF UTTAR PRADESH AND ANR. BHAGABATI PRASAD P",
+              "29": "SLP(Crl) No. SHIVDUTT PANDEY @ SHIVDUTT RAM LOTAN VERSUS STATE OF UTTAR PRADESH AND ANR.",
               "30": "SLP(Crl) No. 4443/2025 RAJESH RAJWADE @ KHAIRA @ PANDRA VERSUS THE STATE OF CHHATTISGARH",
               "31": "SLP(Crl) No. PALAN ALI LASKAR VERSUS THE STATE OF WEST BEGAL",
               "31.1": "Connected SABIR ALI LASKAR VERSUS THE STATE OF WEST BENGAL",
@@ -907,7 +912,7 @@
               "36": "SLP(Crl) No. 850/2026 MOSARAB SK. AND ANR. VERSUS STATE OF WEST BENGAL",
               "36.1": "Connected NOOR ISLAM @ NUR ISLAM @ ICCHU AND ORS. VERSUS THE STATE OF WEST BENGAL",
               "37": "SLP(Crl) No. 3090/2026 M. BALAMURUGAN VERSUS R. PRABHAKARAN",
-              "38": "SLP(Crl) No. N.K.SREEKUMAR VERSUS STATE OF KERALA",
+              "38": "SLP(Crl) No. N.K.SREEKUMAR VERSUS STATE OF KERALA JAMES P. THOMAS- 2398",
               "39": "SLP(Crl) No. STATE OF KARNATAKA VERSUS SRI. H.R. LOKESH AND ANR.",
               "40": "SLP(Crl) No. 1492/2026 SHANTI SWAROOP VERSUS THAMIN BAI ALIAS THAMIN AND ORS.",
               "41": "SLP(Crl) No. NIRMALA SHARMA AND ORS. VERSUS THE STATE OF NCT OF DELHI AND ANR.",
@@ -1102,7 +1107,11 @@
             },
             "times": {
               "301": "2:00 PM",
-              "302": "2:00 PM"
+              "302": "2:00 PM",
+              "16": "2:00 PM",
+              "18": "2:00 PM",
+              "19": "2:00 PM",
+              "22": "2:00 PM"
             },
             "withItem": {},
             "main": 58,
@@ -5268,6 +5277,12 @@
           "text": "HON'BLE MR. JUSTICE K.V. VISWANATHAN WILL SIT IN SPECIAL BENCH IN COURT NO. 6 AT 2:00 P.M.",
           "courts": [
             "6"
+          ]
+        },
+        {
+          "text": "FOLLOWING LEFT OVER MATTERS OF THIS COURT WILL BE TAKEN UP FOR HEARING BY THIS SPECIAL BENCH",
+          "courts": [
+            "9"
           ]
         },
         {
@@ -11922,7 +11937,7 @@
   "sources": {
     "2026-09-28": {
       "M_J_1": 981513,
-      "M_J_2": 587178,
+      "M_J_2": 605058,
       "M_C_1": 548928,
       "M_C_2": 505461,
       "M_S_1": 529244,
