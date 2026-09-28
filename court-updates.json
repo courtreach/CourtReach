@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-28T20:26:50.967295Z",
+  "generated_at": "2026-09-28T23:28:10.180054Z",
   "parser_version": 11,
   "window": [
     "2026-09-29",
@@ -23,6 +23,7 @@
         "Regular (main)",
         "Regular (supp)",
         "Registrar (main)",
+        "Registrar (supp)",
         "Curative & Review (main)"
       ],
       "lists": {
@@ -3622,7 +3623,7 @@
         "Registrar": {
           "1": {
             "coram": "SH. APOORV SINGH, REGISTRAR",
-            "total": "31",
+            "total": "32",
             "fresh": "",
             "items": {
               "1": "C.A. No. PUMA SPORTS INDIA PVT. LTD. VERSUS RAGHUBIR SARAN CHARITABLE TRUST",
@@ -3650,7 +3651,7 @@
               "8.14": "Connected NETA NAND SHARMA VERSUS THE STATE OF HARYANA AND ORS.",
               "8.15": "Connected THE STATE OF HARYANA AND ORS. VERSUS SURAJ BHAN RATHEE AND ANR.",
               "8.16": "Connected STATE OF HARYANA AND ORS. VERSUS PARMOD KUMAR GUPTA AND ORS.",
-              "9": "Diary No. 45084-2025 SAPNA AND ORS. VERSUS ORIENTAL INSURANCE COMPANY LIMITED AND",
+              "9": "Dno 45084-2025",
               "10": "SLP(C) No. SANJAY SHASHIKANT KADAM VERSUS VITTHAL THAKU JAGDALE AND ORS.",
               "11": "SLP(C) No. 29156/2025 INDRAJ SINGH VERSUS THE ORIENTAL INSURANCE CO. LTD. AND ORS.",
               "12": "SLP(C) No. 3230/2026 DYNAX APPAREL PRIVATE LIMITED VERSUS SOHANA BEGUM AND ORS.",
@@ -3672,7 +3673,8 @@
               "27": "SLP(Crl) No. SURAJ SURESH KORDE VERSUS THE STATE OF MAHARASHTRA AND ANR.",
               "28": "SLP(Crl) No. VANITHA AITHAL VERSUS AISHWARYA GOWDA AND ORS.",
               "29": "SLP(Crl) No. MOHAN KUMAR A VERSUS SHIVA SWAMY T.M",
-              "30": "SLP(Crl) No. HARPREET KAUR VERSUS STATE OF PUNJAB AND ANR."
+              "30": "SLP(Crl) No. HARPREET KAUR VERSUS STATE OF PUNJAB AND ANR.",
+              "31": "ARBIT.PETITON No. VEEDA CLINICAL RESEARCH LTD VERSUS APNAR PHARMA LP"
             },
             "advocates": {
               "2": {
@@ -3694,7 +3696,8 @@
                 "pet": "RAGHAVENDRA PRATAP"
               },
               "9": {
-                "resp": "CHANDRASHEKHAR A"
+                "resp": "CHANDRASHEKHAR A",
+                "pet": "DELETED"
               },
               "10": {
                 "pet": "SAMRAT KRISHNARAO"
@@ -3740,7 +3743,7 @@
             "times": {},
             "withItem": {},
             "main": 31,
-            "supp": 0
+            "supp": 1
           },
           "2": {
             "coram": "MS. GRACY L. BAWITLUNG, REGISTRAR",
@@ -9443,6 +9446,7 @@
       "F_J_1": 713269,
       "F_J_2": 512002,
       "M_R_1": 525981,
+      "M_R_2": 505804,
       "M_CC_1": 566642
     },
     "2026-09-30": {
