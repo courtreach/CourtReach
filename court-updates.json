@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-29T19:10:03.763382Z",
+  "generated_at": "2026-09-30T08:54:20.214374Z",
   "parser_version": 11,
   "window": [
     "2026-09-30",
@@ -621,7 +621,7 @@
           },
           "5": {
             "coram": "HON'BLE MR. JUSTICE J.B. PARDIWALA HON'BLE MR. JUSTICE K. VINOD CHANDRAN",
-            "total": "137",
+            "total": "138",
             "fresh": "",
             "items": {
               "1": "Diary No. 24861-2026 SANDEEP SINGH ALIAS KALA VERSUS STATE OF PUNJAB",
@@ -766,7 +766,8 @@
               "36": "SLP(Crl) No. BHUMIT LOOMBA, VERSUS STATE OF PUNJAB",
               "37": "SLP(Crl) No. NEERAJ SEHRAWAT @ NEERAJ BAWANIA, VERSUS STATE (GOVERNMENT OF NATIONAL CAPITAL",
               "38": "SLP(C) No. 33827/2026 RANJU JOHN AND ORS. VERSUS RAJ JOHN CHACKO AND ANR.",
-              "310": "Diary No. 59155-2026 JANE KAUSHIK VERSUS UNION OF INDIA AND ORS."
+              "310": "Diary No. 59155-2026 JANE KAUSHIK VERSUS UNION OF INDIA AND ORS.",
+              "311": "SLP(Crl) No. SANDHYA VERSUS S. T. SEKAR AND ORS."
             },
             "advocates": {
               "1": {
@@ -795,15 +796,21 @@
               },
               "38": {
                 "pet": "NARENDER KUMAR VERMA"
+              },
+              "311": {
+                "pet": "BAKSHI & ASSOCIATES"
               }
             },
             "times": {
               "301": "2:00 PM",
-              "310": "1:35 PM"
+              "310": "1:35 PM",
+              "311": "2:00 PM"
             },
-            "withItem": {},
+            "withItem": {
+              "311": "308"
+            },
             "main": 133,
-            "supp": 4
+            "supp": 5
           },
           "6": {
             "coram": "HON'BLE MR. JUSTICE DIPANKAR DATTA HON'BLE MR. JUSTICE SHEEL NAGU",
@@ -1892,15 +1899,89 @@
             "supp": 0
           },
           "17": {
-            "coram": "",
-            "total": "0",
+            "coram": "HON'BLE MR. JUSTICE VIJAY BISHNOI HON'BLE MR. JUSTICE ATUL S. CHANDURKAR",
+            "total": "19",
             "fresh": "",
-            "items": {},
-            "advocates": {},
+            "items": {
+              "21.2": "Connected UNION OF INDIA VERSUS NO. 2643355 EX. GDR. ABHAI RAM",
+              "21.3": "Connected UNION OF INDIA VERSUS POORNA RAM",
+              "21.4": "Connected UNION OF INDIA AND ORS. VERSUS DARSHAN SINGH",
+              "21.5": "Connected UNION OF INDIA AND ORS. VERSUS SEENAPPA AND ANR.",
+              "21.6": "Connected UNION OF INDIA AND ORS. VERSUS VENKAPPA",
+              "21.7": "Connected UNION OF INDIA AND ORS. VERSUS PRABHU DAYAL",
+              "21.8": "Connected UNION OF INDIA AND ORS. VERSUS SONDE PAPI REDDY",
+              "21.9": "Connected UNION OF INDIA AND ORS. VERSUS NO 2854830 EX RFN BHIM SINGH",
+              "21.1": "Connected UNION OF INDIA AND ORS.",
+              "0": "SLP(C) No. 13524/2026 VERSUS PJ SEBASTIAN AND ANR.",
+              "1": "SLP(C) No. 14026/2026 VERSUS PUSHPA DEVI",
+              "2": "SLP(C) No. 15313/2026 VERSUS MAN SINGH",
+              "3": "Diary No. 22343-2026 VERSUS JAG RAM",
+              "4": "Diary No. 12656-2026 VERSUS AMI LAL",
+              "5": "SLP(C) No. 21178/2026 VERSUS KEMI",
+              "6": "SLP(C) No. 22880/2026 VERSUS DURGI DEVI",
+              "7": "SLP(C) No. VERSUS PUSHP KANWAR",
+              "22": "SLP(Crl) No. BHUVANESHVARI VERSUS THE STATE REPRESENTED BY ITS THE SECRETARY",
+              "25": "SLP(C) No. 20371/2025 RAJADTTA SIDRAM RASOLGIKAR VERSUS THE STATE OF MAHARASHTRA AND ORS.",
+              "26": "Diary No. 49806-2025 S. RAJKUMAR VERSUS THE COMMISSIONER AND ORS.",
+              "27": "SLP(C) No. 4664/2026 D.C. ELANGOVAN VERSUS SRI LAKSHMI HOMES PRIVATE LIMITED AND ORS.",
+              "28": "SLP(C) No. 15346/2026 HARVINDRA, PRINCIPAL, D.A.V. INTER COLLEGE, VERSUS SNEHA SINGH AND ORS.",
+              "30": "Diary No. 25543-2026 THE STATE OF KERALA VERSUS M/S. KANNAN DEVAN HILLS",
+              "31": "Diary No. 26301-2026 VARINDER PAL SINGH VERSUS THE NEW INDIA ASSURANCE COMPANY LIMITED",
+              "32": "Diary No. 28102-2026 PRINCIPAL COMMISSIONER OF CUSTOMS VERSUS M/S PROFFER IT CONSULTANCY PRIVATE LIMTED",
+              "33": "SLP(C) No. 24943/2026 ZEESHAN ALI VERSUS BAJAJ ALLIANCE GENERAL INSURANCE COMPANY",
+              "34": "SLP(C) No. 26982/2026 STATE OF RAJASTHAN AND ANR. VERSUS VANDANA RATHORE",
+              "38": "Diary No. 51579-2026 UNION OF INDIA AND ORS. VERSUS SAJAN KANWAR"
+            },
+            "advocates": {
+              "21.2": {
+                "pet": "MUKESH KUMAR MARORIA"
+              },
+              "21.3": {
+                "pet": "MUKESH KUMAR MARORIA"
+              },
+              "21.4": {
+                "pet": "MUKESH KUMAR MARORIA"
+              },
+              "21.5": {
+                "pet": "MUKESH KUMAR MARORIA"
+              },
+              "21.6": {
+                "pet": "MUKESH KUMAR MARORIA"
+              },
+              "21.7": {
+                "pet": "MUKESH KUMAR MARORIA"
+              },
+              "21.8": {
+                "pet": "MUKESH KUMAR MARORIA"
+              },
+              "21.9": {
+                "pet": "MUKESH KUMAR MARORIA"
+              },
+              "21.1": {
+                "pet": "SHREEKANT NEELAPPA"
+              },
+              "22": {
+                "pet": "RAGHUNATHA SETHUPATHY"
+              },
+              "27": {
+                "pet": "KRISHNA DEV"
+              },
+              "32": {
+                "pet": "GURMEET SINGH MAKKER"
+              },
+              "34": {
+                "pet": "S.. UDAYA KUMAR SAGAR"
+              },
+              "38": {
+                "pet": "SHREEKANT NEELAPPA"
+              }
+            },
             "times": {},
-            "withItem": {},
+            "withItem": {
+              "38": "21"
+            },
             "main": 0,
-            "supp": 0
+            "supp": 19
           }
         },
         "Regular": {
@@ -6521,7 +6602,7 @@
   "sources": {
     "2026-09-30": {
       "M_J_1": 817324,
-      "M_J_2": 632923,
+      "M_J_2": 649726,
       "F_J_1": 966088,
       "F_J_2": 757123,
       "M_R_1": 526002,
