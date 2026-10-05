@@ -51,7 +51,7 @@ OUTPUT_FILE = "court-updates.json"
 # based change-detection reuses a cached parse when the PDF is unchanged; without
 # this, a parser FIX never reaches already-cached dates (their PDFs don't change).
 # A version mismatch forces a full re-parse of every date in the window.
-PARSER_VERSION = 12  # bumped: notes no longer swallow table debris; Single Judge/Chamber notes dropped
+PARSER_VERSION = 13  # bumped: structured specialBenches; judge-movement notes go to the judge's own court
 HEADERS = {"User-Agent": "Mozilla/5.0 (compatible; courtreach-causelist-bot/1.0)"}
 
 COURT_RE = re.compile(r"COURT\s*NO\.?\s*[:\-]?\s*([0-9]+)", re.I)
@@ -121,7 +121,8 @@ NOTE_LINE_RE = re.compile(r"^NOTE\s*:-\s*(.*)$", re.I)
 NOTE_END_RE = re.compile(r"^NEW DELHI\b|^ADDITIONAL REGISTRAR|^SUPREME COURT OF INDIA", re.I)
 NOTE_KEEP_RE = re.compile(
     r"WILL\s+(?:NOT\s+)?SIT|NOT\s+SITTING|SHALL\s+(?:NOT\s+)?SIT|SPECIAL\s+BENCH|"
-    r"ASSEMBLE|COMPOSITION|ON\s+LEAVE|WILL\s+PRESIDE|WILL\s+TAKE\s+UP", re.I)
+    r"ASSEMBLE|COMPOSITION|ON\s+LEAVE|WILL\s+PRESIDE|WILL\s+TAKE\s+UP|"
+    r"LEFT\s+OVER\s+MATTERS|FOLLOWING\s+BENCH", re.I)
 NOTE_SKIP_RE = re.compile(r"AS\s+PER\s+CIRCULAR|FRESH\s+MATTERS|APPRECIATED|LISTING\s+IS\s+AUTOMATIC", re.I)
 NOTE_COURT_RE = re.compile(r"COURT\s*NOS?\.?\s*:?\s*([0-9]{1,2})", re.I)
 
@@ -154,66 +155,221 @@ def split_sentences(text):
     return [x for x in out if x]
 
 
+# A court SECTION header is exactly "COURT NO. : 4" (or "CHIEF JUSTICE'S COURT") on its own
+# line. The looser COURT_RE matches wrapped note text too ("COURT NO. 3, IF ANY]"), which would
+# silently reassign the section in the middle of a note.
+SECTION_RE = re.compile(r"^COURT\s*NO\.?\s*:\s*([0-9]{1,2})\s*$", re.I)
+SECTION_CJ_RE = re.compile(r"^CHIEF\s+JUSTICE'?S\s+COURT\s*$", re.I)
+# A judge-side note about sitting in a special bench elsewhere ("HON'BLE MR. JUSTICE MANOJ
+# MISRA WILL SIT IN SPECIAL BENCH IN COURT NO. 4 AFTER ...") belongs to the JUDGE'S OWN court
+# — the section it is printed in — not to the venue (owner, 5 Oct 2026: "the notice should come
+# up in his Court 10 and not Court 4"). The venue gets the structured special-bench summary.
+# Generalised to ANY judge-movement note ("HON'BLE MR. JUSTICE MANMOHAN WILL SIT IN COURT NO.3
+# AT 2.00 P.M. TO TAKE UP LEFT OVER MATTERS OF COURT NO. 3" is printed in Court 9 — his own
+# court; Court 3 carries its own "left over matters ... by the following bench" note).
+SB_SIT_NOTE_RE = re.compile(r"\bWILL\s+SIT\s+IN\b", re.I)
+
+
+def _section_of(line):
+    m = SECTION_RE.match(line)
+    if m:
+        return str(int(m.group(1)))
+    if SECTION_CJ_RE.match(line):
+        return "1"
+    return None
+
+
 def parse_day_notes(text):
-    """[{'text': ..., 'courts': ['17', ...]}] — deduped operational NOTE:- blocks. A note
-    that names no court ("THIS BENCH WILL RE-ASSEMBLE ... OF THIS COURT") belongs to the
-    court whose section it is printed in, so the section court is tracked and used."""
-    out, seen, acc, taken, cur = [], set(), None, 0, None
+    """[{'text': ..., 'courts': [...]}] — deduped operational notes from NOTE:- blocks.
+
+    A NOTE:- block can carry several bracketed notes separated by "." lines, and a note can be
+    followed by the judges it names ("[LEFT OVER MATTERS ... WILL BE TAKEN UP BY THE FOLLOWING
+    BENCH AT 2.00 P.M.] . HON'BLE MRS. JUSTICE B.V. NAGARATHNA / HON'BLE MR. JUSTICE MANMOHAN")
+    — those judges are appended to that note. Attribution: always the section court it is
+    printed in; a special-bench SITTING note goes ONLY there (the judge's own court), any other
+    note also to the courts it names. A block inside a special bench's own section header
+    ("[ SPECIAL BENCH ] . [ THIS BENCH WILL ASSEMBLE AFTER ...]") is skipped here — that court
+    is described by parse_special_benches() instead."""
+    out, seen = [], set()
+    cur = None            # section court
+    in_block = False      # inside a NOTE:- block
+    sb_block = False      # this block is a special bench's own section header
+    acc = None            # current note text being accumulated
+    taken = 0
+    last = None           # last emitted note (to append trailing judge names)
+    struct = re.compile(r"^(MISCELLANEOUS\s+HEARING|REGULAR\s+HEARING|SUPPLEMENTARY\s+LIST|SNo\.|"
+                        r"Petitioner\s*/\s*Respondent|Advocate$)", re.I)
+
     def flush():
-        nonlocal acc
-        t = re.split(r"\bDROP\s+NOTE\b", re.sub(r"\s+", " ", acc or ""), maxsplit=1, flags=re.I)[0].strip(" []-·")
+        nonlocal acc, last
+        t = re.split(r"\bDROP\s+NOTE\b", re.sub(r"\s+", " ", acc or ""), maxsplit=1, flags=re.I)[0].strip(" []-·.")
         acc = None
+        last = None
         if not t or len(t) < 15:
+            return
+        if re.fullmatch(r"\s*SPECIAL\s+BENCH\s*", t, re.I):
+            return
+        if sb_block:
             return
         if NOTE_SKIP_RE.search(t) or not NOTE_KEEP_RE.search(t) or IGNORABLE_NOTE_RE.search(t):
             return
-        courts = sorted(set(str(int(c)) for c in NOTE_COURT_RE.findall(t)))
-        if not courts and cur:
-            courts = [cur]
+        named = set(str(int(c)) for c in NOTE_COURT_RE.findall(t))
+        if cur:
+            courts = {cur} if SB_SIT_NOTE_RE.search(t) else ({cur} | named)
+        else:
+            courts = named
+        courts = sorted(courts, key=int)
         key = ",".join(courts) + "|" + re.sub(r"[^A-Z0-9]", "", t.upper())
         if key in seen:
             return
         seen.add(key)
-        out.append({"text": t[:300], "courts": courts})
-    struct = re.compile(r"^(MISCELLANEOUS\s+HEARING|SUPPLEMENTARY\s+LIST|SNo\.|Petitioner\s*/\s*Respondent|Advocate$)", re.I)
+        last = {"text": t[:300], "courts": courts}
+        out.append(last)
+
+    def end_block():
+        nonlocal in_block, sb_block, last
+        if acc is not None:
+            flush()
+        in_block = sb_block = False
+        last = None
+
     for raw in text.splitlines():
         line = raw.strip()
         if not line:
             continue
-        if acc is None:
-            cm = REG_RE.search(line) or COURT_RE.search(line)
-            if cm:
-                cur = cm.group(1)
-            elif CJ_RE.search(line):
-                cur = "1"
+        sec = _section_of(line)
+        if sec is not None:
+            end_block()
+            cur = sec
+            continue
+        m = NOTE_LINE_RE.match(line)
+        if m:
+            end_block()
+            in_block, taken = True, 0
+            frag = (m.group(1) or "").strip()
+            if frag:
+                acc = frag
+                if "]" in frag:
+                    acc = frag[:frag.find("]")]
+                    if re.fullmatch(r"\[?\s*SPECIAL\s+BENCH\s*", acc, re.I):
+                        sb_block = True
+                    flush()
+            continue
+        if not in_block:
+            continue
+        if NOTE_END_RE.match(line) or struct.match(line) or NOTE_JUNK_RE.search(line) or ITEM_LINE_RE.match(line):
+            end_block()
+            continue
         if acc is not None:
-            # a bracketed note's real terminator is its closing "]" — without cutting there,
-            # a page-top note ran straight into "MISCELLANEOUS HEARING Petitioner/Respondent
-            # SNo. ..." section headers before the line budget was spent
             close = line.find("]")
             if close >= 0:
                 acc += " " + line[:close]
                 flush()
-                continue
-            # a note is a few lines at most — a block that runs on is list content, not a note
-            if NOTE_END_RE.match(line) or NOTE_LINE_RE.match(line) or struct.match(line) \
-                    or NOTE_JUNK_RE.search(line) or taken >= 6:
-                flush()
+            elif taken >= 6:
+                end_block()
             else:
                 acc += " " + line
                 taken += 1
+            continue
+        # between notes inside the block
+        if line in (".", "-", "*"):
+            continue
+        if line.startswith("["):
+            body = line[1:]
+            if re.match(r"\s*SPECIAL\s+BENCH\s*\]?\s*$", body, re.I):
+                sb_block = True
                 continue
-        m = NOTE_LINE_RE.match(line)
-        if m:
-            frag = m.group(1) or ""
-            close = frag.find("]")
-            if close >= 0:
-                acc = frag[:close]
+            acc, taken = body, 0
+            if "]" in body:
+                acc = body[:body.find("]")]
                 flush()
-            else:
-                acc, taken = frag, 0
+            continue
+        if JUDGE_RE.match(line) and not NOTE_KEEP_RE.search(line):
+            if last is not None:
+                last["text"] = (last["text"] + " — " + re.sub(r"\s+", " ", line)).strip()[:400]
+            continue
+        # an unbracketed note sentence ("HON'BLE MR. JUSTICE K.V. VISWANATHAN WILL SIT ...")
+        acc, taken = line, 0
     if acc is not None:
         flush()
+    return out
+
+
+def _judge_name(line):
+    n = re.sub(r"^HON'?BLE\s+(?:THE\s+)?(?:MR\.?|MRS\.?|MS\.?|DR\.?)?\s*", "", line.strip(), flags=re.I)
+    n = re.sub(r"^JUSTICE\s+", "", n, flags=re.I).strip(" ,.")
+    if re.match(r"^CHIEF\s+JUSTICE$", n, re.I):
+        return "The Chief Justice"
+    return "Justice " + n.title()
+
+
+def parse_special_benches(text):
+    """Special benches described by their OWN section header in the venue court — e.g.
+    COURT NO. : 4 / HON'BLE MR. JUSTICE M.M. SUNDRESH / ... MANOJ MISRA / ... SATISH CHANDRA
+    SHARMA / NOTE:- [ SPECIAL BENCH ] . [ THIS BENCH WILL ASSEMBLE AFTER THE NORMAL WORK OF
+    THIS COURT, COURT NO. 10 AND COURT NO. 16 IS OVER ]. Returns
+    [{venue, judges, at, after, extra}] — `after` is every court whose normal work must finish
+    first (THIS COURT = the venue), `at` a clock time when one is declared, `extra` any other
+    note printed in that header ("LEFT OVER MATTERS OF THIS COURT WILL BE TAKEN UP ... BY THIS
+    SPECIAL BENCH"). Page headers repeat, so results are deduped."""
+    out, seen = [], set()
+    struct = re.compile(r"^(MISCELLANEOUS\s+HEARING|REGULAR\s+HEARING|SUPPLEMENTARY\s+LIST|SNo\.|"
+                        r"Petitioner\s*/\s*Respondent)", re.I)
+    region, court = None, None
+
+    def analyse():
+        if not region or not court:
+            return
+        blob = re.sub(r"\s+", " ", " ".join(region))
+        if not re.search(r"\[\s*SPECIAL\s+BENCH\s*\]|THIS\s+SPECIAL\s+BENCH|NOTE\s*:-\s*SPECIAL\s+BENCH", blob, re.I):
+            return
+        judges = []
+        for l in region:
+            if JUDGE_RE.match(l) and not NOTE_KEEP_RE.search(l):
+                judges.append(_judge_name(l))
+            elif judges:
+                break
+        tm = TIME_RE.search(blob)
+        at = re.sub(r"\s+", " ", tm.group(1)).strip().upper() if tm else None
+        after = []
+        am = re.search(r"AFTER\s+THE\s+NORMAL\s+WORK\s+OF\s+(.*?)\s+(?:IS|ARE)\s+OVER", blob, re.I)
+        if am:
+            clause = am.group(1)
+            after = set(courts_in(clause))
+            if re.search(r"THIS\s+COURT", clause, re.I):
+                after.add(court)
+            after = sorted(after, key=int)
+        extra = []
+        for b in re.findall(r"\[([^\]]+)\]", blob):
+            b = re.sub(r"\s+", " ", b).strip(" .")
+            if re.fullmatch(r"SPECIAL\s+BENCH", b, re.I) or re.search(r"AFTER\s+THE\s+NORMAL\s+WORK", b, re.I):
+                continue
+            if NOTE_SKIP_RE.search(b) or IGNORABLE_NOTE_RE.search(b) or len(b) < 15:
+                continue
+            extra.append(b[:300])
+        key = (court, tuple(judges), at, tuple(after))
+        if key in seen:
+            return
+        seen.add(key)
+        out.append({"venue": court, "judges": judges, "at": at, "after": after, "extra": extra})
+
+    for raw in text.splitlines():
+        line = raw.strip()
+        if not line:
+            continue
+        sec = _section_of(line)
+        if sec is not None:
+            analyse()
+            court, region = sec, []
+            continue
+        if region is None:
+            continue
+        if struct.match(line) or ITEM_LINE_RE.match(line) or len(region) > 25:
+            analyse()
+            region = None
+            continue
+        region.append(line)
+    analyse()
     return out
 
 
@@ -255,6 +411,29 @@ def parse_home_notices(html):
 # Court No.2" notice never reached the app. The homepage alone gets a browser User-Agent.
 HOME_HEADERS = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
                               "(KHTML, like Gecko) Chrome/126 Safari/537.36"}
+
+
+NOTICE_CLOCK_RE = re.compile(r"\b(\d{1,2}(?:[.:]\d{2})?\s*[AaPp]\.?\s*[Mm]\.?)")
+NOTICE_VENUE_RE = re.compile(r"\b(?:IN|AT)\s+COURT\s+NO\.?\s*:?\s*(\d{1,2})\b", re.I)
+NOTICE_JUDGE_RE = re.compile(r"Justice\s+((?:[A-Z][A-Za-z.']*\.?\s*){1,5}?)(?=\s*(?:,|\band\b|\bwill\b|\bin\b|\bon\b|\bat\b|\bshall\b|\(|$))")
+
+
+def special_from_notice(sentence):
+    """A homepage-notice sentence announcing a timed special bench ("... Special Bench
+    comprising Hon'ble Mr. Justice Vikram Nath and Hon'ble Mr. Justice Satish Chandra Sharma
+    will sit at 2.55 P.M. in Court No. 2 ...") -> {venue, judges, at, ...}, else None. Only the
+    TIME and VENUE matter for the maths; the sentence itself already reaches every court it
+    names (notice_notes)."""
+    if not re.search(r"special\s+bench", sentence, re.I) or re.search(r"cancel", sentence, re.I):
+        return None
+    tm = NOTICE_CLOCK_RE.search(sentence)
+    vm = NOTICE_VENUE_RE.search(sentence)
+    venue = str(int(vm.group(1))) if vm else ("1" if CJ_RE.search(sentence) else None)
+    if not tm or not venue:
+        return None
+    judges = ["Justice " + re.sub(r"\s+", " ", j).strip(" .,") for j in NOTICE_JUDGE_RE.findall(sentence)]
+    return {"venue": venue, "judges": judges, "at": re.sub(r"\s+", " ", tm.group(1)).upper(),
+            "after": [], "extra": [sentence[:300]]}
 
 
 NOTICE_TITLE_KEEP_RE = re.compile(
@@ -794,7 +973,7 @@ def n_matters(items):
 
 
 def build_for_date(date_str, prev_day=None, prev_sizes=None):
-    """Returns (lists_found, lists, notes, sizes, reused). Probes every list URL with a
+    """Returns (lists_found, lists, notes, specials, sizes, reused). Probes every list URL with a
     1KB ranged GET first; if the sizes all match the previous run, the previous
     parse is reused wholesale — no PDF is downloaded."""
     sizes = {}
@@ -806,9 +985,10 @@ def build_for_date(date_str, prev_day=None, prev_sizes=None):
             time.sleep(0.15)
     if prev_day is not None and sizes == (prev_sizes or {}):
         return (prev_day.get("lists_found", []), prev_day.get("lists", {}),
-                prev_day.get("notes", []), sizes, True)
+                prev_day.get("notes", []), prev_day.get("specialBenches", []), sizes, True)
     lists_found, lists = [], {}
     notes, note_keys = [], set()
+    specials, sb_keys = [], set()
     for human, variants in LIST_TYPES.items():
         merged = {}
         for suffix, variant in variants:
@@ -824,6 +1004,11 @@ def build_for_date(date_str, prev_day=None, prev_sizes=None):
             # operational NOTE:- blocks (a judge sitting elsewhere, a changed bench, a
             # court not sitting) — deduped across every list and variant of the day
             # (not from the Chamber / Single Judge lists at all — owner doesn't track those)
+            for b in ([] if human in ("Chamber", "Single Judge") else parse_special_benches(text)):
+                k = (b["venue"], tuple(b["judges"]), b["at"], tuple(b["after"]))
+                if k not in sb_keys:
+                    sb_keys.add(k)
+                    specials.append(b)
             for n in ([] if human in ("Chamber", "Single Judge") else parse_day_notes(text)):
                 k = re.sub(r"[^A-Z0-9]", "", n["text"].upper())
                 if k not in note_keys:
@@ -869,7 +1054,7 @@ def build_for_date(date_str, prev_day=None, prev_sizes=None):
             c["total"] = str(n_matters(c["items"]))
         if merged:
             lists[human] = merged
-    return lists_found, lists, notes, sizes, False
+    return lists_found, lists, notes, specials, sizes, False
 
 
 def main():
@@ -901,12 +1086,13 @@ def main():
     prev_by, prev_src = ({}, {}) if stale_parser else (prev_by_raw, prev_src_raw)
     by_date, sources = {}, {}
     for date_str in dates:
-        lists_found, lists, notes, sizes, reused = build_for_date(
+        lists_found, lists, notes, specials, sizes, reused = build_for_date(
             date_str, prev_by.get(date_str), prev_src.get(date_str))
         if sizes:
             sources[date_str] = sizes
         if lists_found or lists:
-            by_date[date_str] = {"lists_found": lists_found, "lists": lists, "notes": notes}
+            by_date[date_str] = {"lists_found": lists_found, "lists": lists, "notes": notes,
+                                 "specialBenches": specials}
             ncourts = sum(len(v) for v in lists.values())
             print("  {}: {} list(s), {} courts, {} note(s){}".format(
                 date_str, len(lists), ncourts, len(notes), "  [unchanged — reused]" if reused else "  [FETCHED]"))
@@ -958,6 +1144,26 @@ def main():
             # may have changed) instead of piling duplicates on top
             notes[:] = [x for x in notes if x.get("url") != n["url"]]
             keys = set(note_key(x) for x in notes)
+            # a timed special bench announced by notice feeds the time maths too; the notice is
+            # the later word, so its time replaces a causelist one for the same venue
+            sbs = day.setdefault("specialBenches", [])
+            sbs[:] = [b for b in sbs if b.get("url") != n["url"]]
+            for sent in split_sentences(text if len(text or "") >= 30 else n["title"]):
+                sb = special_from_notice(sent)
+                if not sb:
+                    continue
+                sb["url"] = n["url"]
+                same = [b for b in sbs if b["venue"] == sb["venue"] and not b.get("url")]
+                if same:
+                    # causelist bench, re-timed by the notice: keep its judges / after-courts
+                    same[0]["at"] = sb["at"]
+                    same[0]["noticeUrl"] = n["url"]
+                else:
+                    # notice-only bench: its sentence is already a court note, so the app uses
+                    # this record for the time maths only (src=web), never as a second summary
+                    sb["src"] = "web"
+                    sbs.append(sb)
+                print("  {}: special bench by notice — Court {} at {}".format(date_str, sb["venue"], sb["at"]))
             for note in notice_notes(n["title"], text):
                 note["url"] = n["url"]
                 k = note_key(note)

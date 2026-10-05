@@ -146,6 +146,35 @@ today's and picked-date sheets both):
    Chief Justice's Court = 1). Bench cancellations / "will not sit" notices arrive here.
    Fetched fresh every run in main() — notices land intraday; their PDFs never change.
 
+**Special benches are structured, not just text (owner, 5 Oct 2026).** Rule: a note about a
+judge moving ("HON'BLE MR. JUSTICE MANOJ MISRA WILL SIT IN SPECIAL BENCH IN COURT NO. 4 AFTER
+...") belongs to the JUDGE'S OWN court — the section it is printed in (Court 10) — not the
+venue; the VENUE court instead shows a summary of the bench: who sits, and when ("Special Bench
+sits here after the normal work of Courts 4, 10 & 16 is over — Justice M.M. Sundresh, Justice
+Manoj Misra, Justice Satish Chandra Sharma"). A homepage notice naming several courts ("normal
+work of Court 2 and Court 16 will resume after the Special Bench is over") shows in all of
+them. Implementation:
+- `parse_special_benches()` reads the venue court's own special-bench section header (the
+  repeated "COURT NO. : 4" whose coram is the bench, with "[ SPECIAL BENCH ]" and "THIS BENCH
+  WILL ASSEMBLE AFTER THE NORMAL WORK OF THIS COURT, COURT NO. 10 AND COURT NO. 16 IS OVER")
+  -> `by_date[d].specialBenches = [{venue, judges, at, after, extra}]` (THIS COURT = venue).
+- `parse_day_notes()` is now a block state machine: several bracketed notes per NOTE:- block,
+  trailing judge lines appended ("... BY THE FOLLOWING BENCH AT 2.00 P.M. — HON'BLE MRS.
+  JUSTICE B.V. NAGARATHNA — ..."), any "WILL SIT IN" note goes to its section court only, and
+  a special bench's own header block is left to parse_special_benches. Section headers are
+  matched EXACTLY (`SECTION_RE`: "COURT NO. : 4" alone on a line) — the loose COURT_RE matched
+  wrapped note text ("COURT NO. 3, IF ANY]") and reassigned the section mid-note.
+- `special_from_notice()` lifts a timed special bench out of a homepage notice (venue + clock);
+  it re-times a causelist bench at the same venue (`noticeUrl`) or stands alone (`src:"web"`,
+  maths only — its sentence is already a court note, so no duplicate summary).
+- Maths: `ENG.courtRemaining()` = items a court still has to call before its normal work is
+  over (Misc list + outstanding passovers; whole list while mentioning/pronouncement is on;
+  null if unreadable). A 300-series matter whose bench sits "after Courts X, Y, Z" is
+  ~max(remaining) + its place in the bench away (`approx`); any unreadable court -> no figure,
+  just the sentence. A clock always wins: typed > notice re-timing > causelist item time >
+  the bench's own time (app `fixedTimeFor`, mirrored in worker.js). Regular-list sizes are not
+  in ctx, so a court already past its Misc list counts only its passovers — a known undercount.
+
 **Notice hygiene (owner, 5 Oct 2026).** (a) A recalled passover shows on the island as plain
 "P32" — a bare P butted against the number, no badge, no gap (was a boxed "PO" tag).
 (b) Single Judge and Chamber Judge notices are IGNORED everywhere — owner: "We are not

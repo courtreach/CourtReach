@@ -2024,7 +2024,8 @@ function courtCtx(){
   const {done,po}=statusMarks();
   return { nowMins:nowMinsIST(), boardByCourt:boardByCourt(),
     seqByCourt:effSeqByCourt(), remarksByCourt, boardPO:boardPO.marks, recalledPO:recalledPO.set, poMarks:po, doneMarks:done,
-    miscTotalByCourt:miscTotalByCourt(), itemHi:itemHi.max, withItem:withItemByCourt() };
+    miscTotalByCourt:miscTotalByCourt(), itemHi:itemHi.max, withItem:withItemByCourt(),
+    specialBenches:courtUpdates?.by_date?.[todayISO()]?.specialBenches||[] };
 }
 function classify(e){ const bc=boardByCourt()[String(e.courtNo)];
   const ctx=courtCtx();
@@ -2047,15 +2048,34 @@ function manualTimeFor(court,item,date){
   const r = timesOrg[k]!==undefined ? timesOrg[k] : timesOwn[k];
   return (r && r.t) || "";
 }
+/* The special bench sitting at this court that a 300-series matter belongs to (owner's example:
+   Court 4's bench of Justices Sundresh, Manoj Misra and Satish Chandra Sharma, sitting "after
+   the normal work of Courts 4, 10 & 16 is over"). A notice that re-times a bench ("... will sit
+   at 2.55 P.M.") is the later word, so its time beats the causelist's. */
+function benchFor(court,item,date){
+  if(!ENG.isSpecialBenchItem(Math.floor(parseFloat(item)))) return null;
+  const all=(courtUpdates?.by_date?.[date||todayISO()]?.specialBenches||[]).filter(b=>String(b.venue)===String(parseInt(court,10)));
+  return all.find(b=>b.noticeUrl||b.src==="web") || all.find(b=>b.at) || all[0] || null;
+}
+function benchNoticeTime(court,item,date){
+  const b=benchFor(court,item,date);
+  return (b && (b.noticeUrl||b.src==="web") && ENG.clockMins(b.at)!=null) ? b.at : "";
+}
 function fixedTimeFor(court,item,date){
   const t=manualTimeFor(court,item,date); if(t) return t;
+  const nt=benchNoticeTime(court,item,date); if(nt) return nt;
   const sb=specialBenchTimeFor(court,item,date);
-  return ENG.clockMins(sb)!=null ? sb : "";
+  if(ENG.clockMins(sb)!=null) return sb;
+  const b=benchFor(court,item,date);
+  return (b && ENG.clockMins(b.at)!=null) ? b.at : "";
 }
 // What to PRINT for a timed case: a typed time as a clock ("2:30 PM"); a causelist note verbatim.
 function fixedLabelFor(court,item,date){
   const t=manualTimeFor(court,item,date); if(t){ const m=ENG.clockMins(t); return m!=null ? ENG.fmtClock(m) : t; }
-  return specialBenchTimeFor(court,item,date);
+  const nt=benchNoticeTime(court,item,date); if(nt) return ENG.fmtClock(ENG.clockMins(nt));
+  const sb=specialBenchTimeFor(court,item,date); if(sb) return sb;
+  const b=benchFor(court,item,date);
+  return (b && ENG.clockMins(b.at)!=null) ? ENG.fmtClock(ENG.clockMins(b.at)) : "";
 }
 // The words for the court sheet's passover row — built from the engine's plan, so the sentence
 // and the distances on the chips can never say two different things.
@@ -2645,8 +2665,30 @@ function courtCoram(court){
    daily notices feed for these on sci.gov.in — the NOTE:- blocks in the list PDFs are the
    authoritative source; fetch_causelist.py captures them, keyed to the courts each note
    names (or the section it was printed in). Quoted verbatim, house style. */
+// "Courts 4, 10 & 16"
+const courtsPhrase = cs => cs.length===1 ? "Court "+cs[0] : "Courts "+cs.slice(0,-1).join(", ")+" & "+cs[cs.length-1];
+/* What the VENUE court should say about a special bench sitting in it (owner: "Court 4 island
+   should show that there is a special bench after the Court 4, 10 and 16's work is done and the
+   Bench is of so and so Judges"). The judges' own courts carry their own "will sit in special
+   bench" notes; a bench known only from a homepage notice is already a note in every court it
+   names, so it gets no second line here. */
+function benchSummaries(court, date){
+  const c=String(parseInt(court,10)), out=[];
+  for(const b of (courtUpdates?.by_date?.[date||todayISO()]?.specialBenches||[])){
+    if(String(b.venue)!==c || b.src==="web") continue;
+    const when = (b.noticeUrl && ENG.clockMins(b.at)!=null) ? `at ${ENG.fmtClock(ENG.clockMins(b.at))} (per notice)`
+      : (b.after||[]).length ? `after the normal work of ${courtsPhrase(b.after)} is over`
+      : ENG.clockMins(b.at)!=null ? `at ${ENG.fmtClock(ENG.clockMins(b.at))}` : "today";
+    out.push(`Special Bench sits here ${when}${(b.judges||[]).length?` — ${b.judges.join(", ")}`:""}`);
+    for(const x of (b.extra||[])) out.push(x);
+  }
+  return out;
+}
 function courtNotes(court, date){
   const c=String(parseInt(court,10)), seen=new Set(), out=[];
+  for(const t of benchSummaries(court, date)){
+    const k=t.toUpperCase().replace(/[^A-Z0-9]/g,""); if(!seen.has(k)){ seen.add(k); out.push(t); }
+  }
   for(const n of (courtUpdates?.by_date?.[date||todayISO()]?.notes||[])){
     if(!(n.courts||[]).includes(c)) continue;
     // Cut the table debris an earlier parser let a note swallow ("… DROP NOTE:- Item No.

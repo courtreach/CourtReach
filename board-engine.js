@@ -26,6 +26,10 @@
      fixedTimes       {"court_item": "HH:MM" | minutes}  a matter the court has fixed for a
                                                           particular time — no sequence applies
                                                           to it, so it is measured in minutes
+     specialBenches   [{venue, after:[courts], at, judges}]  a special bench's own sitting
+                                                          rule — "after the normal work of Courts
+                                                          4, 10 & 16 is over" — used to measure
+                                                          its matters (300s) from those courts
      withItem         {"court_item": "otherItem"}  the CAUSELIST's own word that this item
                                                      will be heard together with a different
                                                      item in the same court ("TO BE TAKEN UP
@@ -345,6 +349,28 @@
     return false;
   }
 
+  /* Items a court still has to call before its NORMAL work (the Miscellaneous list, and its
+     outstanding passovers) is over — or null when that cannot be known (not on the board,
+     not sitting, no list size, or inside another court phase). The item on now counts: it is
+     not finished yet. Once a court has moved past its Misc list only its outstanding passovers
+     are counted, since the Regular list's size is not in ctx — `approx` covers that. */
+  function courtRemaining(ctx, court) {
+    court = String(court);
+    const bc = (ctx.boardByCourt || {})[court], total = miscTotalFor(ctx, court);
+    if (!bc || total == null || /not in session/i.test(bc.status || "")) return null;
+    const cur = parseFloat(bc.item);
+    if (isNaN(cur)) return null;
+    const po = Object.keys(passoverItemsFor(ctx, court)).length;
+    const fl = Math.floor(cur);
+    if (fl >= 800 && fl < 900) return total + po;          // mentioning: the lists haven't begun
+    if (fl >= 1500 && fl < 1600) return total + po;        // pronouncement: same
+    if (isReservedItem(fl)) return null;                    // its own special bench / other phase
+    if (onRegularList(ctx, court, total)) return po;
+    const seqTxt = (bc.sequence && bc.sequence.trim()) ? bc.sequence : ((ctx.seqByCourt || {})[court] || "");
+    const reach = reachOf(ctx, court, seqInfo(seqTxt).seq, total, bc.item);
+    return Math.max(0, total - reach) + 1 + po;
+  }
+
   // "14:30" / "2.30 PM" / "2 pm" / 870 -> minutes into the day, or null.
   function clockMins(v) {
     if (v == null || v === "") return null;
@@ -437,6 +463,28 @@
         if (g <= 1) return { tier: "now", label: g === 0 ? "SPECIAL BENCH — ON NOW" : "Special Bench — NEXT", short: g === 0 ? "NOW" : "NEXT", gap: g, special: true };
         if (g <= 4) return { tier: "soon", label: "~" + g + " Special Bench items away", short: g + " away", gap: g, special: true };
         return { tier: "later", label: g + " Special Bench items away", short: g + " away", gap: g, special: true };
+      }
+      /* "THIS BENCH WILL ASSEMBLE AFTER THE NORMAL WORK OF THIS COURT, COURT NO. 10 AND COURT
+         NO. 16 IS OVER" (ctx.specialBenches, from fetch_causelist.py): the bench can only
+         assemble once the LAST of those courts is done, so the distance is the most items any
+         of them still has to call, plus this matter's place within the bench (301 first) —
+         owner: "this should be taken into consideration for calculating time ... for the
+         special bench matter". Every listed court must be readable, or no figure is given. */
+      const benches = (ctx.specialBenches || []).filter(b => String(b.venue) === String(e.courtNo) && (b.after || []).length);
+      if (benches.length) {
+        const after = benches[0].after.map(String);
+        const rem = after.map(c => ({ c, n: courtRemaining(ctx, c) }));
+        const names = after.length === 1 ? "Court " + after[0] : "Courts " + after.slice(0, -1).join(", ") + " & " + after[after.length - 1];
+        if (rem.every(r => r.n != null)) {
+          const worst = rem.reduce((a, b) => (b.n > a.n ? b : a));
+          const g = worst.n + Math.max(0, Math.floor(parseFloat(ours)) - 301);
+          const why = worst.n > 0 ? " (Court " + worst.c + " has ~" + worst.n + " left)" : "";
+          const lab = "Special Bench after " + names + " finish" + why;
+          if (g <= 1) return { tier: "now", label: lab + (g === 0 ? " — about to assemble" : " — next"), short: g === 0 ? "NOW" : "NEXT", gap: g, approx: true, special: true };
+          if (g <= 4) return { tier: "soon", label: "~" + g + " away · " + lab, short: "~" + g + " away", gap: g, approx: true, special: true };
+          return { tier: "later", label: "~" + g + " away · " + lab, short: "~" + g + " away", gap: g, approx: true, special: true };
+        }
+        return { tier: "later", label: "Special Bench — after " + names + " finish", short: "special bench", special: true };
       }
       return { tier: "later", label: "Special Bench — time-fixed, or after the court's regular work is over", short: "special bench", special: true };
     }
@@ -628,7 +676,7 @@
     return { tier: "later", label: gap + " items away" + poNote, short: gap + " away", gap, approx, poNote };
   }
 
-  const API = { classify, isReservedItem, isSpecialBenchItem, seqInfo, orderPos, parseSequenceLine, preStartGap, preStartResult, isMentioning, MENT_END, REG_BASE, passoverItemsFor, detailRemark, remarkEndsToday, callPos, recallPos, miscEnd, reachOf, passoverPlan, passoversBeforeOurs, clockMins, fmtClock };
+  const API = { classify, courtRemaining, isReservedItem, isSpecialBenchItem, seqInfo, orderPos, parseSequenceLine, preStartGap, preStartResult, isMentioning, MENT_END, REG_BASE, passoverItemsFor, detailRemark, remarkEndsToday, callPos, recallPos, miscEnd, reachOf, passoverPlan, passoversBeforeOurs, clockMins, fmtClock };
   root.BoardEngine = API;
   if (typeof module !== "undefined" && module.exports) module.exports = API;
 })(typeof self !== "undefined" ? self : (typeof globalThis !== "undefined" ? globalThis : this));
