@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-05T10:58:24.760375Z",
+  "generated_at": "2026-10-05T11:09:30.106951Z",
   "parser_version": 13,
   "window": [
     "2026-10-05",
@@ -3241,7 +3241,21 @@
           ]
         },
         {
-          "text": "Notice regarding change in Court No.2 on 05.10.2026 (Monday)",
+          "text": "Hon'ble Mr. Justice Sandeep Mehta will not be holding the Court on 05.10.2026 (Monday).",
+          "courts": [
+            "2"
+          ],
+          "url": "https://cdnbbsr.s3waas.gov.in/s3ec0490f1f4972d133619a60c30f3559e/uploads/2026/10/2026100410.pdf"
+        },
+        {
+          "text": "Hence, the sitting of the Bench comprising Hon'ble Mr. Justice Vikram Nath, Hon'ble Mr. Justice Augustine George Masih and Hon'ble Mr. Justice Sandeep Mehta in Court No. 2 on 05.10.2026 (Monday) stands cancelled and the matters listed before this Bench will now be taken up for hearing by the Bench c",
+          "courts": [
+            "2"
+          ],
+          "url": "https://cdnbbsr.s3waas.gov.in/s3ec0490f1f4972d133619a60c30f3559e/uploads/2026/10/2026100410.pdf"
+        },
+        {
+          "text": "Furthermore, the sitting of Special Bench constituted in Court No. 2 comprising Hon'ble Mr. Justice Vikram Nath and Hon'ble Mr. Justice Sandeep Mehta on 05.10.2026 (Monday) at 2:00 p.m. also stands cancelled and the matters listed before this Bench will not be taken up for hearing.",
           "courts": [
             "2"
           ],
