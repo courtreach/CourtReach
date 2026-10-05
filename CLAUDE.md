@@ -99,6 +99,27 @@ internally (`bc.sequence` then `ctx.seqByCourt`) — so it can never disagree wi
 rest of classify() sees for that court, and needs no extra courtreach.html/worker.js
 wiring: both already pass `seqByCourt` into ctx for other reasons.
 
+**Special Bench series (300s) is NEVER part of the list order** (owner: "Special Bench are
+always listed as time fixed matter or with direction that they will be taken up after the
+work of the court or courts is over ... It should never be in the sequence of the
+miscellaneous or regular list"; real report 5 Oct 2026: item 301 shown "241 away" with the
+court on item 62). The engine had no notion of the 300s, so 301 − 62 fell out as plain
+arithmetic. Courts 4 and 10 announce theirs in a NOTE:- block ("WILL SIT IN SPECIAL BENCH …
+AFTER THE NORMAL WORK OF THIS COURT … IS OVER"), not with a clock, so no time is captured
+and the time-fixed path never fires. Now (`isSpecialBenchItem`/`isReservedItem` in the
+engine): OUR 300-series item with no usable time returns `{special:true}` and NO gap
+("special bench" chip); with a clock it is still minutes (time-fixed path wins first);
+once the board is itself inside the 300s it is series arithmetic (NOW/NEXT/n away; "past" is
+deliberately NOT `over` — no over-claims from numbers). Conversely, when the board sits on a
+300 item (the 2 PM bench) a normal list item reads "special bench" (list paused), never
+"over". `reachOf`/`passoverPlan` ignore a reserved board item as a position, and
+`noteItemHi`, `showProg` and `onRegular` all use `ENG.isReservedItem` — the same latch that
+once poisoned the progress bar with 800s. The numbered lists top out far below 300 (highest
+seen in a real causelist: 226). Island: a gap-less special bench never drives the tile's
+colour; the sheet lists it after sequenced and clock-timed cases. Not done: the relative
+sitting text itself ("after the normal work of Court 4 and 16 is over") is shown only in the
+sheet's notice box (court-level), not attached to the item row.
+
 **Mentioning series (800s) as OUR item** — a tracked 800-series matter is measured inside
 its own series (owner: "the mentioning series ... will be always taken up before the
 miscellaneous and regular lists and after pronouncement"): series arithmetic while the

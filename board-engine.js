@@ -38,6 +38,13 @@
   "use strict";
   const MENT_END = 640;          // 10:40 IST — mentioning done
   const REG_BASE = 101;          // Regular list numbered 101+
+  /* RESERVED item numbers are court PHASES, never positions in the Miscellaneous / Regular
+     call order: the 300s are Special Bench (always time-fixed, or "after the normal work of
+     the court is over"), the 800s mentioning, 1500s pronouncement, 1600s Single Judge, 1700s
+     Chamber. The numbered lists top out well below 300 (highest seen in a real causelist:
+     226). Anything that does arithmetic on item numbers must skip these. */
+  const isSpecialBenchItem = n => n >= 300 && n < 400;
+  const isReservedItem = n => isSpecialBenchItem(n) || n >= 800;
   const poKey = (court, item) => String(court) + "_" + String(item);
 
   // ---- pure sequence maths (identical to board.html) ----
@@ -197,7 +204,11 @@
      never dip, so the reach is the greatest of the three. Under a sequence the highest NUMBER
      says little (item 12 may be first in the announced order), which is why OVER matters. */
   function reachOf(ctx, court, seq, miscTotal, curItem) {
-    const cur = parseFloat(curItem), curP = callPos(seq, curItem);
+    const cur = parseFloat(curItem);
+    // The board sitting on a Special Bench / mentioning / judgment item says nothing about how
+    // far the numbered lists have got — counting it as a position made reach balloon past the
+    // whole list the moment a 2 PM special bench began.
+    const curP = isReservedItem(Math.floor(cur)) ? null : callPos(seq, curItem);
     const hi = (ctx.itemHi || {})[String(court)] || 0, hiP = hi ? callPos(seq, hi) : null;
     let overP = null;
     const r = (ctx.remarksByCourt || {})[String(court)];
@@ -207,7 +218,7 @@
     let poP = null;
     const po = passoverItemsFor(ctx, court);
     for (const k in po) { const kp = callPos(seq, k); if (kp != null && kp < (miscTotal != null ? miscTotal : Infinity) && (poP == null || kp > poP)) poP = kp; }
-    return Math.max(curP != null ? curP + 1 : 0, hiP != null ? hiP + 1 : 0, overP != null ? overP + 1 : 0, poP != null ? poP + 1 : 0, (!seq.length && !isNaN(cur)) ? cur : 0);
+    return Math.max(curP != null ? curP + 1 : 0, hiP != null ? hiP + 1 : 0, overP != null ? overP + 1 : 0, poP != null ? poP + 1 : 0, (!seq.length && !isNaN(cur) && !isReservedItem(Math.floor(cur))) ? cur : 0);
   }
   /* Where THIS court's passovers will be taken, in one place, so the sheet and the distance
      maths can never disagree. `at` is "after"/"sequence"/"end"/"now"/null; `queue` is the
@@ -219,7 +230,7 @@
     const po = passoverItemsFor(ctx, court);
     const queue = Object.keys(po).map(k => parseInt(k, 10)).filter(n => !isNaN(n)).sort((a, b) => (callPos(seq, a) - callPos(seq, b)));
     const total = miscTotalFor(ctx, court), end = miscEnd(seq, total);
-    const cur = bc ? bc.item : null, curP = cur != null ? callPos(seq, cur) : null;
+    const cur = bc ? bc.item : null, curP = (cur != null && !isReservedItem(Math.floor(parseFloat(cur)))) ? callPos(seq, cur) : null;
     const reach = bc ? reachOf(ctx, court, seq, total, cur) : 0;
     const recalled = hasRecalledPO(ctx, court);
     // The item the sequence's own "passovers" marker sits right after — "1 TO 10 25 TO 50
@@ -405,6 +416,30 @@
       return fixedResult(fixedMins, ctx.nowMins || 0);
     }
     if (!bc) return { tier: "unknown", label: "court not on the board", short: "—" };
+    /* OUR matter is a SPECIAL BENCH matter (300s). It is never in the Miscellaneous / Regular
+       call order — it is either time-fixed (handled above, in minutes) or announced to sit
+       "after the normal work of the court is over" — so the item number must NEVER be
+       measured against the board's (owner: "Special Bench are always listed as time fixed
+       matter or with direction that they will be taken up after the work of the court or
+       courts is over ... It should never be in the sequence of the miscellaneous or regular
+       list". Real report: item 301 shown "241 away" with the court on item 62.) Inside the
+       series itself (the bench is actually sitting) distance is series arithmetic, same shape
+       as the Single/Chamber phases; otherwise there is no distance to give, only the fact. */
+    const oursSB = isSpecialBenchItem(Math.floor(parseFloat(e.itemNo)));
+    if (oursSB) {
+      const remSB = detailRemark(ctx, e.courtNo, ours);
+      if (remarkEndsToday(remSB))
+        return { tier: "passed", label: "board: " + remSB, short: remSB.length <= 12 ? remSB.toLowerCase() : "over", over: true, special: true };
+      const curSB = parseInt(bc.item, 10);
+      if (isSpecialBenchItem(curSB)) {
+        const g = Math.floor(parseFloat(ours)) - curSB;
+        if (g < 0) return { tier: "passed", label: "Special Bench has moved past this item", short: "past", gap: g, special: true };
+        if (g <= 1) return { tier: "now", label: g === 0 ? "SPECIAL BENCH — ON NOW" : "Special Bench — NEXT", short: g === 0 ? "NOW" : "NEXT", gap: g, special: true };
+        if (g <= 4) return { tier: "soon", label: "~" + g + " Special Bench items away", short: g + " away", gap: g, special: true };
+        return { tier: "later", label: g + " Special Bench items away", short: g + " away", gap: g, special: true };
+      }
+      return { tier: "later", label: "Special Bench — time-fixed, or after the court's regular work is over", short: "special bench", special: true };
+    }
     const seqTxt = (bc.sequence && bc.sequence.trim()) ? bc.sequence : ((ctx.seqByCourt || {})[String(e.courtNo)] || "");
     if (/not in session/i.test(bc.status || "")) {
       const pg = preStartGap(seqTxt, ours);
@@ -464,6 +499,11 @@
     if (remarkEndsToday(remNow))
       return { tier: "passed", label: "board: " + remNow,
                short: remNow.length <= 12 ? remNow.toLowerCase() : "over", over: true };
+    // The board is on a Special Bench item (the 2 PM bench is sitting) while OURS is a normal
+    // list item: the numbered lists are paused, not advanced — item-number arithmetic against
+    // 301 would call every list item "over" and put the court hundreds of positions ahead.
+    if (isSpecialBenchItem(curBoardNum))
+      return { tier: "later", label: "Special Bench is sitting — the list resumes after it", short: "special bench", special: true };
     const { seq, passIdx } = seqInfo(seqTxt);
     const miscTotalHere = miscTotalFor(ctx, e.courtNo);
     const curPos = callPos(seq, bc.item);          // null only when the board's item isn't a number
@@ -588,7 +628,7 @@
     return { tier: "later", label: gap + " items away" + poNote, short: gap + " away", gap, approx, poNote };
   }
 
-  const API = { classify, seqInfo, orderPos, parseSequenceLine, preStartGap, preStartResult, isMentioning, MENT_END, REG_BASE, passoverItemsFor, detailRemark, remarkEndsToday, callPos, recallPos, miscEnd, reachOf, passoverPlan, passoversBeforeOurs, clockMins, fmtClock };
+  const API = { classify, isReservedItem, isSpecialBenchItem, seqInfo, orderPos, parseSequenceLine, preStartGap, preStartResult, isMentioning, MENT_END, REG_BASE, passoverItemsFor, detailRemark, remarkEndsToday, callPos, recallPos, miscEnd, reachOf, passoverPlan, passoversBeforeOurs, clockMins, fmtClock };
   root.BoardEngine = API;
   if (typeof module !== "undefined" && module.exports) module.exports = API;
 })(typeof self !== "undefined" ? self : (typeof globalThis !== "undefined" ? globalThis : this));

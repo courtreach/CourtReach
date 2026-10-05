@@ -2066,6 +2066,7 @@ function passoverPlanText(plan){
   // already reached it (owner: "1-10, 25-50 and then passovers ... this means that passover
   // will be taken up after 50" — that fact doesn't stop being true once the court gets there).
   if(plan.at==="end") return `Taken at the end of the Miscellaneous list${plan.after!=null?` (after item ${plan.after})`:""} — ${toGo(plan.gap)}${order}.`;
+  if(plan.after!=null) return `Taken after the announced sequence (after item ${plan.after})${order}.`;
   return `When they will be taken has not been announced — usually at the end of the list${order}.`;
 }
 // The raw remark-column text for one of OUR items — "DISMISSED", "OVER", "LIST ON 25.08.2026",
@@ -2137,14 +2138,14 @@ function recordBoardPO(){
 }
 function noteItemHi(){
   if(itemHi.date!==todayISO()) itemHi={date:todayISO(),max:{}};
-  // Reserved-series numbers (800s mentioning, 1500s judgments, 1600s Single Judge, 1700s
+  // Reserved-series numbers (300s Special Bench, 800s mentioning, 1500s judgments, 1600s Single Judge, 1700s
   // Chamber) are a court PHASE, not a position in the numbered list — same reason showProg()
   // stops drawing the bar past curNum 800. Left unfiltered, one glimpse of the board sitting
   // in mentioning before Misc starts latches itemHi onto e.g. 850 for the rest of the day
   // (it only resets at midnight), which reachOf() then folds into "reach" as if the court had
   // gotten 850 items into a ~60-item Misc list — doneN saturates at miscTotal and the progress
   // bar collapses to just outstanding-passovers-plus-one "to go", however much is really left.
-  for(const c of board){ const n=parseInt(c.item,10); if(!isNaN(n) && n<800) itemHi.max[c.court]=Math.max(itemHi.max[c.court]||0,n); }
+  for(const c of board){ const n=parseInt(c.item,10); if(!isNaN(n) && !ENG.isReservedItem(n)) itemHi.max[c.court]=Math.max(itemHi.max[c.court]||0,n); }
 }
 // Is a court's CURRENT item one that was passed over and has now been recalled (owner: "if a
 // case number 6 which was passed over ... is called again after some time it should show
@@ -2547,7 +2548,7 @@ function boardCell(c, mini){
   // A timed case the engine could read as a clock IS banded — by minutes (classify's fixed
   // branch) — so "in 12 min" colours the island like "2 away" would. Only a causelist note it
   // cannot read as a time ("...after ... is over") stays out of the banding, as before.
-  const normalKs = ks.filter(x=>!x.sbTime || x.k.fixed);
+  const normalKs = ks.filter(x=>(!x.sbTime || x.k.fixed) && !(x.k.special && x.k.gap==null));
   // colour/status label follow the MOST URGENT non-time-fixed case; display order is always
   // by item number so it never reshuffles as the court progresses (owner: "constant order").
   const best=normalKs.slice().sort((a,b)=>(TIER_RANK[a.k.tier]-TIER_RANK[b.k.tier])||((a.k.gap??999)-(b.k.gap??999)))[0];
@@ -2616,10 +2617,14 @@ function boardCell(c, mini){
   ks.forEach(x=>{ if(x.sbTime && !sbSeen.has(x.sbTime)){ sbSeen.add(x.sbTime); sbList.push({item:x.e.itemNo, time:x.sbTime}); } });
   const sbMulti = new Set(ks.filter(x=>x.sbTime).map(x=>x.sbTime)).size > 1;
   const sbText = sbList.map(s=>sbMulti?`${s.item}: ${s.time}`:s.time).join(" · ");
+  // A Special Bench case with no clock time and no distance ("after the court's regular work")
+  // still needs its one calm word on the island when it is the only thing tracked here.
+  const sbNoGap = !best && ks.find(x=>x.k.special && x.k.gap==null);
   return `<div class="cell${stk} ours ${cellTier} ${idle?"idle":""}${mine?" mycase":""}" ${dc}>
     ${mine?`<div class="mycase-rib"><i class="ti ti-star-filled"></i> Your case</div>`:""}
     ${head}
-    <div class="cell-ours${cnt}"><span class="oi">${items}</span>${best?`<span class="ourlab">${esc(best.k.short||best.k.label||"—")}</span>`:""}
+    <div class="cell-ours${cnt}"><span class="oi">${items}</span>${best?`<span class="ourlab">${esc(best.k.short||best.k.label||"—")}</span>`
+      :sbNoGap?`<span class="ourlab">${esc(sbNoGap.k.short)}</span>`:""}
       ${sbText?`<span class="oursbtime"><i class="ti ti-clock"></i> ${esc(sbText)}</span>`:""}</div></div>`;
 }
 
@@ -2812,8 +2817,8 @@ function openCourtModal(court,_refetched){
   // curNum<800: a reserved-series item (803 = mentioning) is a PHASE, not a Regular-list
   // position — without the gate the hero read "Misc list done · Regular list on" while the
   // court was actually doing its morning mentioning.
-  const onRegular = miscTotal>0 && curNum>=ENG.REG_BASE && curNum<800 && reach>miscTotal;
-  const showProg=!idle && !isNaN(curNum) && curNum>0 && curNum<800 && miscTotal>0 && !onRegular;
+  const onRegular = miscTotal>0 && curNum>=ENG.REG_BASE && !ENG.isReservedItem(Math.floor(curNum)) && reach>miscTotal;
+  const showProg=!idle && !isNaN(curNum) && curNum>0 && !ENG.isReservedItem(Math.floor(curNum)) && miscTotal>0 && !onRegular;
   const leftN=showProg ? Math.max(0, miscTotal-doneN) : 0;
   const pct=showProg ? Math.max(2, Math.min(100, Math.round(doneN/miscTotal*100))) : 0;
   const planLine=passoverPlanText(plan);
@@ -2852,6 +2857,7 @@ function openCourtModal(court,_refetched){
       const it=x=>parseFloat(x.e.itemNo)||0;
       const rank=x=> x.done ? 3e9+it(x)
         : (x.k.fixed && x.k.minsAway!=null) ? 2e9+x.k.minsAway
+        : (x.k.special && x.k.gap==null) ? 2.5e9+it(x)
         : (x.k.gap!=null) ? x.k.gap
         : 1e9+it(x);
       return (rank(a)-rank(b)) || (it(a)-it(b));
