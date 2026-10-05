@@ -1122,10 +1122,29 @@ def main():
         keys = set(note_key(n) for n in notes)
         for n in want:
             if n["url"] not in pdf_text_cache:
-                data = fetch_pdf(n["url"])
-                pdf_text_cache[n["url"]] = pdf_to_text(data) if data else ""
+                # A notice PDF that fails to download used to fall back silently to its title —
+                # 5 Oct 2026, Court 2's "Justice Sandeep Mehta will not be holding the Court"
+                # became just "Notice regarding change in Court No.2" on one run. Retry, and if it
+                # still fails keep what the previous run read from the same PDF (it never changes).
+                text = ""
+                for attempt in range(3):
+                    data = fetch_pdf(n["url"])
+                    text = pdf_to_text(data) if data else ""
+                    if text and text.strip():
+                        break
+                    time.sleep(2 * (attempt + 1))
+                if not (text and text.strip()):
+                    print("WARNING: notice PDF unreadable after 3 tries — {}".format(n["url"]))
+                pdf_text_cache[n["url"]] = text
                 time.sleep(0.2)
             text = pdf_text_cache[n["url"]]
+            if not (text and text.strip()):
+                old_day = prev_by_raw.get(date_str, {})
+                kept = [x for x in old_day.get("notes", []) if x.get("url") == n["url"]]
+                if kept and any(x["text"] != n["title"] for x in kept):
+                    notes[:] = [x for x in notes if x.get("url") != n["url"]] + kept
+                    print("  {}: kept last run's text for {}".format(date_str, n["title"][:60]))
+                    continue
             if re.search(r"oral\s+mentioning", n["title"], re.I):
                 ment = parse_mentioning(text)
                 if ment:

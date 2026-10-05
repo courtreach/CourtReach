@@ -2684,10 +2684,13 @@ function benchSummaries(court, date){
   }
   return out;
 }
+// Same sentence, different print: "FOLLOWING LEFT OVER MATTERS ..." vs "LEFT OVER MATTERS ...",
+// "PART-HEARD" vs "PART- HEARD" — compared without those to catch the repeat.
+const noteKey = t => t.toUpperCase().replace(/\b(FOLLOWING|NOW)\b/g,"").replace(/[^A-Z0-9]/g,"");
 function courtNotes(court, date){
   const c=String(parseInt(court,10)), seen=new Set(), out=[];
   for(const t of benchSummaries(court, date)){
-    const k=t.toUpperCase().replace(/[^A-Z0-9]/g,""); if(!seen.has(k)){ seen.add(k); out.push(t); }
+    const k=noteKey(t); if(!seen.has(k)){ seen.add(k); out.push(t); }
   }
   for(const n of (courtUpdates?.by_date?.[date||todayISO()]?.notes||[])){
     if(!(n.courts||[]).includes(c)) continue;
@@ -2697,10 +2700,14 @@ function courtNotes(court, date){
     // Chamber Judge sittings ("We are not concerned with when they are sitting or not sitting").
     const t=String(n.text||"").replace(/\s*\bDROP\s+NOTE\b.*$/i,"").replace(/\s+/g," ").trim();
     if(!t || /single\s+judge|\bchambers?\b/i.test(t)) continue;
-    const k=t.toUpperCase().replace(/[^A-Z0-9]/g,""); if(seen.has(k)) continue;
+    const k=noteKey(t); if(seen.has(k)) continue;
     seen.add(k); out.push(t);
   }
-  return out;
+  // "FOLLOWING LEFT OVER MATTERS OF THIS COURT WILL NOW BE TAKEN UP ... BY THIS BENCH" is the
+  // section label of the bench taking those matters — redundant once the court already has a
+  // note saying who takes its left-over matters, and when.
+  const fuller = out.filter(t=>/LEFT\s+OVER\s+MATTERS/i.test(t) && !/^FOLLOWING\b/i.test(t));
+  return fuller.length ? out.filter(t=>!/^FOLLOWING\s+LEFT\s+OVER\s+MATTERS\b.*\bBY\s+THIS\s+(SPECIAL\s+)?BENCH\b/i.test(t)) : out;
 }
 // One notice per row, numbered serially when there is more than one (owner: "They should be
 // separated and listed serially") — never run together with line breaks as before.
