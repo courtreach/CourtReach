@@ -164,6 +164,16 @@ already-cached data. Homepage-derived notes carry their PDF `url` so a re-run RE
 that notice produced rather than stacking duplicates. `PARSER_VERSION` 12 forces the re-clean —
 remember the 25 Sep lesson: after a version bump, WATCH the run to completion.
 
+**Homepage fetch needs a browser User-Agent.** `www.sci.gov.in` answers **403** to the bot
+User-Agent the rest of `fetch_causelist.py` uses (`api.sci.gov.in` and the upload CDN accept
+it). The first live runs of the homepage fetch therefore came back empty *silently* — no
+mentioning list, no bench-change notices (5 Oct 2026). `fetch_home_notices()` uses
+`HOME_HEADERS` (browser UA) and now prints a WARNING on any failure. Only titles matching
+`NOTICE_TITLE_KEEP_RE` (change / cancel / not sitting / composition / special bench /
+sitting) become court notes; the daily "Helpline numbers of Court Masters" circular (names
+every court) and "Advance List of Chamber Matters" are skipped. Local testing caveat: this
+Mac's Python certificate store is broken, so test the homepage with `curl -A <ua>`, not urllib.
+
 **The daily MENTIONING LIST is real and published** — same homepage strip, "List of oral
 mentioning matters before Hon'ble Courts on <date>". Its entries are numbered
 "<court>.<801+>" ("2.801", "16.801") — court and 800-series item in one token —

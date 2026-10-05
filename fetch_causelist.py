@@ -249,12 +249,31 @@ def parse_home_notices(html):
     return out
 
 
+# www.sci.gov.in's firewall answers 403 to the bot User-Agent the rest of this script uses
+# (api.sci.gov.in and the upload CDN accept it) — verified 5 Oct 2026: the first live run of
+# the homepage fetch silently came back empty, so that day's mentioning list and "change in
+# Court No.2" notice never reached the app. The homepage alone gets a browser User-Agent.
+HOME_HEADERS = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+                              "(KHTML, like Gecko) Chrome/126 Safari/537.36"}
+
+
+NOTICE_TITLE_KEEP_RE = re.compile(
+    r"\bchanges?\b|cancel|not\s+(?:be\s+)?(?:sit|sitting|holding)|composition|re-?constitut|"
+    r"special\s+bench|\bsitting\b", re.I)
+NOTICE_TITLE_SKIP_RE = re.compile(r"helpline|advance\s+list", re.I)
+
+
 def fetch_home_notices():
     try:
-        req = urllib.request.Request(SC_HOME, headers=HEADERS)
+        req = urllib.request.Request(SC_HOME, headers=HOME_HEADERS)
         with urllib.request.urlopen(req, timeout=60) as resp:
-            return parse_home_notices(resp.read().decode("utf-8", "replace"))
-    except Exception:
+            out = parse_home_notices(resp.read().decode("utf-8", "replace"))
+        if not out:
+            print("WARNING: sci.gov.in homepage fetched but no listing notices parsed")
+        return out
+    except Exception as e:
+        # loud, not silent — a quiet [] here is exactly how the first failure went unnoticed
+        print("WARNING: sci.gov.in homepage fetch failed: {}: {}".format(type(e).__name__, e))
         return []
 
 
@@ -927,6 +946,13 @@ def main():
                     day["mentioning"] = ment
                     print("  {}: mentioning list — {} matters across {} courts".format(
                         date_str, sum(len(v) for v in ment.values()), len(ment)))
+                continue
+            # Only bench-change / sitting notices become court notes. The same homepage strip
+            # also carries the daily "Helpline numbers of Court Masters" circular (it names
+            # every court, so it would have stuck a VC-helpline note on all sixteen) and
+            # "Advance List of Chamber Matters" (a case table that parses to noise) — both seen
+            # live on 5 Oct 2026.
+            if not NOTICE_TITLE_KEEP_RE.search(n["title"]) or NOTICE_TITLE_SKIP_RE.search(n["title"]):
                 continue
             # re-running with the same notice replaces what it produced last time (its split
             # may have changed) instead of piling duplicates on top
