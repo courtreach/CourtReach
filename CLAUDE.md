@@ -225,6 +225,12 @@ rather than lost. A genuine fresh fetch still overwrites normally — verified b
 directions. Lesson for next time: don't trigger `workflow_dispatch` on a `PARSER_VERSION`
 bump without watching the run to completion.
 
+**Second fetch bug, same day (5 Oct 2026) — notices fetched, then discarded.** On a
+cache-reuse day `build_for_date` returned the cached notes/specialBenches OBJECTS; main()
+merged homepage notices into them in place, which also edited `prev_by`, so the "No change
+since last run" check always passed and nothing was written. Fixed with `copy.deepcopy` on the
+reuse path; reproduced both ways. Rule: anything main() mutates must never alias `prev_by`.
+
 **Court sheet case order** — the sheet's "Your/Chamber cases here" list is sorted along
 the call order, nearest first (owner: "The cases closer should be on top even though their
 item number is greater"); time-fixed cases follow (soonest clock first), finished ones
