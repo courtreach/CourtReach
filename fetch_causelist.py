@@ -21,6 +21,7 @@ List-type PDF codes (verified against real 13-07-2026 PDFs):
 Each publishes _1 (main) and, some days, _2 (supplementary).
 """
 
+import copy
 import io
 import json
 import re
@@ -984,6 +985,13 @@ def build_for_date(date_str, prev_day=None, prev_sizes=None):
                 sizes[suffix] = s
             time.sleep(0.15)
     if prev_day is not None and sizes == (prev_sizes or {}):
+        # COPIES, not the cached objects themselves: main() later merges the homepage notices
+        # into these lists in place, and handing back the same objects meant prev_by was edited
+        # too — so by_date always compared equal to it, "No change since last run" fired, and a
+        # notice that arrived after the causelist PDFs stopped changing was never written
+        # (5 Oct 2026: Court 2's "Justice Sandeep Mehta will not be holding the Court" fetched
+        # fine and was then thrown away).
+        prev_day = copy.deepcopy(prev_day)
         return (prev_day.get("lists_found", []), prev_day.get("lists", {}),
                 prev_day.get("notes", []), prev_day.get("specialBenches", []), sizes, True)
     lists_found, lists = [], {}
