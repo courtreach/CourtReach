@@ -51,7 +51,7 @@ OUTPUT_FILE = "court-updates.json"
 # based change-detection reuses a cached parse when the PDF is unchanged; without
 # this, a parser FIX never reaches already-cached dates (their PDFs don't change).
 # A version mismatch forces a full re-parse of every date in the window.
-PARSER_VERSION = 11  # bumped: also capture operational NOTE:- blocks (bench/sitting notes)
+PARSER_VERSION = 12  # bumped: notes no longer swallow table debris; Single Judge/Chamber notes dropped
 HEADERS = {"User-Agent": "Mozilla/5.0 (compatible; courtreach-causelist-bot/1.0)"}
 
 COURT_RE = re.compile(r"COURT\s*NO\.?\s*[:\-]?\s*([0-9]+)", re.I)
@@ -126,6 +126,34 @@ NOTE_SKIP_RE = re.compile(r"AS\s+PER\s+CIRCULAR|FRESH\s+MATTERS|APPRECIATED|LIST
 NOTE_COURT_RE = re.compile(r"COURT\s*NOS?\.?\s*:?\s*([0-9]{1,2})", re.I)
 
 
+# Notices about Single Judge / Chamber Judge sittings are deliberately NOT tracked (owner:
+# "Ignore any notices of Single Judge or Chamber Judge notings. We are not concerned with when
+# they are sitting or not sitting").
+IGNORABLE_NOTE_RE = re.compile(r"single\s+judge|\bchambers?\b", re.I)
+# A table that follows a NOTE (a "DROP NOTE:-" listing of items shifted to another bench, with
+# its "Item No. Case No. Petitioner/Respondent Advocate Shifted to Reason" header) is list
+# content, not part of the note — it used to be swallowed into the note's text.
+NOTE_JUNK_RE = re.compile(r"\bDROP\s+NOTE\b|^Item\s+No\.|^Case\s+No\.|^Shifted\s+to\b", re.I)
+_ABBREV = {"mr", "mrs", "ms", "dr", "hon", "no", "nos", "dt", "sh", "smt", "sri", "vs", "jr", "sr", "st", "m/s", "etc"}
+
+
+def split_sentences(text):
+    """Sentence-split a notice body WITHOUT breaking on 'Mr.', 'K.V.', 'P.M.', 'Court No.' —
+    a split only happens before a capital letter, and a fragment ending in an abbreviation or
+    an initial is glued back to what follows."""
+    parts = re.split(r"(?<=[.;])\s+(?=[A-Z\"'(])", re.sub(r"\s+", " ", text or "").strip())
+    out = []
+    for frag in parts:
+        if out:
+            last = out[-1].split(" ")[-1].rstrip(".").lower()
+            lastraw = out[-1].split(" ")[-1]
+            if last in _ABBREV or re.fullmatch(r"(?:[A-Za-z]\.)+[A-Za-z]?\.?", lastraw):
+                out[-1] += " " + frag
+                continue
+        out.append(frag)
+    return [x for x in out if x]
+
+
 def parse_day_notes(text):
     """[{'text': ..., 'courts': ['17', ...]}] — deduped operational NOTE:- blocks. A note
     that names no court ("THIS BENCH WILL RE-ASSEMBLE ... OF THIS COURT") belongs to the
@@ -133,11 +161,11 @@ def parse_day_notes(text):
     out, seen, acc, taken, cur = [], set(), None, 0, None
     def flush():
         nonlocal acc
-        t = re.sub(r"\s+", " ", acc or "").strip(" []-·")
+        t = re.split(r"\bDROP\s+NOTE\b", re.sub(r"\s+", " ", acc or ""), maxsplit=1, flags=re.I)[0].strip(" []-·")
         acc = None
         if not t or len(t) < 15:
             return
-        if NOTE_SKIP_RE.search(t) or not NOTE_KEEP_RE.search(t):
+        if NOTE_SKIP_RE.search(t) or not NOTE_KEEP_RE.search(t) or IGNORABLE_NOTE_RE.search(t):
             return
         courts = sorted(set(str(int(c)) for c in NOTE_COURT_RE.findall(t)))
         if not courts and cur:
@@ -168,7 +196,8 @@ def parse_day_notes(text):
                 flush()
                 continue
             # a note is a few lines at most — a block that runs on is list content, not a note
-            if NOTE_END_RE.match(line) or NOTE_LINE_RE.match(line) or struct.match(line) or taken >= 6:
+            if NOTE_END_RE.match(line) or NOTE_LINE_RE.match(line) or struct.match(line) \
+                    or NOTE_JUNK_RE.search(line) or taken >= 6:
                 flush()
             else:
                 acc += " " + line
@@ -265,17 +294,32 @@ def courts_in(text):
     return sorted(courts, key=int)
 
 
-def notice_note(title, text):
-    """One note entry from a notice PDF — the body when it extracts as text, the (already
-    informative) homepage title when it does not (a scanned notice)."""
+def notice_notes(title, text):
+    """The separate notices inside one homepage notice PDF — a single bulletin often carries
+    several unrelated bench changes ("The Special Bench ... stands cancelled. The Single Judge
+    Bench ... stands cancelled."), which used to be stored as ONE run-together text. Split per
+    sentence, glue a court-less trailing sentence ("Future dates ... will be notified shortly.")
+    back onto the one before it, and drop Single Judge / Chamber Judge ones entirely. When the
+    PDF is a scan with no text, the (already informative) homepage title stands in."""
     body = ""
     if text:
         drop = re.compile(r"^(SUPREME COURT OF INDIA|NOTICE$|Dated this|By order|sd/?-?$|"
                           r"Additional Registrar|Assistant Registrar|Copy to|Page \d+)", re.I)
         keep = [l.strip() for l in text.splitlines() if l.strip() and not drop.match(l.strip())]
         body = re.sub(r"\s+", " ", " ".join(keep)).strip()
-    t = body if len(body) >= 30 else title
-    return {"text": t[:450], "courts": courts_in(t + " " + title)}
+    sentences = split_sentences(body if len(body) >= 30 else title)
+    merged = []
+    for sent in sentences:
+        if merged and not courts_in(sent) and not re.search(r"\b(bench|court|justice)\b", sent, re.I):
+            merged[-1] += " " + sent
+        else:
+            merged.append(sent)
+    out = []
+    for sent in merged:
+        if IGNORABLE_NOTE_RE.search(sent):
+            continue
+        out.append({"text": sent[:300], "courts": courts_in(sent) or courts_in(title)})
+    return out
 
 
 # Page-header boilerplate repeated at the top of every page. When an item's
@@ -760,7 +804,8 @@ def build_for_date(date_str, prev_day=None, prev_sizes=None):
             lists_found.append("{} ({})".format(human, variant))
             # operational NOTE:- blocks (a judge sitting elsewhere, a changed bench, a
             # court not sitting) — deduped across every list and variant of the day
-            for n in parse_day_notes(text):
+            # (not from the Chamber / Single Judge lists at all — owner doesn't track those)
+            for n in ([] if human in ("Chamber", "Single Judge") else parse_day_notes(text)):
                 k = re.sub(r"[^A-Z0-9]", "", n["text"].upper())
                 if k not in note_keys:
                     note_keys.add(k)
@@ -883,12 +928,17 @@ def main():
                     print("  {}: mentioning list — {} matters across {} courts".format(
                         date_str, sum(len(v) for v in ment.values()), len(ment)))
                 continue
-            note = notice_note(n["title"], text)
-            k = note_key(note)
-            if k not in keys:
-                keys.add(k)
-                notes.append(note)
-                print("  {}: notice — {}".format(date_str, note["text"][:80]))
+            # re-running with the same notice replaces what it produced last time (its split
+            # may have changed) instead of piling duplicates on top
+            notes[:] = [x for x in notes if x.get("url") != n["url"]]
+            keys = set(note_key(x) for x in notes)
+            for note in notice_notes(n["title"], text):
+                note["url"] = n["url"]
+                k = note_key(note)
+                if k not in keys:
+                    keys.add(k)
+                    notes.append(note)
+                    print("  {}: notice — {}".format(date_str, note["text"][:80]))
 
     # Nothing new anywhere -> leave the file untouched so the workflow commits
     # nothing and Pages doesn't rebuild. (generated_at = time of last CHANGE.)

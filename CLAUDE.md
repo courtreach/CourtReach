@@ -146,6 +146,24 @@ today's and picked-date sheets both):
    Chief Justice's Court = 1). Bench cancellations / "will not sit" notices arrive here.
    Fetched fresh every run in main() — notices land intraday; their PDFs never change.
 
+**Notice hygiene (owner, 5 Oct 2026).** (a) A recalled passover shows on the island as plain
+"P32" — a bare P butted against the number, no badge, no gap (was a boxed "PO" tag).
+(b) Single Judge and Chamber Judge notices are IGNORED everywhere — owner: "We are not
+concerned with when they are sitting or not sitting". Enforced twice: at source
+(`IGNORABLE_NOTE_RE`: NOTE:- blocks are not harvested from the Chamber / Single Judge list
+PDFs at all, and any note or homepage-notice sentence mentioning either is dropped) and again
+at display in `courtNotes()` (covers data already cached). (c) Notices must be SEPARATE and
+SERIAL: `noticeHTML()` renders one `<li>` per notice, numbered when there is more than one;
+`notice_notes()` splits a multi-part bulletin per sentence (abbreviation-safe: "Mr.", "K.V.",
+"P.M.", "Court No." never split; a court-less trailing sentence glues to the one before) so a
+bulletin carrying a Special Bench cancellation AND a Single Judge one yields only the first.
+(d) The "jumbled" text was real parser debris: a NOTE:- block ran on into the next table
+("DROP NOTE:- Item No. Case No. Petitioner/Respondent Advocate Shifted to Reason …").
+`NOTE_JUNK_RE` now ends a note at that table; `courtNotes()` also cuts at "DROP NOTE" for
+already-cached data. Homepage-derived notes carry their PDF `url` so a re-run REPLACES what
+that notice produced rather than stacking duplicates. `PARSER_VERSION` 12 forces the re-clean —
+remember the 25 Sep lesson: after a version bump, WATCH the run to completion.
+
 **The daily MENTIONING LIST is real and published** — same homepage strip, "List of oral
 mentioning matters before Hon'ble Courts on <date>". Its entries are numbered
 "<court>.<801+>" ("2.801", "16.801") — court and 800-series item in one token —

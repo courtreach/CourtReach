@@ -202,11 +202,10 @@ main#main{flex:1;min-height:0;overflow-y:auto;padding:8px 12px 12px;-webkit-over
 .ct-num{font-family:var(--mono);font-size:24px;font-weight:800;color:var(--mut);line-height:1;letter-spacing:.5px}
 .ct-num .cd{color:var(--navy)}
 .on-num{font-family:var(--mono);font-size:21px;font-weight:700;color:var(--ink);line-height:.95;margin-top:2px}
-/* A court's current item that was passed over and has now been recalled (owner: "if it was
-   passed over and then taken up ... it should show PO6") — a small tag riding in front of the
-   item number, not a separate line, so it reads as one unit ("PO 6") at a glance. */
-.po-tag{display:inline-block;font-size:.55em;font-weight:800;letter-spacing:.3px;color:#fff;
-  background:#33507e;border-radius:5px;padding:1px 4px;margin-right:3px;vertical-align:2px}
+/* A court's current item that was passed over and has now been recalled shows as "P32" —
+   a plain P butted straight against the number, no badge and no gap (owner: "shown as P32
+   and not PO32. There should not be any gap between the word P and the number"). */
+.po-tag{display:inline;font:inherit;letter-spacing:0;color:inherit;background:none;padding:0;margin:0}
 /* mini tiles: stacked, small chip (no split) */
 .cell.mini .cell-head{flex-direction:column;align-items:center;gap:2px}
 .cell.mini .ct-side{flex:none;background:none;border-radius:0;padding:0}
@@ -437,7 +436,12 @@ main#main{flex:1;min-height:0;overflow-y:auto;padding:8px 12px 12px;-webkit-over
 .cs-notice{display:flex;gap:7px;align-items:flex-start;font-size:11.5px;line-height:1.5;
   color:#e7d9b0;margin-top:9px;padding:7px 10px;background:rgba(194,168,106,.10);
   border:1px solid rgba(194,168,106,.35);border-radius:10px}
-.cs-notice i{flex:none;margin-top:1px}
+.cs-notice i{flex:none;margin-top:2px}
+.cs-nlist{margin:0;padding-left:17px;flex:1;min-width:0}
+.cs-nlist li{margin:0 0 6px;padding-left:2px}
+.cs-nlist li:last-child{margin-bottom:0}
+.cs-nlist li::marker{font-weight:700;color:var(--gold)}
+.cs-nlist.one{list-style:none;padding-left:0}
 /* The one action. Gold-edged rather than filled: present and findable, but it never
    out-shouts the case you came to check. */
 /* Centred on its own row (owner: "Center the Join hearing button") rather than pinned to
@@ -2527,10 +2531,10 @@ function boardCell(c, mini){
   const splitHead=`<div class="cell-head">
     <div class="ct-side"><span class="ct-num">C<span class="cd">${esc(c.court)}</span></span></div>
     <div class="on-side">${idle?`<span class="on-num">–</span>`
-      :`<span class="on-lab">on</span><span class="on-num">${poNow?`<span class="po-tag" title="Passed over, now recalled">PO</span>`:""}${esc(onLabel)}</span>`}</div>
+      :`<span class="on-lab">on</span><span class="on-num">${poNow?`<span class="po-tag" title="Passed over, now recalled">P</span>`:""}${esc(onLabel)}</span>`}</div>
   </div>`;
   const stackHead=`<div class="cell-topbar">C<span class="cd">${esc(c.court)}</span></div>
-    <div class="cell-on"><span class="cell-on-num">${idle?"–":`${poNow?`<span class="po-tag" title="Passed over, now recalled">PO</span>`:""}${esc(onLabel)}`}</span></div>`;
+    <div class="cell-on"><span class="cell-on-num">${idle?"–":`${poNow?`<span class="po-tag" title="Passed over, now recalled">P</span>`:""}${esc(onLabel)}`}</span></div>`;
   const head = ISLAND_STACKED ? stackHead : splitHead;
   const stk = ISLAND_STACKED ? " stk" : "";
   if(!ours.length && !mine){ return `<div class="cell${stk}${mini?" mini":""}${idle?" idle":""}" ${dc}>${head}</div>`; }
@@ -2642,9 +2646,25 @@ function courtCoram(court){
    authoritative source; fetch_causelist.py captures them, keyed to the courts each note
    names (or the section it was printed in). Quoted verbatim, house style. */
 function courtNotes(court, date){
-  const c=String(parseInt(court,10));
-  return (courtUpdates?.by_date?.[date||todayISO()]?.notes||[])
-    .filter(n=>(n.courts||[]).includes(c)).map(n=>n.text);
+  const c=String(parseInt(court,10)), seen=new Set(), out=[];
+  for(const n of (courtUpdates?.by_date?.[date||todayISO()]?.notes||[])){
+    if(!(n.courts||[]).includes(c)) continue;
+    // Cut the table debris an earlier parser let a note swallow ("… DROP NOTE:- Item No.
+    // Case No. Petitioner/Respondent Advocate Shifted to Reason …") — that was the "jumbled and
+    // intermingled" text — then drop what the owner told us not to track: Single Judge and
+    // Chamber Judge sittings ("We are not concerned with when they are sitting or not sitting").
+    const t=String(n.text||"").replace(/\s*\bDROP\s+NOTE\b.*$/i,"").replace(/\s+/g," ").trim();
+    if(!t || /single\s+judge|\bchambers?\b/i.test(t)) continue;
+    const k=t.toUpperCase().replace(/[^A-Z0-9]/g,""); if(seen.has(k)) continue;
+    seen.add(k); out.push(t);
+  }
+  return out;
+}
+// One notice per row, numbered serially when there is more than one (owner: "They should be
+// separated and listed serially") — never run together with line breaks as before.
+function noticeHTML(list){
+  if(!list.length) return "";
+  return `<div class="cs-notice"><i class="ti ti-info-circle"></i><ol class="cs-nlist${list.length>1?"":" one"}">${list.map(t=>`<li>${esc(t)}</li>`).join("")}</ol></div>`;
 }
 /* The MENTIONING series' place in this court's day (owner: "calculate the mentioning
    series which will be always taken up before the miscellaneous and regular lists and
@@ -2828,7 +2848,7 @@ function openCourtModal(court,_refetched){
         <span class="cs-id">Court <b>${esc(court)}</b></span>
       </div>
       ${coram?`<div class="cs-coram">${coramHTML(coram)}</div>`:""}
-      ${notes.length?`<div class="cs-notice"><i class="ti ti-info-circle"></i> <span>${notes.map(esc).join("<br>")}</span></div>`:""}
+      ${noticeHTML(notes)}
       <div class="cs-prog">
         <div class="cs-progline">
           <span class="cs-on ${idle?"idle":""}">${idle?"Not sitting":`On item ${esc(bc?.item||"·")}`}</span>
@@ -3072,7 +3092,7 @@ function openDateCourtModal(court,date){
         <span class="cs-id">Court <b>${esc(court)}</b></span>
       </div>
       ${coram?`<div class="cs-coram">${coramHTML(coram)}</div>`:""}
-      ${courtNotes(court,date).length?`<div class="cs-notice"><i class="ti ti-info-circle"></i> <span>${courtNotes(court,date).map(esc).join("<br>")}</span></div>`:""}
+      ${noticeHTML(courtNotes(court,date))}
       <div class="cs-prog"><div class="cs-progline">
         <span class="cs-on idle">${esc(fmtDateLong(date))}</span>
         ${totals.length?`<span class="cs-of">${esc(totals.map(t=>t.split(": ")[1]).join(" · "))} listed</span>`:""}
