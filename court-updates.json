@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-05T07:18:30.286462Z",
+  "generated_at": "2026-10-05T07:23:52.288573Z",
   "parser_version": 12,
   "window": [
     "2026-10-05",
@@ -3217,8 +3217,99 @@
             "10",
             "4"
           ]
+        },
+        {
+          "text": "Hon'ble Mr. Justice Sandeep Mehta will not be holding the Court on 05.10.2026 (Monday).",
+          "courts": [
+            "2"
+          ],
+          "url": "https://cdnbbsr.s3waas.gov.in/s3ec0490f1f4972d133619a60c30f3559e/uploads/2026/10/2026100410.pdf"
+        },
+        {
+          "text": "Hence, the sitting of the Bench comprising Hon'ble Mr. Justice Vikram Nath, Hon'ble Mr. Justice Augustine George Masih and Hon'ble Mr. Justice Sandeep Mehta in Court No. 2 on 05.10.2026 (Monday) stands cancelled and the matters listed before this Bench will now be taken up for hearing by the Bench c",
+          "courts": [
+            "2"
+          ],
+          "url": "https://cdnbbsr.s3waas.gov.in/s3ec0490f1f4972d133619a60c30f3559e/uploads/2026/10/2026100410.pdf"
+        },
+        {
+          "text": "Furthermore, the sitting of Special Bench constituted in Court No. 2 comprising Hon'ble Mr. Justice Vikram Nath and Hon'ble Mr. Justice Sandeep Mehta on 05.10.2026 (Monday) at 2:00 p.m. also stands cancelled and the matters listed before this Bench will not be taken up for hearing.",
+          "courts": [
+            "2"
+          ],
+          "url": "https://cdnbbsr.s3waas.gov.in/s3ec0490f1f4972d133619a60c30f3559e/uploads/2026/10/2026100410.pdf"
         }
-      ]
+      ],
+      "mentioning": {
+        "2": {
+          "801": "1511MISC Mishra",
+          "802": "",
+          "803": "27023/23 (S. Venkata Kavita vs. State of",
+          "804": "(Balasaheb Parshuram Phengse vs. The Ms. Surbhi Kapoor",
+          "805": "6896/26 (Sundeep Pundamale Selvaraj vs. 2102 Mr. D. Abhinav Rao",
+          "806": "2105 Mr. Harisha S.R."
+        },
+        "3": {
+          "801": "6296/26 (Indi Vivekananda vs. Mantri Consumer Mr. Pallav Mongia",
+          "802": "Mr. Satyajeet Kumar",
+          "803": "Housing &",
+          "804": "(Medical Superintendent vs. Swapnil",
+          "805": "(Gazanfar Ali vs. Union territory of Jammu Land acquisition Mr. Shubham Saigal",
+          "806": "Mr. Rahul Gupta",
+          "807": "(Santosh vs. The State of Maharashtra) Ms. Anagha S. Desai",
+          "808": "3635/24 @ D. No. 10681/24 (Kamaraj vs. 1511LI Mr. A. Karthik",
+          "809": "(M/s Guruvayoor Infrastructure Pvt. Ltd.",
+          "810": ". 1501TEN Mr. Rajat Joseph"
+        },
+        "4": {
+          "801": "51920/25 (Union of India vs. Himanshu 1511MISC Mr. Dheeraj P. Deo",
+          "802": "2101 Mr. G. Balaji"
+        },
+        "5": {
+          "801": "(Aditi vs. National Board of Examination in Educational Ms. Sukriti Bhatnagar"
+        },
+        "6": {
+          "801": "1512",
+          "802": "(PIP)",
+          "803": "Corporation of Greater Mumbai vs. Rekha Housing &"
+        },
+        "7": {
+          "801": "acquisition and Ms. Shruti Bisht",
+          "802": "1501MISC Mr. Kush Chaturvedi"
+        },
+        "8": {
+          "801": "1511MISC Mr. D. Kumanan",
+          "802": ""
+        },
+        "9": {
+          "801": "1271/23 @ D. No. 20179/22 (Dharampal"
+        },
+        "10": {
+          "801": "51545/26 (Jayveersinh Vikramsinh Jadeja 1511RB Crl. Mr. Ishaan George",
+          "802": "28044/26 (Vijaypal Singh vs. State of 1511MISC Ms. Niti Richhariya",
+          "803": "Mr. Shardul S. Shroff",
+          "804": "",
+          "805": "1511RB Dr. Nanda Kishore"
+        },
+        "11": {
+          "801": "Ms. Prerna Singh",
+          "802": "Mr. Sandeep Singh",
+          "803": "31806/26 (B Kunal Kumar Dora vs. Union",
+          "804": "54840/25 (Alagiri vs. State Represented by Mr. B. Karunakaran",
+          "805": "35031/26 (Ajit Kumar vs. The State of 1511AB Mr. T.S. Nanda Kumar",
+          "806": "15554/25 (Satinder Pal Kaur vs. Amarjit Mr. Zeeshan Diwan",
+          "807": "42820/26 (Sachin Choudhary vs. State of 1511RB Mr. Sugandh Rathor"
+        },
+        "13": {
+          "801": "1511LI",
+          "802": "(Mahadev vs. Chandan Balkrishna Mr. Satyakam Sharma"
+        },
+        "16": {
+          "801": "32426/26 (Shankar Chhatria vs. State of 1504RB",
+          "802": "1511LI Mr. Sugandh Rathor",
+          "803": "1508TWO Ms. Shilpa Singh"
+        }
+      }
     },
     "2026-10-06": {
       "lists_found": [
