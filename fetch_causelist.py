@@ -52,7 +52,7 @@ OUTPUT_FILE = "court-updates.json"
 # based change-detection reuses a cached parse when the PDF is unchanged; without
 # this, a parser FIX never reaches already-cached dates (their PDFs don't change).
 # A version mismatch forces a full re-parse of every date in the window.
-PARSER_VERSION = 15  # bumped: notice lines worded "... to sit ..." (owner, 7 Oct 2026)
+PARSER_VERSION = 16  # bumped: bracketed notes run to "]"; left-over-in-another-court / after-special-bench phrasings
 HEADERS = {"User-Agent": "Mozilla/5.0 (compatible; courtreach-causelist-bot/1.0)"}
 
 COURT_RE = re.compile(r"COURT\s*NO\.?\s*[:\-]?\s*([0-9]+)", re.I)
@@ -241,7 +241,8 @@ def judges_in(text):
             words = []
             for tok in rest.split(" "):
                 bare = tok.strip(",;.()")
-                if not bare or bare.upper() in _NAME_STOP or re.match(r"\d", bare) or tok.startswith("("):
+                if not bare or bare.upper() in _NAME_STOP or re.match(r"\d", bare) or tok.startswith("(") \
+                        or bare in ("—", "–", "-") or re.match(r"HON'?BLE$", bare, re.I):
                     break
                 words.append(_title_word(bare if not re.fullmatch(r"(?:[A-Za-z]\.)+", tok.rstrip(",;")) else tok.rstrip(",;")))
                 if tok.endswith(",") or tok.endswith(";") or (tok.endswith(".") and not re.fullmatch(r"(?:[A-Za-z]\.)+", tok)):
@@ -416,8 +417,15 @@ def interpret_sentence(s, section=None):
 
     # 9. left-over matters taken up by a named bench at a time
     if re.search(r"LEFT\s+OVER\s+MATTERS", t, re.I) and re.search(r"FOLLOWING\s+BENCH|BY\s+THE\s+BENCH", t, re.I) and section:
-        return [{"courts": [section], "text": "Left-over matters to be taken up{} by {}".format(
-                    " from " + clock if clock else "", names_phrase(js) if js else "another bench"),
+        room = re.search(r"TAKEN\s+UP\s+IN\s+COURT\s+NO\.?\s*(\d{1,2})", t, re.I)
+        if re.search(r"ASSEMBLE\s+AFTER\s+THE\s+HEARING\s+IN\s+SPECIAL\s+BENCH", t, re.I):
+            # the clock here is the SPECIAL BENCH's sitting, not when left-overs begin
+            when = " after the Special Bench hearing here{} is over".format(" (" + clock + ")" if clock else "")
+        else:
+            when = " from " + clock if clock else ""
+        return [{"courts": [section], "text": "Left-over matters to be taken up{}{} by {}".format(
+                    " in Court " + str(int(room.group(1))) if room else "", when,
+                    names_phrase(js) if js else "another bench"),
                  "keys": ["leftover|bench|{}".format(section)]}]
     return None
 
@@ -592,6 +600,7 @@ def parse_day_notes(text):
     in_block = False      # inside a NOTE:- block
     sb_block = False      # this block is a special bench's own section header
     acc = None            # current note text being accumulated
+    bracketed = False     # the open note began with "[" — it runs to its "]", whatever follows
     taken = 0
     last = None           # last emitted note (to append trailing judge names)
     struct = re.compile(r"^(MISCELLANEOUS\s+HEARING|REGULAR\s+HEARING|SUPPLEMENTARY\s+LIST|SNo\.|"
@@ -645,7 +654,7 @@ def parse_day_notes(text):
             in_block, taken = True, 0
             frag = (m.group(1) or "").strip()
             if frag:
-                acc = frag
+                acc, bracketed = frag, frag.startswith("[")
                 if "]" in frag:
                     acc = frag[:frag.find("]")]
                     if re.fullmatch(r"\[?\s*SPECIAL\s+BENCH\s*", acc, re.I):
@@ -654,7 +663,11 @@ def parse_day_notes(text):
             continue
         if not in_block:
             continue
-        if NOTE_END_RE.match(line) or struct.match(line) or NOTE_JUNK_RE.search(line) or ITEM_LINE_RE.match(line):
+        # A wrapped note line can START with a number ("[... WILL BE TAKEN UP IN COURT NO." /
+        # "18 AT 2.00 P.M. BY THE FOLLOWING BENCH]", 8 Oct 2026) — inside an open bracket that is
+        # note text, not an item row; reading it as an item cut the note off mid-sentence.
+        if NOTE_END_RE.match(line) or struct.match(line) or NOTE_JUNK_RE.search(line) or \
+                (ITEM_LINE_RE.match(line) and not (acc is not None and bracketed)):
             end_block()
             continue
         if acc is not None:
@@ -684,7 +697,7 @@ def parse_day_notes(text):
             if re.match(r"\s*SPECIAL\s+BENCH\s*\]?\s*$", body, re.I):
                 sb_block = True
                 continue
-            acc, taken = body, 0
+            acc, taken, bracketed = body, 0, True
             if "]" in body:
                 acc = body[:body.find("]")]
                 flush()
@@ -694,7 +707,7 @@ def parse_day_notes(text):
                 last["text"] = (last["text"] + " — " + re.sub(r"\s+", " ", line)).strip()[:400]
             continue
         # an unbracketed note sentence ("HON'BLE MR. JUSTICE K.V. VISWANATHAN WILL SIT ...")
-        acc, taken = line, 0
+        acc, taken, bracketed = line, 0, False
     if acc is not None:
         flush()
     # interpret each raw note into plain per-court lines; the same FACT printed in several
