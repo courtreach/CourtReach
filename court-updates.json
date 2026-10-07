@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-10-07T06:03:57.442853Z",
-  "parser_version": 15,
+  "generated_at": "2026-10-07T06:11:08.663266Z",
+  "parser_version": 16,
   "window": [
     "2026-10-07",
     "2026-10-08",
@@ -5739,7 +5739,7 @@
           "courts": [
             "3"
           ],
-          "text": "Left-over matters to be taken up from 2:00 PM by Justices B.V. Nagarathna — Hon'ble Mr and Devendra Kumar Upadhyaya",
+          "text": "Left-over matters to be taken up after the Special Bench hearing here (2:00 PM) is over by Justices B.V. Nagarathna and Devendra Kumar Upadhyaya",
           "keys": [
             "leftover|bench|3"
           ]
@@ -5811,9 +5811,9 @@
           "courts": [
             "9"
           ],
-          "text": "Left over matters of this court except part-heard matters if any, will be taken up in court no",
+          "text": "Left-over matters to be taken up in Court 18 from 2:00 PM by Justices Manmohan and Arun Palli",
           "keys": [
-            "raw|LEFTOVERMATTERSOFTHISCOURTEXCEPTPARTHEARDMATTERSIFANYWILLBETAKENUPINCOURTNO"
+            "leftover|bench|9"
           ]
         },
         {
@@ -5865,7 +5865,7 @@
           "courts": [
             "14"
           ],
-          "text": "Left-over matters to be taken up from 2:00 PM by Justices Ujjal Bhuyan — Hon'ble Mr and Alok Aradhe",
+          "text": "Left-over matters to be taken up from 2:00 PM by Justices Ujjal Bhuyan and Alok Aradhe",
           "keys": [
             "leftover|bench|14"
           ]
@@ -5892,7 +5892,7 @@
           "courts": [
             "16"
           ],
-          "text": "Left-over matters to be taken up from 2:00 PM by Justices Satish Chandra Sharma — Hon'ble Mr and K. Vinod Chandran",
+          "text": "Left-over matters to be taken up from 2:00 PM by Justices Satish Chandra Sharma and K. Vinod Chandran",
           "keys": [
             "leftover|bench|16"
           ]
