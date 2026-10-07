@@ -2665,33 +2665,13 @@ function courtCoram(court){
    daily notices feed for these on sci.gov.in — the NOTE:- blocks in the list PDFs are the
    authoritative source; fetch_causelist.py captures them, keyed to the courts each note
    names (or the section it was printed in). Quoted verbatim, house style. */
-// "Courts 4, 10 & 16"
-const courtsPhrase = cs => cs.length===1 ? "Court "+cs[0] : "Courts "+cs.slice(0,-1).join(", ")+" & "+cs[cs.length-1];
-/* What the VENUE court should say about a special bench sitting in it (owner: "Court 4 island
-   should show that there is a special bench after the Court 4, 10 and 16's work is done and the
-   Bench is of so and so Judges"). The judges' own courts carry their own "will sit in special
-   bench" notes; a bench known only from a homepage notice is already a note in every court it
-   names, so it gets no second line here. */
-function benchSummaries(court, date){
-  const c=String(parseInt(court,10)), out=[];
-  for(const b of (courtUpdates?.by_date?.[date||todayISO()]?.specialBenches||[])){
-    if(String(b.venue)!==c || b.src==="web") continue;
-    const when = (b.noticeUrl && ENG.clockMins(b.at)!=null) ? `at ${ENG.fmtClock(ENG.clockMins(b.at))} (per notice)`
-      : (b.after||[]).length ? `after the normal work of ${courtsPhrase(b.after)} is over`
-      : ENG.clockMins(b.at)!=null ? `at ${ENG.fmtClock(ENG.clockMins(b.at))}` : "today";
-    out.push(`Special Bench sits here ${when}${(b.judges||[]).length?` — ${b.judges.join(", ")}`:""}`);
-    for(const x of (b.extra||[])) out.push(x);
-  }
-  return out;
-}
 // Same sentence, different print: "FOLLOWING LEFT OVER MATTERS ..." vs "LEFT OVER MATTERS ...",
 // "PART-HEARD" vs "PART- HEARD" — compared without those to catch the repeat.
 const noteKey = t => t.toUpperCase().replace(/\b(FOLLOWING|NOW)\b/g,"").replace(/[^A-Z0-9]/g,"");
 function courtNotes(court, date){
+  // The venue's own special-bench line ("Special Bench sits here at 3:00 PM — ...") now comes
+  // from fetch_causelist.py with every other interpreted notice, so it is just one more note.
   const c=String(parseInt(court,10)), seen=new Set(), out=[];
-  for(const t of benchSummaries(court, date)){
-    const k=noteKey(t); if(!seen.has(k)){ seen.add(k); out.push(t); }
-  }
   for(const n of (courtUpdates?.by_date?.[date||todayISO()]?.notes||[])){
     if(!(n.courts||[]).includes(c)) continue;
     // Cut the table debris an earlier parser let a note swallow ("… DROP NOTE:- Item No.

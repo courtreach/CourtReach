@@ -146,6 +146,38 @@ today's and picked-date sheets both):
    Chief Justice's Court = 1). Bench cancellations / "will not sit" notices arrive here.
    Fetched fresh every run in main() — notices land intraday; their PDFs never change.
 
+**Notices are INTERPRETED, not pasted (owner, 7 Oct 2026: "Look at this mess of notices ...
+We need better fetching of notices and then setting out them here").** The court sheet had
+shown run-together fragments; four separate faults, all fixed:
+1. Cut-off causelist notes — they were read from the advocate-column-stripped text, which
+   chops a long NOTE line past x=415 ("...WILL SIT IN SPECIAL BENCH IN" + nothing). `pdf_texts()`
+   now returns (column_text, full_text) from ONE pdfplumber pass; notes and special-bench
+   headers are read from full_text, cause titles still from column_text.
+2. Merged notice paragraphs — the listing notice was split by sentence and "p.m." was glued as
+   an abbreviation, so separate changes ran together and were cut at 300 chars.
+   `notice_paragraphs()` now cuts by LAYOUT (each paragraph's first line is indented ~110pt vs
+   the ~74pt body margin; centred/right furniture — title, "Dated", "Contd...2/-", "-2-", "By
+   order", signatory — is skipped). `split_sentences()` also ends a sentence at "p.m." when a
+   mixed-case sentence follows (never in ALL-CAPS causelist text).
+3. Wrong special-bench TIMES (a consequence of 2): Court 4 was stored 2:55 PM and Court 10
+   3:55 PM — the "regular bench sits upto" times — instead of 3:00 / 4:00 PM.
+4. Nothing was interpreted. `interpret_sentence()` recognises the notice/NOTE kinds — bench
+   cancelled; bench constituted (venue, time, judges, "to hear ..."); matters re-assigned to a
+   recomposed bench (with who replaced whom); a bench moved to another room ("instead of Court
+   No. 17"); regular bench sits only until T; sits the whole day; a judge not holding court; a
+   judge moving to a special bench / to take another court's left-over matters — and
+   `interpret_paragraph()` merges them into ONE plain line per court ("Special Bench sits here
+   at 3:00 PM — Justices M.M. Sundresh and Aravind Kumar · to hear M.A. No. 74/2025 in C.A. No.
+   14300/2024; regular bench sits only until 2:55 PM"; Court 11: "Regular bench sits only until
+   2:55 PM (Special Bench in Court 4 at 3:00 PM)"). Unrecognised text falls back to the tidied
+   sentence (ALL-CAPS turned to sentence case) — never dropped, never guessed.
+Every fact carries `keys` (e.g. `until|11|2:55 PM`, `bench|4`); `merge_notes()` lets a notice
+REPLACE an older line stating the same fact for the same court, `finalize_notes()` drops a
+judge's "sits in the Special Bench here" where the bench's own line already names him, and the
+venue's special-bench summary is now generated in Python (`bench_summaries()`), so the app no
+longer builds one. Verified end-to-end on the 7 Oct causelist + notice with main() itself
+(network stubbed). `PARSER_VERSION` 14.
+
 **Special benches are structured, not just text (owner, 5 Oct 2026).** Rule: a note about a
 judge moving ("HON'BLE MR. JUSTICE MANOJ MISRA WILL SIT IN SPECIAL BENCH IN COURT NO. 4 AFTER
 ...") belongs to the JUDGE'S OWN court — the section it is printed in (Court 10) — not the

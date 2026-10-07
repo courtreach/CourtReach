@@ -52,7 +52,7 @@ OUTPUT_FILE = "court-updates.json"
 # based change-detection reuses a cached parse when the PDF is unchanged; without
 # this, a parser FIX never reaches already-cached dates (their PDFs don't change).
 # A version mismatch forces a full re-parse of every date in the window.
-PARSER_VERSION = 13  # bumped: structured specialBenches; judge-movement notes go to the judge's own court
+PARSER_VERSION = 14  # bumped: notices read by paragraph and interpreted into plain per-court lines
 HEADERS = {"User-Agent": "Mozilla/5.0 (compatible; courtreach-causelist-bot/1.0)"}
 
 COURT_RE = re.compile(r"COURT\s*NO\.?\s*[:\-]?\s*([0-9]+)", re.I)
@@ -149,6 +149,14 @@ def split_sentences(text):
         if out:
             last = out[-1].split(" ")[-1].rstrip(".").lower()
             lastraw = out[-1].split(" ")[-1]
+            # "p.m." / "a.m." END a sentence when a mixed-case sentence follows ("... upto 2:55
+            # p.m. Special Bench comprising ...") — gluing there merged separate changes and put
+            # the wrong time on a bench (7 Oct 2026). In ALL-CAPS causelist text the next word
+            # is capitalised anyway ("2.00 P.M. TO TAKE UP"), so there it stays glued.
+            ampm = lastraw.lower() in ("a.m.", "p.m.", "am.", "pm.")
+            if ampm and re.match(r"[A-Z][a-z]", frag):
+                out.append(frag)
+                continue
             if last in _ABBREV or re.fullmatch(r"(?:[A-Za-z]\.)+[A-Za-z]?\.?", lastraw):
                 out[-1] += " " + frag
                 continue
@@ -178,6 +186,392 @@ def _section_of(line):
     if SECTION_CJ_RE.match(line):
         return "1"
     return None
+
+
+# ================================================================================
+# NOTICE INTERPRETATION — what a notice or NOTE:- actually means, one plain line per court
+# --------------------------------------------------------------------------------
+# Owner, 7 Oct 2026, showing a court sheet of run-together fragments: "Look at this mess of
+# notices. Can you make out what the notices are trying to say. We need better fetching of
+# notices and then setting out them here." The SC's daily listing notice is a list of
+# PARAGRAPHS, each a self-contained change ("Special Bench comprising ... is constituted in
+# Court No. 4 ... at 3:00 p.m. to hear M.A.No.74/2025 ... Hence, Regular benches in Court No. 4
+# & Court No. 11 ... will sit upto 2:55 p.m."). Each paragraph is read whole, the sentence
+# kinds below are recognised, and the result is rewritten as short lines per court
+# ("Special Bench sits here at 3:00 PM — Justices M.M. Sundresh and Aravind Kumar · to hear
+# M.A. No. 74/2025 in C.A. No. 14300/2024; regular bench sits only until 2:55 PM"). Anything
+# unrecognised falls back to the tidied sentence itself — never dropped, never guessed.
+# Every fact carries `keys` so the same fact from the causelist and from a notice collapses.
+
+CLOCK_RE = re.compile(r"\b(\d{1,2})(?:[.:](\d{2}))?\s*([AaPp])\.?\s*[Mm]\b\.?")
+_NAME_STOP = {"AND", "IN", "IS", "WILL", "ON", "CONSTITUTED", "COMPRISING", "WHO", "TO", "AT",
+              "OF", "THE", "FOR", "SHALL", "HAS", "HAVE", "WOULD", "SIT", "SITTING", "NOT", "BE",
+              "AS", "WITH", "FROM", "INSTEAD", "HENCE", "ACCORDINGLY", "MATTERS", "BENCH"}
+
+
+def _clean(t):
+    return re.sub(r"\s+", " ", (t or "").replace("’", "'").replace("‘", "'")
+                  .replace("“", '"').replace("”", '"')).strip()
+
+
+def fmt_clock(t):
+    m = CLOCK_RE.search(t or "")
+    if not m:
+        return None
+    return "{}:{} {}M".format(int(m.group(1)), m.group(2) or "00", m.group(3).upper())
+
+
+def _title_word(w):
+    if re.fullmatch(r"(?:[A-Za-z]\.)+", w):          # initials: M.M. / N.V.
+        return w.upper()
+    return w[:1].upper() + w[1:].lower() if w.isupper() and len(w) > 1 else w
+
+
+def judges_in(text):
+    """Every judge named, in order, as 'Justice X' (or 'the Chief Justice'). Copes with the
+    notices' own slips ("Hon'ble Aravind Kumar" — no "Justice") and ALL-CAPS causelist text."""
+    out = []
+    t = _clean(text)
+    for m in re.finditer(r"HON'?BLE\s+", t, re.I):
+        rest = t[m.end():]
+        if re.match(r"(?:THE\s+)?CHIEF\s+JUSTICE\b", rest, re.I):
+            name = "the Chief Justice"
+        else:
+            rest = re.sub(r"^(?:(?:MR|MRS|MS|DR)\.?\s+)?(?:JUSTICE\s+)?", "", rest, flags=re.I)
+            words = []
+            for tok in rest.split(" "):
+                bare = tok.strip(",;.()")
+                if not bare or bare.upper() in _NAME_STOP or re.match(r"\d", bare) or tok.startswith("("):
+                    break
+                words.append(_title_word(bare if not re.fullmatch(r"(?:[A-Za-z]\.)+", tok.rstrip(",;")) else tok.rstrip(",;")))
+                if tok.endswith(",") or tok.endswith(";") or (tok.endswith(".") and not re.fullmatch(r"(?:[A-Za-z]\.)+", tok)):
+                    break
+            if not words:
+                continue
+            name = "Justice " + " ".join(words)
+        if name not in out:
+            out.append(name)
+    return out
+
+
+def names_phrase(js):
+    if not js:
+        return ""
+    if all(j.startswith("Justice ") for j in js) and len(js) > 1:
+        bare = [j[len("Justice "):] for j in js]
+        return "Justices " + (", ".join(bare[:-1]) + " and " + bare[-1])
+    return js[0] if len(js) == 1 else ", ".join(js[:-1]) + " and " + js[-1]
+
+
+def _bench_kind(t):
+    if re.search(r"constitution\s+bench", t, re.I):
+        return "Constitution Bench"
+    if re.search(r"special\s+bench", t, re.I):
+        return "Special Bench"
+    if re.search(r"single\s+judge", t, re.I):
+        return "Single Judge Bench"
+    return "Bench"
+
+
+def _tidy_case(t):
+    t = re.sub(r"\b(M\.A|C\.A|W\.P|S\.L\.P|T\.P|Crl\.A|R\.P)\.?\s*No\.?\s*", lambda m: m.group(1) + ". No. ", t)
+    t = re.sub(r"\bDiary\s*No\.?\s*", "Diary No. ", t, flags=re.I)
+    t = re.sub(r"\b(M\.A|C\.A|W\.P)\.(?=Diary)", r"\1. ", t)
+    return t.strip(" .")
+
+
+def _venue(t):
+    m = re.search(r"\bin\s+Court\s+No\.?\s*:?\s*(\d{1,2})\b", t, re.I)
+    if m:
+        return str(int(m.group(1)))
+    if re.search(r"Chief\s+Justice'?s\s+Court", t, re.I):
+        return "1"
+    return None
+
+
+def interpret_sentence(s, section=None):
+    """[{courts, text, keys, sb?}] for one sentence; [] when it is about Single Judge /
+    Chamber matters; None when no template matches (caller falls back to the sentence)."""
+    t = _clean(s)
+    if IGNORABLE_NOTE_RE.search(t):
+        return []
+    named = courts_in(t)
+    clock = fmt_clock(t)
+    js = judges_in(t)
+
+    # 1. a bench cancelled
+    if re.search(r"\b(?:stands|is|has\s+been)\s+cancell?ed\b", t, re.I):
+        kind = _bench_kind(t)
+        v = _venue(t) or (named[0] if named else section)
+        if not v:
+            return None
+        who = names_phrase(js) if len(js) <= 3 else "{} judges".format(len(js))
+        return [{"courts": [v], "text": "{}{}{} is cancelled".format(
+                    kind, " of " + who if who else "", " at " + clock if clock else ""),
+                 "keys": ["cancel|{}|{}".format(v, clock)]}]
+
+    # 2. a bench constituted (Special / Constitution / a fresh division bench)
+    if re.search(r"\bconstituted\s+in\b", t, re.I):
+        kind = _bench_kind(t)
+        v = _venue(t) or (named[0] if named else section)
+        if not v:
+            return None
+        pm = re.search(r"\bto\s+hear\s+(.+)$", t, re.I)
+        purpose = _tidy_case(pm.group(1)) if pm else ""
+        txt = "{} sits here{} — {}{}".format(kind, " at " + clock if clock else "", names_phrase(js),
+                                            " · to hear " + purpose if purpose else "")
+        f = {"courts": [v], "text": txt, "keys": ["bench|{}".format(v)]}
+        if kind == "Special Bench":
+            f["sb"] = {"venue": v, "judges": js, "at": clock, "after": [], "extra": []}
+        return [f]
+
+    # 3. matters re-assigned to a recomposed bench
+    rm = re.search(r"will\s+now\s+be\s+taken\s+up.*?\bby\s+the\s+bench\s+comprising\s+(.+)$", t, re.I)
+    if rm:
+        v = _venue(t) or (named[0] if named else section)
+        old = judges_in(t[:rm.start()])
+        new = judges_in(rm.group(1))
+        if not v or not new:
+            return None
+        add = [j for j in new if j not in old]
+        gone = [j for j in old if j not in new]
+        diff = ""
+        if add and gone:
+            diff = " — {} in place of {}".format(names_phrase(add), names_phrase(gone))
+        elif add:
+            diff = " — {} {} the bench".format(names_phrase(add), "joins" if len(add) == 1 else "join")
+        elif gone:
+            diff = " — {} not sitting".format(names_phrase(gone))
+        return [{"courts": [v], "text": "Bench today: {}{}".format(names_phrase(new), diff),
+                 "keys": ["recomp|{}".format(v)]}]
+
+    # 4. a bench moved to another court room
+    mv = re.search(r"will\s+sit\s+in\s+Court\s+No\.?\s*(\d{1,2})\s+instead\s+of\s+Court\s+No\.?\s*(\d{1,2})", t, re.I)
+    if mv:
+        to, frm = str(int(mv.group(1))), str(int(mv.group(2)))
+        um = re.search(r"up\s*to\s+(.+)$", t, re.I)
+        until = fmt_clock(um.group(1)) if um else None
+        who = names_phrase(js)
+        return [{"courts": [to], "text": "{} sit here today instead of Court {}{}".format(
+                    who or "The bench", frm, ", until " + until if until else ""),
+                 "keys": ["moved|{}".format(to)]},
+                {"courts": [frm], "text": "{} sit in Court {} today, not here".format(who or "The listed bench", to),
+                 "keys": ["movedfrom|{}".format(frm)]}]
+
+    # 5. regular bench(es) sit only until a time
+    um = re.search(r"\bwill\s+sit\s+up\s*to\s+(\d{1,2}(?:[.:]\d{2})?\s*[AaPp]\.?\s*[Mm]\.?)", t, re.I)
+    # "JUSTICE X WILL SIT IN COURT NO. 18 ... AND THIS BENCH WILL SIT UPTO 3:55" — the time is
+    # that moving bench's, not the regular bench of every court named; branch 8 handles it
+    if um and re.search(r"WILL\s+SIT\s+IN\s+(?:SPECIAL\s+BENCH\s+IN\s+)?(?:THIS\s+COURT|COURT\s+NO)", t, re.I) and js:
+        um = None
+    if um:
+        until = fmt_clock(um.group(1))
+        cs = named or ([section] if section else [])
+        if not cs:
+            return None
+        return [{"courts": [c], "text": "Regular bench sits only until {}".format(until),
+                 "keys": ["until|{}|{}".format(c, until)]} for c in cs]
+
+    # 6. a bench sits the whole day
+    if re.search(r"will\s+sit\s+for\s+the\s+whole\s+day", t, re.I):
+        cs = [_venue(t)] if _venue(t) else (named or ([section] if section else []))
+        if not cs:
+            return None
+        return [{"courts": [c], "text": "Regular bench sits the whole day{}".format(
+                    " — " + names_phrase(js) if js else ""), "keys": ["wholeday|{}".format(c)]} for c in cs]
+
+    # 7. a judge not holding court
+    if re.search(r"will\s+not\s+be\s+holding\s+(?:the\s+)?court|will\s+not\s+sit\b", t, re.I) and js:
+        cs = named or ([section] if section else [])
+        return [{"courts": cs, "text": "{} is not sitting today".format(js[0]),
+                 "keys": ["absent|{}".format(js[0])]}] if cs else None
+
+    # 8. a judge moving: to a special bench, or to take up another court's left-over matters
+    jm = re.search(r"WILL\s+SIT\s+IN\s+(SPECIAL\s+BENCH\s+IN\s+)?(THIS\s+COURT|COURT\s+NO\.?\s*(\d{1,2}))", t, re.I)
+    if jm and js:
+        dest = section if re.match(r"THIS", jm.group(2), re.I) else str(int(jm.group(3)))
+        lm = re.search(r"LEFT\s+OVER\s+MATTERS\s+OF\s+(THIS\s+COURT|COURT\s+NO\.?\s*(\d{1,2}))", t, re.I)
+        if jm.group(1):                                  # special bench
+            if dest and dest == section:
+                txt = "{} sits in the Special Bench here{}".format(js[0], " at " + clock if clock else "")
+            else:
+                txt = "{} leaves{} for the Special Bench in Court {}".format(
+                    js[0], " at " + clock if clock else "", dest)
+            return [{"courts": [section] if section else [dest], "text": txt,
+                     "keys": ["sbjoin|{}|{}".format(js[0], dest)]}]
+        if lm:
+            of = section if re.match(r"THIS", lm.group(1), re.I) else str(int(lm.group(2)))
+            um2 = re.search(r"\bsit\s+up\s*to\s+(.+)$", t, re.I)
+            until = fmt_clock(um2.group(1)) if um2 else None
+            txt = "{} sits in Court {}{} to take up {}'s left-over matters{}".format(
+                js[0], dest, " from " + clock if clock else "", "this court" if of == section else "Court " + str(of),
+                ", until " + until if until else "")
+            cs = sorted({c for c in (section, of) if c}, key=int)
+            return [{"courts": cs, "text": txt, "keys": ["leftover|{}|{}".format(js[0], of)]}]
+        cs = [section] if section else [dest]
+        return [{"courts": cs, "text": "{} sits in Court {}{}".format(js[0], dest, " at " + clock if clock else ""),
+                 "keys": ["sits|{}|{}".format(js[0], dest)]}]
+
+    # 9. left-over matters taken up by a named bench at a time
+    if re.search(r"LEFT\s+OVER\s+MATTERS", t, re.I) and re.search(r"FOLLOWING\s+BENCH|BY\s+THE\s+BENCH", t, re.I) and section:
+        return [{"courts": [section], "text": "Left-over matters taken up{} by {}".format(
+                    " from " + clock if clock else "", names_phrase(js) if js else "another bench"),
+                 "keys": ["leftover|bench|{}".format(section)]}]
+    return None
+
+
+def _sentence_case(t):
+    """A readable fallback for an ALL-CAPS note nothing above recognised."""
+    if t.upper() != t:
+        return t
+    out = t.lower()
+    out = re.sub(r"(^|[.!?]\s+)([a-z])", lambda m: m.group(1) + m.group(2).upper(), out)
+    out = re.sub(r"\bhon'?ble\b", "Hon'ble", out)
+    out = re.sub(r"\bjustice\s+((?:[a-z.]+\s?){1,4})", lambda m: "Justice " + " ".join(_title_word(w.upper()) for w in m.group(1).split()), out)
+    out = re.sub(r"\bcourt no\.", "Court No.", out)
+    out = re.sub(r"\b(\d{1,2})[.:](\d{2})\s*p\.?\s*m\.?", lambda m: "{}:{} PM".format(m.group(1), m.group(2)), out)
+    out = re.sub(r"\b(\d{1,2})[.:](\d{2})\s*a\.?\s*m\.?", lambda m: "{}:{} AM".format(m.group(1), m.group(2)), out)
+    return out
+
+
+def interpret_paragraph(para, section=None, fallback_courts=None):
+    """Facts for one notice paragraph (or one causelist note), merged per court:
+    "Special Bench sits here at 3:00 PM — ...; regular bench sits only until 2:55 PM"."""
+    para = _clean(para)
+    sents = split_sentences(para)
+    facts, unknown = [], []
+    for sn in sents:
+        r = interpret_sentence(sn, section)
+        if r is None:
+            unknown.append(sn)
+        else:
+            facts.extend(r)
+    # a Special/Constitution bench in this paragraph explains why OTHER courts stop early
+    benches = [f for f in facts if f["keys"][0].startswith("bench|")]
+    out, by_court = [], {}
+    for f in facts:
+        for c in f["courts"]:
+            if c not in by_court:
+                by_court[c] = {"courts": [c], "parts": [], "keys": [], "sb": None}
+                out.append(by_court[c])
+            text = f["text"]
+            if f["keys"][0].startswith("until|") and benches:
+                b = benches[0]
+                bv = b["courts"][0]
+                if bv != c:
+                    m = re.search(r" at (\d{1,2}:\d{2} [AP]M)", b["text"])
+                    text += " (Special Bench in Court {}{})".format(bv, " at " + m.group(1) if m else "")
+                else:
+                    text = text[0].lower() + text[1:]
+            by_court[c]["parts"].append(text)
+            by_court[c]["keys"] += f["keys"]
+            if f.get("sb"):
+                by_court[c]["sb"] = f["sb"]
+    notes = []
+    for g in out:
+        n = {"courts": g["courts"], "text": "; ".join(g["parts"]), "keys": g["keys"]}
+        if g["sb"]:
+            n["sb"] = g["sb"]
+        notes.append(n)
+    if unknown:
+        cs = sorted(set(courts_in(" ".join(unknown))) | ({section} if section else set()), key=int) or list(fallback_courts or [])
+        if cs:
+            rest = _sentence_case(" ".join(unknown))
+            if len(rest) > 500:
+                cut = rest[:500].rsplit(". ", 1)[0]
+                rest = (cut if len(cut) > 200 else rest[:500].rsplit(" ", 1)[0]) + " …"
+            notes.append({"courts": cs, "text": rest, "keys": ["raw|" + re.sub(r"[^A-Z0-9]", "", rest.upper())[:80]]})
+    return notes
+
+
+def bench_summaries(specials):
+    """The venue court's own line for each special bench read from the causelist ("Special
+    Bench sits here after the normal work of Courts 4, 10 & 16 is over — Justices M.M.
+    Sundresh, Manoj Misra and Satish Chandra Sharma"). Keyed bench|<venue>, so a notice about
+    the same bench replaces it."""
+    out = []
+    for b in specials:
+        after = b.get("after") or []
+        if after:
+            cs = after if len(after) == 1 else after[:-1]
+            when = "after the normal work of {} is over".format(
+                "Court " + after[0] if len(after) == 1 else "Courts " + ", ".join(cs) + " & " + after[-1])
+        elif b.get("at"):
+            when = "at " + (fmt_clock(b["at"]) or b["at"])
+        else:
+            when = "today"
+        parts = ["Special Bench sits here {}{}".format(when, " — " + names_phrase(b["judges"]) if b.get("judges") else "")]
+        parts += [_sentence_case(x) for x in (b.get("extra") or [])]
+        out.append({"courts": [b["venue"]], "text": "; ".join(parts), "keys": ["bench|" + b["venue"]]})
+    return out
+
+
+def merge_notes(existing, new):
+    """Add `new` facts to a day's notes; any older note that states one of the same facts for
+    the same court is replaced — a notice is the later, fuller word."""
+    nk = {c + "#" + k for c in new["courts"] for k in new.get("keys", [])}
+    keep = []
+    for n in existing:
+        ok = {c + "#" + k for c in n["courts"] for k in n.get("keys", [])}
+        if ok and ok & nk:
+            rest = [c for c in n["courts"] if not ({c + "#" + k for k in n.get("keys", [])} & nk)]
+            if rest:
+                n = dict(n, courts=rest)
+                keep.append(n)
+            continue
+        keep.append(n)
+    keep.append(new)
+    return keep
+
+
+def finalize_notes(notes):
+    """Drop a judge's "sits in the Special Bench here" line where that court already has the
+    bench's own line naming him — it says nothing new."""
+    bench_text = {}
+    for n in notes:
+        for c in n["courts"]:
+            if "bench|" + c in n.get("keys", []):
+                bench_text[c] = n["text"]
+    out = []
+    for n in notes:
+        ks = n.get("keys", [])
+        if ks and all(k.startswith("sbjoin|") for k in ks):
+            j = ks[0].split("|")[1].replace("Justice ", "")
+            if all(c in bench_text and j in bench_text[c] for c in n["courts"]):
+                continue
+        out.append(n)
+    return out
+
+
+def notice_paragraphs(data):
+    """A notice PDF's paragraphs, by layout: each paragraph's first line is indented (x0
+    ~110pt) past the body margin (~74pt); centred/right lines (title, "Dated", "Contd...2/-",
+    "-2-", "By order", the signatory) sit further right and are skipped. [] when the PDF has no
+    text layer (a scan) — the caller then uses the homepage title."""
+    try:
+        import pdfplumber
+        lines = []
+        with pdfplumber.open(io.BytesIO(data)) as pdf:
+            for pg in pdf.pages:
+                lines += [(ln["x0"], ln["text"]) for ln in pg.extract_text_lines()]
+    except Exception:
+        return []
+    body = [x for x, tx in lines if len(tx) > 40]
+    if not body:
+        return []
+    margin = min(body)
+    drop = re.compile(r"^(SUPREME COURT OF INDIA|NOTICE$|Dated\s*:|By order|sd/?-|Copy to|Contd|-\s*\d+\s*-|"
+                      r"(?:Additional|Assistant|Deputy)\s+Registrar|Registrar\b)", re.I)
+    paras = []
+    for x, tx in lines:
+        tx = tx.strip()
+        if not tx or drop.match(tx) or x > margin + 120:
+            continue
+        if x >= margin + 15 or not paras:
+            paras.append(tx)
+        else:
+            paras[-1] += " " + tx
+    return [p for p in (re.sub(r"\s+", " ", q).strip() for q in paras) if len(p) > 20]
 
 
 def parse_day_notes(text):
@@ -224,7 +618,7 @@ def parse_day_notes(text):
         if key in seen:
             return
         seen.add(key)
-        last = {"text": t[:300], "courts": courts}
+        last = {"text": t[:600], "courts": courts, "section": cur}
         out.append(last)
 
     def end_block():
@@ -262,16 +656,24 @@ def parse_day_notes(text):
             end_block()
             continue
         if acc is not None:
-            close = line.find("]")
-            if close >= 0:
-                acc += " " + line[:close]
+            # an unbracketed note ends at a "." separator, a new bracket or a new judge
+            # sentence — they used to be glued together ("... AT 2.00 P.M. . HON'BLE MR. ...")
+            if line in (".", "-", "*") or line.startswith("[") or \
+                    (JUDGE_RE.match(line) and NOTE_KEEP_RE.search(line)):
                 flush()
-            elif taken >= 6:
-                end_block()
+                if line in (".", "-", "*"):
+                    continue
             else:
-                acc += " " + line
-                taken += 1
-            continue
+                close = line.find("]")
+                if close >= 0:
+                    acc += " " + line[:close]
+                    flush()
+                elif taken >= 6:
+                    end_block()
+                else:
+                    acc += " " + line
+                    taken += 1
+                continue
         # between notes inside the block
         if line in (".", "-", "*"):
             continue
@@ -293,7 +695,17 @@ def parse_day_notes(text):
         acc, taken = line, 0
     if acc is not None:
         flush()
-    return out
+    # interpret each raw note into plain per-court lines; the same FACT printed in several
+    # courts' sections (or in main and supplementary lists) collapses to one
+    final, done = [], set()
+    for r in out:
+        for n in interpret_paragraph(r["text"], section=r.get("section"), fallback_courts=r["courts"]):
+            ks = {c + "#" + k for c in n["courts"] for k in n["keys"]}
+            if ks <= done:
+                continue
+            done |= ks
+            final.append(n)
+    return final
 
 
 def _judge_name(line):
@@ -414,29 +826,6 @@ HOME_HEADERS = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWe
                               "(KHTML, like Gecko) Chrome/126 Safari/537.36"}
 
 
-NOTICE_CLOCK_RE = re.compile(r"\b(\d{1,2}(?:[.:]\d{2})?\s*[AaPp]\.?\s*[Mm]\.?)")
-NOTICE_VENUE_RE = re.compile(r"\b(?:IN|AT)\s+COURT\s+NO\.?\s*:?\s*(\d{1,2})\b", re.I)
-NOTICE_JUDGE_RE = re.compile(r"Justice\s+((?:[A-Z][A-Za-z.']*\.?\s*){1,5}?)(?=\s*(?:,|\band\b|\bwill\b|\bin\b|\bon\b|\bat\b|\bshall\b|\(|$))")
-
-
-def special_from_notice(sentence):
-    """A homepage-notice sentence announcing a timed special bench ("... Special Bench
-    comprising Hon'ble Mr. Justice Vikram Nath and Hon'ble Mr. Justice Satish Chandra Sharma
-    will sit at 2.55 P.M. in Court No. 2 ...") -> {venue, judges, at, ...}, else None. Only the
-    TIME and VENUE matter for the maths; the sentence itself already reaches every court it
-    names (notice_notes)."""
-    if not re.search(r"special\s+bench", sentence, re.I) or re.search(r"cancel", sentence, re.I):
-        return None
-    tm = NOTICE_CLOCK_RE.search(sentence)
-    vm = NOTICE_VENUE_RE.search(sentence)
-    venue = str(int(vm.group(1))) if vm else ("1" if CJ_RE.search(sentence) else None)
-    if not tm or not venue:
-        return None
-    judges = ["Justice " + re.sub(r"\s+", " ", j).strip(" .,") for j in NOTICE_JUDGE_RE.findall(sentence)]
-    return {"venue": venue, "judges": judges, "at": re.sub(r"\s+", " ", tm.group(1)).upper(),
-            "after": [], "extra": [sentence[:300]]}
-
-
 NOTICE_TITLE_KEEP_RE = re.compile(
     r"\bchanges?\b|cancel|not\s+(?:be\s+)?(?:sit|sitting|holding)|composition|re-?constitut|"
     r"special\s+bench|\bsitting\b", re.I)
@@ -491,34 +880,6 @@ def courts_in(text):
     if CJ_RE.search(text):
         courts.add("1")
     return sorted(courts, key=int)
-
-
-def notice_notes(title, text):
-    """The separate notices inside one homepage notice PDF — a single bulletin often carries
-    several unrelated bench changes ("The Special Bench ... stands cancelled. The Single Judge
-    Bench ... stands cancelled."), which used to be stored as ONE run-together text. Split per
-    sentence, glue a court-less trailing sentence ("Future dates ... will be notified shortly.")
-    back onto the one before it, and drop Single Judge / Chamber Judge ones entirely. When the
-    PDF is a scan with no text, the (already informative) homepage title stands in."""
-    body = ""
-    if text:
-        drop = re.compile(r"^(SUPREME COURT OF INDIA|NOTICE$|Dated this|By order|sd/?-?$|"
-                          r"Additional Registrar|Assistant Registrar|Copy to|Page \d+)", re.I)
-        keep = [l.strip() for l in text.splitlines() if l.strip() and not drop.match(l.strip())]
-        body = re.sub(r"\s+", " ", " ".join(keep)).strip()
-    sentences = split_sentences(body if len(body) >= 30 else title)
-    merged = []
-    for sent in sentences:
-        if merged and not courts_in(sent) and not re.search(r"\b(bench|court|justice)\b", sent, re.I):
-            merged[-1] += " " + sent
-        else:
-            merged.append(sent)
-    out = []
-    for sent in merged:
-        if IGNORABLE_NOTE_RE.search(sent):
-            continue
-        out.append({"text": sent[:300], "courts": courts_in(sent) or courts_in(title)})
-    return out
 
 
 # Page-header boilerplate repeated at the top of every page. When an item's
@@ -594,17 +955,19 @@ ITEM_SNO_RE = re.compile(r"^[0-9]{1,4}(?:\.[0-9]{1,3})?[.\)]?$")
 ADV_SNO_RE = re.compile(r"^([0-9]{1,4}(?:\.[0-9]{1,3})?)[.\)]?$")  # same, capturing the number
 
 
-def pdf_to_column_text(data):
-    """Rebuild the PDF text, dropping the advocate column from item rows only.
-    Returns None if word-level extraction isn't available (caller falls back to
-    pdf_to_text). A court header resets to header mode (coram kept whole); the
-    first serial-numbered row switches on item mode (advocate column dropped)."""
+def pdf_texts(data):
+    """(column_text, full_text) from ONE pdfplumber pass. column_text drops the advocate
+    column from item rows (for cause titles); full_text keeps every row whole. NOTE:- blocks
+    and special-bench headers must be read from full_text: a long note line printed after an
+    item row spills past the advocate-column edge and was being cut off mid-sentence (7 Oct
+    2026: "HON'BLE MR. JUSTICE PRASHANT KUMAR MISHRA WILL SIT IN SPECIAL BENCH IN" — the rest,
+    "THIS COURT AT 3.00 P.M.", sat in the dropped column). (None, None) without pdfplumber."""
     try:
         import pdfplumber
     except Exception:
-        return None
+        return None, None
     try:
-        out = []
+        out, whole = [], []
         with pdfplumber.open(io.BytesIO(data)) as pdf:
             for page in pdf.pages:
                 rows = {}
@@ -614,6 +977,7 @@ def pdf_to_column_text(data):
                 for key in sorted(rows):
                     ws = sorted(rows[key], key=lambda w: w["x0"])
                     full = " ".join(w["text"] for w in ws)
+                    whole.append(full)
                     if REG_RE.search(full) or COURT_RE.search(full) or CJ_RE.search(full):
                         in_items = False           # a court header — coram follows
                     elif ws[0]["x0"] < SNO_COL_X and ITEM_SNO_RE.match(ws[0]["text"]):
@@ -622,10 +986,16 @@ def pdf_to_column_text(data):
                         out.append(" ".join(w["text"] for w in ws if w["x0"] < ADV_COL_X))
                     else:
                         out.append(full)
-        return "\n".join(out)
+        return "\n".join(out), "\n".join(whole)
     except Exception as e:
         print("  column extraction failed:", e)
-        return None
+        return None, None
+
+
+def pdf_to_column_text(data):
+    """Rebuild the PDF text, dropping the advocate column from item rows only (see
+    pdf_texts). Returns None if word-level extraction isn't available."""
+    return pdf_texts(data)[0]
 
 
 # an item number, optionally a sub-item ("37" or "37.1"). "37.1 Connected .."
@@ -1005,23 +1375,26 @@ def build_for_date(date_str, prev_day=None, prev_sizes=None):
             data = fetch_pdf(DAILY_BASE.format(date=date_str, suffix=suffix))
             if not data:
                 continue
-            text = pdf_to_column_text(data) or pdf_to_text(data)  # drop advocate column
+            col, full = pdf_texts(data)
+            text = col or pdf_to_text(data)  # drop advocate column (cause titles)
             if not text.strip():
                 continue
+            notes_text = full or text        # notes/benches read whole — see pdf_texts()
             lists_found.append("{} ({})".format(human, variant))
             # operational NOTE:- blocks (a judge sitting elsewhere, a changed bench, a
             # court not sitting) — deduped across every list and variant of the day
             # (not from the Chamber / Single Judge lists at all — owner doesn't track those)
-            for b in ([] if human in ("Chamber", "Single Judge") else parse_special_benches(text)):
+            for b in ([] if human in ("Chamber", "Single Judge") else parse_special_benches(notes_text)):
                 k = (b["venue"], tuple(b["judges"]), b["at"], tuple(b["after"]))
                 if k not in sb_keys:
                     sb_keys.add(k)
                     specials.append(b)
-            for n in ([] if human in ("Chamber", "Single Judge") else parse_day_notes(text)):
-                k = re.sub(r"[^A-Z0-9]", "", n["text"].upper())
-                if k not in note_keys:
-                    note_keys.add(k)
-                    notes.append(n)
+            for n in ([] if human in ("Chamber", "Single Judge") else parse_day_notes(notes_text)):
+                ks = {c + "#" + k for c in n["courts"] for k in n.get("keys", [])}
+                if ks and ks <= note_keys:
+                    continue
+                note_keys |= ks
+                notes.append(n)
             parsed = parse_courts(text)
             advs = parse_advocates(data, {c: set(parsed[c]["items"]) for c in parsed})
             for court, info in parsed.items():
@@ -1062,7 +1435,7 @@ def build_for_date(date_str, prev_day=None, prev_sizes=None):
             c["total"] = str(n_matters(c["items"]))
         if merged:
             lists[human] = merged
-    return lists_found, lists, notes, specials, sizes, False
+    return lists_found, lists, bench_summaries(specials) + notes, specials, sizes, False
 
 
 def main():
@@ -1117,8 +1490,7 @@ def main():
     web = fetch_home_notices()
     if web:
         print("Homepage listing notices:", len(web))
-    note_key = lambda n: ",".join(n.get("courts", [])) + "|" + re.sub(r"[^A-Z0-9]", "", n["text"].upper())
-    pdf_text_cache = {}
+    pdf_cache = {}      # url -> (bytes, text)
     for date_str in dates:
         day = by_date.get(date_str)
         if day is None:
@@ -1127,14 +1499,14 @@ def main():
         if not want:
             continue
         notes = day.setdefault("notes", [])
-        keys = set(note_key(n) for n in notes)
+        sbs = day.setdefault("specialBenches", [])
         for n in want:
-            if n["url"] not in pdf_text_cache:
+            if n["url"] not in pdf_cache:
                 # A notice PDF that fails to download used to fall back silently to its title —
                 # 5 Oct 2026, Court 2's "Justice Sandeep Mehta will not be holding the Court"
                 # became just "Notice regarding change in Court No.2" on one run. Retry, and if it
                 # still fails keep what the previous run read from the same PDF (it never changes).
-                text = ""
+                data, text = None, ""
                 for attempt in range(3):
                     data = fetch_pdf(n["url"])
                     text = pdf_to_text(data) if data else ""
@@ -1143,9 +1515,9 @@ def main():
                     time.sleep(2 * (attempt + 1))
                 if not (text and text.strip()):
                     print("WARNING: notice PDF unreadable after 3 tries — {}".format(n["url"]))
-                pdf_text_cache[n["url"]] = text
+                pdf_cache[n["url"]] = (data, text)
                 time.sleep(0.2)
-            text = pdf_text_cache[n["url"]]
+            data, text = pdf_cache[n["url"]]
             if not (text and text.strip()):
                 old_day = prev_by_raw.get(date_str, {})
                 kept = [x for x in old_day.get("notes", []) if x.get("url") == n["url"]]
@@ -1167,37 +1539,32 @@ def main():
             # live on 5 Oct 2026.
             if not NOTICE_TITLE_KEEP_RE.search(n["title"]) or NOTICE_TITLE_SKIP_RE.search(n["title"]):
                 continue
-            # re-running with the same notice replaces what it produced last time (its split
-            # may have changed) instead of piling duplicates on top
+            # re-running with the same notice replaces what it produced last time
             notes[:] = [x for x in notes if x.get("url") != n["url"]]
-            keys = set(note_key(x) for x in notes)
-            # a timed special bench announced by notice feeds the time maths too; the notice is
-            # the later word, so its time replaces a causelist one for the same venue
-            sbs = day.setdefault("specialBenches", [])
             sbs[:] = [b for b in sbs if b.get("url") != n["url"]]
-            for sent in split_sentences(text if len(text or "") >= 30 else n["title"]):
-                sb = special_from_notice(sent)
-                if not sb:
-                    continue
-                sb["url"] = n["url"]
-                same = [b for b in sbs if b["venue"] == sb["venue"] and not b.get("url")]
-                if same:
-                    # causelist bench, re-timed by the notice: keep its judges / after-courts
-                    same[0]["at"] = sb["at"]
-                    same[0]["noticeUrl"] = n["url"]
-                else:
-                    # notice-only bench: its sentence is already a court note, so the app uses
-                    # this record for the time maths only (src=web), never as a second summary
-                    sb["src"] = "web"
-                    sbs.append(sb)
-                print("  {}: special bench by notice — Court {} at {}".format(date_str, sb["venue"], sb["at"]))
-            for note in notice_notes(n["title"], text):
-                note["url"] = n["url"]
-                k = note_key(note)
-                if k not in keys:
-                    keys.add(k)
-                    notes.append(note)
-                    print("  {}: notice — {}".format(date_str, note["text"][:80]))
+            # read PARAGRAPH by paragraph (each is one self-contained change) and interpret it
+            paras = (notice_paragraphs(data) if data else []) or ([text] if text and text.strip() else [n["title"]])
+            for para in paras:
+                for fact in interpret_paragraph(para, fallback_courts=courts_in(n["title"])):
+                    sb = fact.pop("sb", None)
+                    fact["url"] = n["url"]
+                    notes[:] = merge_notes(notes, fact)
+                    print("  {}: notice — {} | {}".format(date_str, ",".join(fact["courts"]), fact["text"][:90]))
+                    if sb and sb.get("at"):
+                        # the notice is the later word: its time replaces a causelist bench's
+                        same = [b for b in sbs if b["venue"] == sb["venue"] and not b.get("url")]
+                        if same:
+                            same[0]["at"] = sb["at"]
+                            same[0]["noticeUrl"] = n["url"]
+                            if sb.get("judges"):
+                                same[0]["judges"] = sb["judges"]
+                        else:
+                            sb["src"] = "web"
+                            sb["url"] = n["url"]
+                            sbs.append(sb)
+    for day in by_date.values():
+        if day.get("notes"):
+            day["notes"] = finalize_notes(day["notes"])
 
     # Nothing new anywhere -> leave the file untouched so the workflow commits
     # nothing and Pages doesn't rebuild. (generated_at = time of last CHANGE.)
