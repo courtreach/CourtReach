@@ -164,6 +164,10 @@ header.top{display:flex;align-items:center;justify-content:space-between;gap:6px
    order to walk them. Capped at 5 stops so it never crowds the home screen. */
 .route-rail{display:flex;flex-wrap:wrap;align-items:center;gap:5px;padding:8px 0 2px}
 .rail-arrow{display:inline-flex;align-items:center;color:var(--mut);flex:none}
+/* An arrow belongs to the stop it points AT: arrow + chip wrap as one unit, so a row break
+   never strands a ">" at the end of a line (Android, 7 Oct 2026 — wider glyphs put five stops
+   on three rows with arrows dangling). */
+.rail-unit{display:inline-flex;align-items:center;gap:5px;flex:0 1 auto;min-width:0}
 .rail-arrow i{font-size:12px;line-height:1}
 .rail-stop{appearance:none;flex:0 1 auto;display:flex;align-items:stretch;border:none;
   border-radius:8px;overflow:hidden;cursor:pointer;transition:transform .1s;
@@ -213,7 +217,7 @@ main#main{flex:1;min-height:0;overflow-y:auto;padding:8px 12px 12px;-webkit-over
 .cell.mini .on-lab{display:none}
 .cell.mini .ct-num{background:var(--panel2);border-radius:7px;padding:2px 8px;font-size:16px}
 /* STACKED island: big full-width court header on top, ongoing below (ISLAND_STACKED) */
-.cell.stk{padding:0;overflow:hidden;text-align:center}
+.cell.stk{padding:0;overflow:hidden;text-align:center;display:flex;flex-direction:column}
 /* Header band is ALWAYS the light grey panel — sitting vs not-sitting is carried by the
    court NUMBER's colour, not by flooding the band with navy (owner: "instead of darkening
    the header when the court is sitting... just darken the court number with appropriate
@@ -225,15 +229,18 @@ main#main{flex:1;min-height:0;overflow-y:auto;padding:8px 12px 12px;-webkit-over
 .cell.stk .cell-on-lab{font-size:9px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;color:var(--mut);margin-right:5px}
 .cell.stk .cell-on-num{font-family:var(--mono);font-size:28px;font-weight:800;color:var(--ink);line-height:1}
 .cell.stk.idle .cell-on-num,.cell.stk.idle .cell-on-lab{color:var(--passed)}
-/* footer band — fixed height, edge-to-edge (like the header), regardless of item count;
-   content inside scales down to fit via .cnt2/.cnt3/.cnt4p modifier classes */
-.cell.stk .cell-ours{margin:0;width:100%;height:40px;padding:3px 6px;border-radius:0;
+/* footer band — edge-to-edge (like the header); content scales down via .cnt3/.cnt4p.
+   It was a FIXED 40px: on Android (wider glyphs) "116.1 · 301" wrapped to two lines, the
+   centred content overflowed the band and the first line hid under the item row (owner's
+   screenshot, Court 12, 7 Oct 2026). A minimum, not a fixed height — and flex:1 so every
+   island in a row grows its band together and the bands stay level. */
+.cell.stk .cell-ours{margin:0;width:100%;min-height:40px;flex:1 0 auto;padding:3px 6px;border-radius:0;
   display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;box-sizing:border-box}
 .cell.stk .mycase-rib{margin:0}
 .cell.stk.mini .cell-topbar{font-size:20px;padding:7px 3px;letter-spacing:.5px}
 .cell.stk.mini .cell-on{padding:5px 3px 6px}
 .cell.stk.mini .cell-on-num{font-size:19px}
-.cell.stk.mini .cell-ours{height:30px;padding:2px 4px}
+.cell.stk.mini .cell-ours{min-height:30px;padding:2px 4px}
 .cell.mini .on-num{font-size:17px;margin-top:1px}
 .cell.idle .on-num,.cell.idle .on-lab{color:var(--passed)}
 /* idle court island HEADER — band is already grey for every court, so "not sitting" just
@@ -269,7 +276,8 @@ main#main{flex:1;min-height:0;overflow-y:auto;padding:8px 12px 12px;-webkit-over
   text-transform:none;letter-spacing:0;color:var(--gold)}
 .oursbtime i{font-size:10px;margin-right:1px}
 .cell.stk.mini .oursbtime{font-size:9px}
-.oi-sep{opacity:.6;margin:0 1px}
+.oi-sep{opacity:.6;margin:0 3px 0 0}
+.oi-unit{white-space:nowrap}
 .oi-it{cursor:pointer;border-radius:3px;padding:0 1px}
 .oi-it.struck{text-decoration:line-through;text-decoration-thickness:1.6px;opacity:.72}
 .oi-it.overridden{box-shadow:0 0 0 1.5px rgba(255,255,255,.65) inset}
@@ -2266,7 +2274,7 @@ function renderRail(){
   const chip=s=>`<button class="rail-stop ${band(s.k.ment?null:s.k.gap)}" data-court="${esc(s.court)}">
     <span class="rail-ct">C<span class="cd">${esc(s.court)}</span></span><span class="rail-div"></span>
     <span class="rail-dist">${esc(distLab(s.k))}</span></button>`;
-  rail.innerHTML=stops.map((s,i)=>`${i?'<span class="rail-arrow"><i class="ti ti-chevron-right"></i></span>':''}${chip(s)}`).join("");
+  rail.innerHTML=stops.map((s,i)=>`<span class="rail-unit">${i?'<span class="rail-arrow"><i class="ti ti-chevron-right"></i></span>':''}${chip(s)}</span>`).join("");
 }
 
 // The published SEQUENCE marquee (relay ?seq) — the court-wise call order. Throttled;
@@ -2595,7 +2603,7 @@ function boardCell(c, mini){
   const ordered=ks.slice().sort((a,b)=>(parseFloat(a.e.itemNo)||0)-(parseFloat(b.e.itemNo)||0));
   const overrides=getStrikeOverrides();
   const cnt = ordered.length>=4?" cnt4p":ordered.length===3?" cnt3":"";
-  const items=ordered.map(x=>{
+  const items=ordered.map((x,idx)=>{
     // "passed" tier fires for several REASONS board-engine.js deliberately does NOT all treat
     // as confirmed-over — mentioning past its 10:40 cutoff, a Single/Chamber-list item number
     // the board has moved beyond, or (the common case) our item's raw number simply being
@@ -2619,8 +2627,9 @@ function boardCell(c, mini){
     const over=!!x.k.over || remarkEndsToday(remarkFor(c.court, x.e.itemNo));
     const off=!!overrides[strikeKey(c.court,x.e.itemNo)];
     const struck=over&&!off, shown=over&&off;
-    return `<span class="oi-it${struck?" struck":""}${shown?" overridden":""}" data-strike-court="${esc(c.court)}" data-strike-item="${esc(x.e.itemNo)}">${esc(x.e.itemNo)}</span>`;
-  }).join(`<span class="oi-sep">·</span>`);
+    // the "·" travels with the item it precedes, so a wrap never leaves it dangling
+    return `<span class="oi-unit">${idx?`<span class="oi-sep">·</span>`:""}<span class="oi-it${struck?" struck":""}${shown?" overridden":""}" data-strike-court="${esc(c.court)}" data-strike-item="${esc(x.e.itemNo)}">${esc(x.e.itemNo)}</span></span>`;
+  }).join("");
   // The island stays a pure court/item/proximity readout — no names. Who's appearing is
   // in My cases and in the court sheet (owner: "I don't want juniors' names coming on the
   // court islands. They are being shown in my cases").
@@ -3076,7 +3085,7 @@ function dateCourtCell(court, entries){
   const cnt = ordered.length>=4?" cnt4p":ordered.length===3?" cnt3":"";
   return `<div class="cell stk ours later datecell" data-datecourt="${esc(court)}">
     <div class="cell-topbar">C<span class="cd">${esc(court)}</span></div>
-    <div class="cell-ours${cnt}"><span class="oi">${ordered.map(e=>`<span class="oi-it">${esc(e.itemNo)}</span>`).join(`<span class="oi-sep">·</span>`)}</span></div></div>`;
+    <div class="cell-ours${cnt}"><span class="oi">${ordered.map((e,i)=>`<span class="oi-unit">${i?`<span class="oi-sep">·</span>`:""}<span class="oi-it">${esc(e.itemNo)}</span></span>`).join("")}</span></div></div>`;
 }
 // That court's total listed items for the date, from the fetched cause list (may be absent).
 // Used only in the court sheet now, not on the island itself.
