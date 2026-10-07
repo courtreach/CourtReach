@@ -149,6 +149,24 @@ header.top{display:flex;align-items:center;justify-content:space-between;gap:6px
   .brand-logo{width:42px;height:42px}
   .brand{gap:6px}
 }
+/* Narrow phones and FOLDED foldables (Galaxy Fold cover screen ~344px): the 420px step above
+   still left the row ~32px too wide — date pill ran into the logo and "CourtReach" slid under
+   the refresh button (owner, 7 Oct 2026). Tighten everything except the deliberate 18px gap
+   between refresh and sign-out, and let the wordmark scale with the screen. */
+@media(max-width:380px){
+  header.top{gap:4px;padding-left:8px;padding-right:8px}
+  .cal-field{padding:6px 7px;gap:4px;border-radius:10px}
+  .cal-field i{font-size:15px}
+  .cal-field span{font-size:12px}
+  .brand{gap:4px}
+  .brand-logo{width:32px;height:32px}
+  .brand-name{font-size:clamp(15px,5.2vw,21px)}
+  .iconbtn{font-size:19px;padding:5px}
+}
+@media(max-width:330px){
+  .brand-logo{width:28px;height:28px}
+  .cal-field i{display:none}
+}
 .cal-native-overlay{position:absolute;inset:0;width:100%;height:100%;opacity:0;border:none;
   padding:0;margin:0;-webkit-appearance:none;appearance:none;color-scheme:dark}
 #paneTop{flex:none;padding:9px 12px 2px}
