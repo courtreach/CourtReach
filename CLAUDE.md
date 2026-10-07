@@ -166,10 +166,12 @@ shown run-together fragments; four separate faults, all fixed:
    recomposed bench (with who replaced whom); a bench moved to another room ("instead of Court
    No. 17"); regular bench sits only until T; sits the whole day; a judge not holding court; a
    judge moving to a special bench / to take another court's left-over matters — and
-   `interpret_paragraph()` merges them into ONE plain line per court ("Special Bench sits here
-   at 3:00 PM — Justices M.M. Sundresh and Aravind Kumar · to hear M.A. No. 74/2025 in C.A. No.
-   14300/2024; regular bench sits only until 2:55 PM"; Court 11: "Regular bench sits only until
-   2:55 PM (Special Bench in Court 4 at 3:00 PM)"). Unrecognised text falls back to the tidied
+   `interpret_paragraph()` merges them into ONE plain line per court ("Special Bench to sit at
+   3:00 PM — Justices M.M. Sundresh and Aravind Kumar · to hear M.A. No. 74/2025 in C.A. No.
+   14300/2024; regular bench to sit only until 2:55 PM"; Court 11: "Regular bench to sit only
+   until 2:55 PM (Special Bench in Court 4 at 3:00 PM)"). WORDING IS THE OWNER'S: every sitting
+   line says "... to sit ..." — "Special Bench to sit at 3:00 PM", "Regular bench to sit for the
+   entire day" — never "sits here" (owner, 7 Oct 2026: "I dont like this formulation"). Unrecognised text falls back to the tidied
    sentence (ALL-CAPS turned to sentence case) — never dropped, never guessed.
 Every fact carries `keys` (e.g. `until|11|2:55 PM`, `bench|4`); `merge_notes()` lets a notice
 REPLACE an older line stating the same fact for the same court, `finalize_notes()` drops a

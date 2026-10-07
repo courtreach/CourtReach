@@ -52,7 +52,7 @@ OUTPUT_FILE = "court-updates.json"
 # based change-detection reuses a cached parse when the PDF is unchanged; without
 # this, a parser FIX never reaches already-cached dates (their PDFs don't change).
 # A version mismatch forces a full re-parse of every date in the window.
-PARSER_VERSION = 14  # bumped: notices read by paragraph and interpreted into plain per-court lines
+PARSER_VERSION = 15  # bumped: notice lines worded "... to sit ..." (owner, 7 Oct 2026)
 HEADERS = {"User-Agent": "Mozilla/5.0 (compatible; courtreach-causelist-bot/1.0)"}
 
 COURT_RE = re.compile(r"COURT\s*NO\.?\s*[:\-]?\s*([0-9]+)", re.I)
@@ -198,8 +198,8 @@ def _section_of(line):
 # Court No. 4 ... at 3:00 p.m. to hear M.A.No.74/2025 ... Hence, Regular benches in Court No. 4
 # & Court No. 11 ... will sit upto 2:55 p.m."). Each paragraph is read whole, the sentence
 # kinds below are recognised, and the result is rewritten as short lines per court
-# ("Special Bench sits here at 3:00 PM — Justices M.M. Sundresh and Aravind Kumar · to hear
-# M.A. No. 74/2025 in C.A. No. 14300/2024; regular bench sits only until 2:55 PM"). Anything
+# ("Special Bench to sit at 3:00 PM — Justices M.M. Sundresh and Aravind Kumar · to hear
+# M.A. No. 74/2025 in C.A. No. 14300/2024; regular bench to sit only until 2:55 PM"). Anything
 # unrecognised falls back to the tidied sentence itself — never dropped, never guessed.
 # Every fact carries `keys` so the same fact from the causelist and from a notice collapses.
 
@@ -318,8 +318,10 @@ def interpret_sentence(s, section=None):
             return None
         pm = re.search(r"\bto\s+hear\s+(.+)$", t, re.I)
         purpose = _tidy_case(pm.group(1)) if pm else ""
-        txt = "{} sits here{} — {}{}".format(kind, " at " + clock if clock else "", names_phrase(js),
-                                            " · to hear " + purpose if purpose else "")
+        if clock:
+            txt = "{} to sit at {} — {}{}".format(kind, clock, names_phrase(js), " · to hear " + purpose if purpose else "")
+        else:
+            txt = "{}{} to sit{}".format(kind, " of " + names_phrase(js) if js else "", " — to hear " + purpose if purpose else "")
         f = {"courts": [v], "text": txt, "keys": ["bench|{}".format(v)]}
         if kind == "Special Bench":
             f["sb"] = {"venue": v, "judges": js, "at": clock, "after": [], "extra": []}
@@ -352,10 +354,10 @@ def interpret_sentence(s, section=None):
         um = re.search(r"up\s*to\s+(.+)$", t, re.I)
         until = fmt_clock(um.group(1)) if um else None
         who = names_phrase(js)
-        return [{"courts": [to], "text": "{} sit here today instead of Court {}{}".format(
+        return [{"courts": [to], "text": "{} to sit here instead of Court {}{}".format(
                     who or "The bench", frm, ", until " + until if until else ""),
                  "keys": ["moved|{}".format(to)]},
-                {"courts": [frm], "text": "{} sit in Court {} today, not here".format(who or "The listed bench", to),
+                {"courts": [frm], "text": "{} to sit in Court {}, not here".format(who or "The listed bench", to),
                  "keys": ["movedfrom|{}".format(frm)]}]
 
     # 5. regular bench(es) sit only until a time
@@ -369,7 +371,7 @@ def interpret_sentence(s, section=None):
         cs = named or ([section] if section else [])
         if not cs:
             return None
-        return [{"courts": [c], "text": "Regular bench sits only until {}".format(until),
+        return [{"courts": [c], "text": "Regular bench to sit only until {}".format(until),
                  "keys": ["until|{}|{}".format(c, until)]} for c in cs]
 
     # 6. a bench sits the whole day
@@ -377,7 +379,7 @@ def interpret_sentence(s, section=None):
         cs = [_venue(t)] if _venue(t) else (named or ([section] if section else []))
         if not cs:
             return None
-        return [{"courts": [c], "text": "Regular bench sits the whole day{}".format(
+        return [{"courts": [c], "text": "Regular bench to sit for the entire day{}".format(
                     " — " + names_phrase(js) if js else ""), "keys": ["wholeday|{}".format(c)]} for c in cs]
 
     # 7. a judge not holding court
@@ -393,9 +395,9 @@ def interpret_sentence(s, section=None):
         lm = re.search(r"LEFT\s+OVER\s+MATTERS\s+OF\s+(THIS\s+COURT|COURT\s+NO\.?\s*(\d{1,2}))", t, re.I)
         if jm.group(1):                                  # special bench
             if dest and dest == section:
-                txt = "{} sits in the Special Bench here{}".format(js[0], " at " + clock if clock else "")
+                txt = "{} to sit in the Special Bench here{}".format(js[0], " at " + clock if clock else "")
             else:
-                txt = "{} leaves{} for the Special Bench in Court {}".format(
+                txt = "{} to leave{} for the Special Bench in Court {}".format(
                     js[0], " at " + clock if clock else "", dest)
             return [{"courts": [section] if section else [dest], "text": txt,
                      "keys": ["sbjoin|{}|{}".format(js[0], dest)]}]
@@ -403,18 +405,18 @@ def interpret_sentence(s, section=None):
             of = section if re.match(r"THIS", lm.group(1), re.I) else str(int(lm.group(2)))
             um2 = re.search(r"\bsit\s+up\s*to\s+(.+)$", t, re.I)
             until = fmt_clock(um2.group(1)) if um2 else None
-            txt = "{} sits in Court {}{} to take up {}'s left-over matters{}".format(
+            txt = "{} to sit in Court {}{} to take up {}'s left-over matters{}".format(
                 js[0], dest, " from " + clock if clock else "", "this court" if of == section else "Court " + str(of),
                 ", until " + until if until else "")
             cs = sorted({c for c in (section, of) if c}, key=int)
             return [{"courts": cs, "text": txt, "keys": ["leftover|{}|{}".format(js[0], of)]}]
         cs = [section] if section else [dest]
-        return [{"courts": cs, "text": "{} sits in Court {}{}".format(js[0], dest, " at " + clock if clock else ""),
+        return [{"courts": cs, "text": "{} to sit in Court {}{}".format(js[0], dest, " at " + clock if clock else ""),
                  "keys": ["sits|{}|{}".format(js[0], dest)]}]
 
     # 9. left-over matters taken up by a named bench at a time
     if re.search(r"LEFT\s+OVER\s+MATTERS", t, re.I) and re.search(r"FOLLOWING\s+BENCH|BY\s+THE\s+BENCH", t, re.I) and section:
-        return [{"courts": [section], "text": "Left-over matters taken up{} by {}".format(
+        return [{"courts": [section], "text": "Left-over matters to be taken up{} by {}".format(
                     " from " + clock if clock else "", names_phrase(js) if js else "another bench"),
                  "keys": ["leftover|bench|{}".format(section)]}]
     return None
@@ -436,7 +438,7 @@ def _sentence_case(t):
 
 def interpret_paragraph(para, section=None, fallback_courts=None):
     """Facts for one notice paragraph (or one causelist note), merged per court:
-    "Special Bench sits here at 3:00 PM — ...; regular bench sits only until 2:55 PM"."""
+    "Special Bench to sit at 3:00 PM — ...; regular bench to sit only until 2:55 PM"."""
     para = _clean(para)
     sents = split_sentences(para)
     facts, unknown = [], []
@@ -500,7 +502,7 @@ def bench_summaries(specials):
             when = "at " + (fmt_clock(b["at"]) or b["at"])
         else:
             when = "today"
-        parts = ["Special Bench sits here {}{}".format(when, " — " + names_phrase(b["judges"]) if b.get("judges") else "")]
+        parts = ["Special Bench to sit {}{}".format(when, " — " + names_phrase(b["judges"]) if b.get("judges") else "")]
         parts += [_sentence_case(x) for x in (b.get("extra") or [])]
         out.append({"courts": [b["venue"]], "text": "; ".join(parts), "keys": ["bench|" + b["venue"]]})
     return out
@@ -525,7 +527,7 @@ def merge_notes(existing, new):
 
 
 def finalize_notes(notes):
-    """Drop a judge's "sits in the Special Bench here" line where that court already has the
+    """Drop a judge's "to sit in the Special Bench here" line where that court already has the
     bench's own line naming him — it says nothing new."""
     bench_text = {}
     for n in notes:
