@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-10-06T19:20:02.331188Z",
-  "parser_version": 13,
+  "generated_at": "2026-10-07T06:03:57.442853Z",
+  "parser_version": 15,
   "window": [
     "2026-10-07",
     "2026-10-08",
@@ -3687,149 +3687,206 @@
       },
       "notes": [
         {
-          "text": "THIS BENCH WILL SIT UPTO 2:55 P.M",
-          "courts": [
-            "4"
-          ]
-        },
-        {
-          "text": "THIS BENCH WILL SIT UPTO 1.00 P.M",
-          "courts": [
-            "7"
-          ]
-        },
-        {
-          "text": "HON'BLE MR. JUSTICE SHEEL NAGU WILL SIT IN COURT NO. 18 AT 2.00 P.M. TO TAKE UP LEFT OVER MATTERS OF COURT NO. 9 EXCEPT PART-HEARD AND SPECIFICALLY DIRECTED MATTERS, IF ANY",
-          "courts": [
-            "7"
-          ]
-        },
-        {
-          "text": "HON'BLE MR. JUSTICE MANMOHAN WILL SIT IN COURT NO. 18 AT 2.00 P.M. TO TAKE UP LEFT OVER MATTERS OF THIS COURT EXCEPT PART-HEARD AND SPECIFICALLY DIRECTED MATTERS, IF ANY",
           "courts": [
             "9"
+          ],
+          "text": "Special Bench to sit at 2:00 PM — Justices Ahsanuddin Amanullah and Nongmeikapam Kotiswar Singh",
+          "keys": [
+            "bench|9"
           ]
         },
         {
-          "text": "THIS BENCH WILL SIT UPTO 3:55 P.M",
-          "courts": [
-            "10"
-          ]
-        },
-        {
-          "text": "HON'BLE MR. JUSTICE NONGMEIKAPAM KOTISWAR SINGH WILL SIT IN SPECIAL BENCH IN COURT NO. 9 AT 2.00 P.M",
-          "courts": [
-            "16"
-          ]
-        },
-        {
-          "text": "HON'BLE MR. JUSTICE SATISH CHANDRA SHARMA WILL SIT IN SPECIAL BENCH IN COURT NO. 7 AT 2.00 P.M",
-          "courts": [
-            "16"
-          ]
-        },
-        {
-          "text": "HONBLE MR. JUSTICE AHSANUDDIN AMANULLAH WILL SIT IN SPECIAL BENCH IN THIS . [ HONBLE MR. JUSTICE MANMOHAN WILL SIT IN COURT NO. 17 AT 2.00 P.M. TO TAKE UP LEFT OVER MATTERS OF COURT NO. 9 EXCEPT PART-HEARD AND SPECIFICALLY DIRECTED MATTERS, IF ANY",
-          "courts": [
-            "9"
-          ]
-        },
-        {
-          "text": "HON'BLE MR. JUSTICE SATISH CHANDRA SHARMA WILL SIT IN SPECIAL BENCH IN COURT NO. 7 AT 2.00 P.M. . HON'BLE MR. JUSTICE NONGMEIKAPAM KOTISWAR SINGH WILL SIT IN SPECIAL BENCH IN COURT NO. 9 AT 2.00 P.M",
-          "courts": [
-            "16"
-          ]
-        },
-        {
-          "text": "HON'BLE MR. JUSTICE DIPANKAR DATTA WILL SIT IN SPECIAL BENCH IN THIS COURT . HON'BLE MR. JUSTICE SHEEL NAGU WILL SIT IN COURT NO. 18 AT 2:00 P.M. TO TAKE UP LEFT OVER MATTERS OF COURT NO. 9 EXCEPT PART HEARD AND SPECIFICALLY DIRECTED MATTERS, IF ANY AND THIS BENCH WILL SIT UPTO 3:55 P.M",
           "courts": [
             "7"
+          ],
+          "text": "Regular bench to sit only until 1:00 PM",
+          "keys": [
+            "until|7|1:00 PM"
           ]
         },
         {
-          "text": "HON'BLE MR. JUSTICE MANOJ MISRA WILL SIT IN SPECIAL BENCH IN THIS",
           "courts": [
-            "10"
+            "7"
+          ],
+          "text": "Justice Sheel Nagu to sit in Court 18 from 2:00 PM to take up Court 9's left-over matters",
+          "keys": [
+            "leftover|Justice Sheel Nagu|9"
           ]
         },
         {
-          "text": "HON'BLE MR. JUSTICE PRASHANT KUMAR MISHRA WILL SIT IN SPECIAL BENCH IN",
           "courts": [
-            "12"
+            "9"
+          ],
+          "text": "Justice Sheel Nagu to sit in Court 18 from 2:00 PM to take up Court 9's left-over matters",
+          "keys": [
+            "leftover|Justice Sheel Nagu|9"
           ]
         },
         {
-          "text": "HON'BLE MR. JUSTICE N.V. ANJARIA WILL SIT IN SPECIAL BENCH IN COURT NO. 12 AT 3.00 P.M",
+          "courts": [
+            "9"
+          ],
+          "text": "Regular bench to sit only until 1:00 PM",
+          "keys": [
+            "until|9|1:00 PM"
+          ]
+        },
+        {
+          "courts": [
+            "9"
+          ],
+          "text": "Justice Manmohan to sit in Court 18 from 2:00 PM to take up this court's left-over matters",
+          "keys": [
+            "leftover|Justice Manmohan|9"
+          ]
+        },
+        {
+          "courts": [
+            "16"
+          ],
+          "text": "Regular bench to sit only until 1:00 PM",
+          "keys": [
+            "until|16|1:00 PM"
+          ]
+        },
+        {
+          "courts": [
+            "16"
+          ],
+          "text": "Justice Nongmeikapam Kotiswar Singh to leave at 2:00 PM for the Special Bench in Court 9",
+          "keys": [
+            "sbjoin|Justice Nongmeikapam Kotiswar Singh|9"
+          ]
+        },
+        {
+          "courts": [
+            "16"
+          ],
+          "text": "Justice Satish Chandra Sharma to leave at 2:00 PM for the Special Bench in Court 7",
+          "keys": [
+            "sbjoin|Justice Satish Chandra Sharma|7"
+          ]
+        },
+        {
+          "courts": [
+            "7"
+          ],
+          "text": "Justice Dipankar Datta to sit in the Special Bench here at 2:00 PM",
+          "keys": [
+            "sbjoin|Justice Dipankar Datta|7"
+          ]
+        },
+        {
           "courts": [
             "15"
+          ],
+          "text": "Justice N.V. Anjaria to leave at 3:00 PM for the Special Bench in Court 12",
+          "keys": [
+            "sbjoin|Justice N.V. Anjaria|12"
           ]
         },
         {
-          "text": "Dated : 06.10.2026 Constitution Bench comprising Hon’ble the Chief Justice of India, Hon’ble Mr. Justice Aravind Kumar, Hon’ble Mr. Justice Prashant Kumar Mishra, Hon’ble Mr. Justice Joymalya Bagchi, Hon’ble Mr. Justice Vipul M. Pancholi, Hon’ble Mr. Justice Shree Chandrashekhar and Hon’ble Mrs. Jus",
           "courts": [
             "1"
+          ],
+          "text": "Constitution Bench of 7 judges at 11:00 AM is cancelled; Regular bench to sit for the entire day — the Chief Justice, Justice Joymalya Bagchi and Justice V. Mohana",
+          "keys": [
+            "cancel|1|11:00 AM",
+            "wholeday|1"
           ],
           "url": "https://cdnbbsr.s3waas.gov.in/s3ec0490f1f4972d133619a60c30f3559e/uploads/2026/10/2026100654.pdf"
         },
         {
-          "text": "Hence, the regular bench comprising Hon’ble the Chief Justice of India, Hon’ble Mr. Justice Joymalya Bagchi and Hon’ble Mrs. Justice V. Mohana in Chief Justice's Court on 07.10.2026 (Wednesday) will sit for the whole day.",
-          "courts": [
-            "1"
-          ],
-          "url": "https://cdnbbsr.s3waas.gov.in/s3ec0490f1f4972d133619a60c30f3559e/uploads/2026/10/2026100654.pdf"
-        },
-        {
-          "text": "Matters listed before the bench comprising Hon’ble Mr. Justice Vikram Nath, Hon’ble Mr. Justice Augustine George Masih and Hon’ble Mr. Justice Sandeep Mehta in Court No. 2 on 07.10.2026 (Wednesday) will now be taken up for hearing by the Bench comprising Hon'ble Mr. Justice Vikram Nath, Hon'ble Mr. ",
           "courts": [
             "2"
           ],
+          "text": "Bench today: Justices Vikram Nath, Sandeep Mehta and Aparesh Kumar Singh — Justice Aparesh Kumar Singh in place of Justice Augustine George Masih",
+          "keys": [
+            "recomp|2"
+          ],
           "url": "https://cdnbbsr.s3waas.gov.in/s3ec0490f1f4972d133619a60c30f3559e/uploads/2026/10/2026100654.pdf"
         },
         {
-          "text": "Matters listed before the bench comprising Hon’ble Mrs. Justice B.V. Nagarathna and Hon’ble Mr. Justice R. Mahadevan in Court No. 3 on 07.10.2026 (Wednesday) will now be taken up for hearing by the bench comprising Hon’ble Mrs. Justice B.V. Nagarathna, Hon’ble Mr. Justice R. Mahadevan and Hon’ble Mr",
           "courts": [
             "3"
           ],
+          "text": "Bench today: Justices B.V. Nagarathna, R. Mahadevan and Devendra Kumar Upadhyaya — Justice Devendra Kumar Upadhyaya joins the bench",
+          "keys": [
+            "recomp|3"
+          ],
           "url": "https://cdnbbsr.s3waas.gov.in/s3ec0490f1f4972d133619a60c30f3559e/uploads/2026/10/2026100654.pdf"
         },
         {
-          "text": "Special Bench comprising Hon’ble Mr. Justice M.M. Sundresh and Hon’ble Aravind Kumar is constituted in Court No. 4 on 07.10.2026 (Wednesday) at 3:00 p.m. to hear M.A.No.74/2025 in C.A.No.14300/2024.",
           "courts": [
             "4"
           ],
+          "text": "Special Bench to sit at 3:00 PM — Justices M.M. Sundresh and Aravind Kumar · to hear M.A. No. 74/2025 in C.A. No. 14300/2024; regular bench to sit only until 2:55 PM",
+          "keys": [
+            "bench|4",
+            "until|4|2:55 PM"
+          ],
           "url": "https://cdnbbsr.s3waas.gov.in/s3ec0490f1f4972d133619a60c30f3559e/uploads/2026/10/2026100654.pdf"
         },
         {
-          "text": "Hence, Regular benches in Court No. 4 & Court No. 11 on 07.10.2026 (Wednesday) will sit upto 2:55 p.m. Special Bench comprising Hon’ble Mr. Justice Manoj Misra and Hon’ble Mr. Justice Manmohan is constituted in Court No. 10 on 07.10.2026 (Wednesday) at 4:00 p.m. to hear C.A.No.8547-8548/2022.",
           "courts": [
-            "4",
-            "10",
             "11"
           ],
+          "text": "Regular bench to sit only until 2:55 PM (Special Bench in Court 4 at 3:00 PM)",
+          "keys": [
+            "until|11|2:55 PM"
+          ],
           "url": "https://cdnbbsr.s3waas.gov.in/s3ec0490f1f4972d133619a60c30f3559e/uploads/2026/10/2026100654.pdf"
         },
         {
-          "text": "Hence, regular bench comprising Hon’ble Mr. Justice Manoj Misra and Hon’ble Mr. Justice Vijay Bishnoi in Court No. 10 on 07.10.2026 (Wednesday) will sit upto 3:55 p.m. Special Bench comprising Hon’ble Mr. Justice Prashant Kumar Mishra and Hon’ble Mr. Justice N.V. Anjaria is constituted in Court No. ",
           "courts": [
-            "10",
+            "10"
+          ],
+          "text": "Special Bench to sit at 4:00 PM — Justices Manoj Misra and Manmohan · to hear C.A. No. 8547-8548/2022; regular bench to sit only until 3:55 PM",
+          "keys": [
+            "bench|10",
+            "until|10|3:55 PM"
+          ],
+          "url": "https://cdnbbsr.s3waas.gov.in/s3ec0490f1f4972d133619a60c30f3559e/uploads/2026/10/2026100654.pdf"
+        },
+        {
+          "courts": [
             "12"
           ],
-          "url": "https://cdnbbsr.s3waas.gov.in/s3ec0490f1f4972d133619a60c30f3559e/uploads/2026/10/2026100654.pdf"
-        },
-        {
-          "text": "Hence, regular benches of Court No. 12 & Court No. 15 will sit upto 2:55 p.m. Contd...2/- -2- Bench comprising Hon’ble Mr. Justice Augustine George Masih and Hon’ble Mrs. Justice Sunita Agarwal is constituted in Court No. 17 on 07.10.2026 (Wednesday) to hear matters listed through supplementary caus",
-          "courts": [
-            "12",
-            "15",
-            "17"
+          "text": "Special Bench to sit at 3:00 PM — Justices Prashant Kumar Mishra and N.V. Anjaria · to hear M.A. Diary No. 35583/2026; regular bench to sit only until 2:55 PM",
+          "keys": [
+            "bench|12",
+            "until|12|2:55 PM"
           ],
           "url": "https://cdnbbsr.s3waas.gov.in/s3ec0490f1f4972d133619a60c30f3559e/uploads/2026/10/2026100654.pdf"
         },
         {
-          "text": "Accordingly, bench comprising Hon’ble Mr. Justice Manmohan and Hon’ble Mr. Justice Sheel Nagu 07.10.2026 (Wednesday) will sit in Court No. 18 instead of Court No. 17 and this bench will sit upto 3:55 p.m.",
           "courts": [
-            "17",
+            "15"
+          ],
+          "text": "Regular bench to sit only until 2:55 PM (Special Bench in Court 12 at 3:00 PM)",
+          "keys": [
+            "until|15|2:55 PM"
+          ],
+          "url": "https://cdnbbsr.s3waas.gov.in/s3ec0490f1f4972d133619a60c30f3559e/uploads/2026/10/2026100654.pdf"
+        },
+        {
+          "courts": [
+            "17"
+          ],
+          "text": "Bench of Justices Augustine George Masih and Sunita Agarwal to sit — to hear matters listed through supplementary cause-list; Justices Manmohan and Sheel Nagu to sit in Court 18, not here",
+          "keys": [
+            "bench|17",
+            "movedfrom|17"
+          ],
+          "url": "https://cdnbbsr.s3waas.gov.in/s3ec0490f1f4972d133619a60c30f3559e/uploads/2026/10/2026100654.pdf"
+        },
+        {
+          "courts": [
             "18"
+          ],
+          "text": "Justices Manmohan and Sheel Nagu to sit here instead of Court 17, until 3:55 PM",
+          "keys": [
+            "moved|18"
           ],
           "url": "https://cdnbbsr.s3waas.gov.in/s3ec0490f1f4972d133619a60c30f3559e/uploads/2026/10/2026100654.pdf"
         }
@@ -3851,7 +3908,7 @@
             "Justice M.M. Sundresh",
             "Justice Aravind Kumar"
           ],
-          "at": "2:55 P.M.",
+          "at": "3:00 PM",
           "after": [],
           "extra": [],
           "noticeUrl": "https://cdnbbsr.s3waas.gov.in/s3ec0490f1f4972d133619a60c30f3559e/uploads/2026/10/2026100654.pdf"
@@ -3862,7 +3919,7 @@
             "Justice Manoj Misra",
             "Justice Manmohan"
           ],
-          "at": "3:55 P.M.",
+          "at": "4:00 PM",
           "after": [],
           "extra": [],
           "noticeUrl": "https://cdnbbsr.s3waas.gov.in/s3ec0490f1f4972d133619a60c30f3559e/uploads/2026/10/2026100654.pdf"
@@ -3875,7 +3932,8 @@
           ],
           "at": "3:00 PM",
           "after": [],
-          "extra": []
+          "extra": [],
+          "noticeUrl": "https://cdnbbsr.s3waas.gov.in/s3ec0490f1f4972d133619a60c30f3559e/uploads/2026/10/2026100654.pdf"
         }
       ],
       "mentioning": {
@@ -5606,69 +5664,237 @@
       },
       "notes": [
         {
-          "text": "THIS BENCH WILL SIT UPTO 1.00 P.M. AND RE-ASSEMBLE AFTER THE HEARING IN SPECIAL BENCH MATTERS LISTED IN THIS COURT AT 2.00 P.M. IS OVER TO TAKE UP LEFT OVER MATTERS OF THIS COURT, IF ANY",
-          "courts": [
-            "2"
-          ]
-        },
-        {
-          "text": "THIS BENCH WILL SIT UPTO 1.00 P.M",
           "courts": [
             "3"
+          ],
+          "text": "Special Bench to sit at 2:00 PM — Justices S. Justice B.V. Nagarathna and Nongmeikapam Kotiswar Singh",
+          "keys": [
+            "bench|3"
           ]
         },
         {
-          "text": "HON'BLE MR. JUSTICE R. MAHADEVAN WILL SIT IN SPECIAL BENCH IN COURT NO. 9 AT 2.00 P.M",
-          "courts": [
-            "3"
-          ]
-        },
-        {
-          "text": "THE FOLLOWING BENCH WILL ASSEMBLE AFTER THE HEARING IN SPECIAL BENCH MATTER LISTED IN THIS COURT AT 2.00 P.M. IS OVER TO TAKE UP THE LEFT OVER MATTERS OF THIS COURT EXCEPT PART HEARD MATTERS, IF ANY — HON'BLE MRS. JUSTICE B.V. NAGARATHNA — HON'BLE MR. JUSTICE DEVENDRA KUMAR UPADHYAYA",
-          "courts": [
-            "3"
-          ]
-        },
-        {
-          "text": "HON'BLE MR. JUSTICE ALOK ARADHE WILL SIT IN COURT NO. 14 AT 2.00 P.M., TO TAKE UP LEFT OVER MATTERS OF COURT NO. 14, EXCEPT PART-HEARD MATTERS, IF ANY",
           "courts": [
             "5"
+          ],
+          "text": "Special Bench to sit at 2:00 PM — Justices Pamidighantam Sri Narasimha and Atul S. Chandurkar",
+          "keys": [
+            "bench|5"
           ]
         },
         {
-          "text": "HON'BLE MR. JUSTICE K. VINOD CHANDRAN WILL SIT IN COURT NO. 16 AT 2.00 P.M. TO TAKE UP LEFT OVER MATTERS OF COURT NO. 16 EXCEPT PART HEARD MATTERS, IF ANY",
           "courts": [
             "6"
+          ],
+          "text": "Special Bench to sit at 1:30 PM — Justices J.B. Pardiwala and K.V. Viswanathan",
+          "keys": [
+            "bench|6"
           ]
         },
         {
-          "text": "LEFT OVER MATTERS OF THIS COURT EXCEPT PART-HEARD MATTERS IF ANY, WILL",
+          "courts": [
+            "6"
+          ],
+          "text": "Special Bench to sit at 2:00 PM — Justices J.B. Pardiwala and K.V. Viswanathan",
+          "keys": [
+            "bench|6"
+          ]
+        },
+        {
           "courts": [
             "9"
+          ],
+          "text": "Special Bench to sit at 2:00 PM — Justices Ahsanuddin Amanullah and R. Mahadevan",
+          "keys": [
+            "bench|9"
           ]
         },
         {
-          "text": "HON'BLE MR. JUSTICE ARUN PALLI WILL SIT IN COURT NO. 18 AT 2.00 P.M. TO TAKE UP LEFT OVER MATTERS OF COURT NO. 9 EXCEPT PART-HEARD MATTERS, IF ANY",
           "courts": [
-            "13"
+            "2"
+          ],
+          "text": "Regular bench to sit only until 1:00 PM",
+          "keys": [
+            "until|2|1:00 PM"
           ]
         },
         {
-          "text": "LEFT OVER MATTERS OF THIS COURT EXCEPT PART-HEARD MATTERS, IF ANY WILL BE TAKEN UP BY THE FOLLOWING BENCH AT 2.00 P.M — HON'BLE MR. JUSTICE UJJAL BHUYAN — HON'BLE MR. JUSTICE ALOK ARADHE",
+          "courts": [
+            "3"
+          ],
+          "text": "Regular bench to sit only until 1:00 PM",
+          "keys": [
+            "until|3|1:00 PM"
+          ]
+        },
+        {
+          "courts": [
+            "3"
+          ],
+          "text": "Justice R. Mahadevan to leave at 2:00 PM for the Special Bench in Court 9",
+          "keys": [
+            "sbjoin|Justice R. Mahadevan|9"
+          ]
+        },
+        {
+          "courts": [
+            "3"
+          ],
+          "text": "Left-over matters to be taken up from 2:00 PM by Justices B.V. Nagarathna — Hon'ble Mr and Devendra Kumar Upadhyaya",
+          "keys": [
+            "leftover|bench|3"
+          ]
+        },
+        {
+          "courts": [
+            "5"
+          ],
+          "text": "Regular bench to sit only until 1:00 PM",
+          "keys": [
+            "until|5|1:00 PM"
+          ]
+        },
+        {
+          "courts": [
+            "5"
+          ],
+          "text": "Justice Alok Aradhe to sit in Court 14 from 2:00 PM to take up Court 14's left-over matters",
+          "keys": [
+            "leftover|Justice Alok Aradhe|14"
+          ]
+        },
+        {
           "courts": [
             "14"
+          ],
+          "text": "Justice Alok Aradhe to sit in Court 14 from 2:00 PM to take up Court 14's left-over matters",
+          "keys": [
+            "leftover|Justice Alok Aradhe|14"
           ]
         },
         {
-          "text": "HON'BLE MR. JUSTICE NONGMEIKAPAM KOTISWAR SINGH WILL SIT IN SPECIAL BENCH IN COURT NO. 3 AT 2.00 P.M",
           "courts": [
-            "16"
+            "6"
+          ],
+          "text": "Regular bench to sit only until 1:00 PM",
+          "keys": [
+            "until|6|1:00 PM"
           ]
         },
         {
-          "text": "LEFT OVER MATTERS OF THIS COURT, EXCEPT PART HEARD MATTERS, IF ANY WILL BE TAKEN UP BY THE FOLLOWING BENCH AT 2.00 P.M — HON'BLE MR. JUSTICE SATISH CHANDRA SHARMA — HON'BLE MR. JUSTICE K. VINOD CHANDRAN",
+          "courts": [
+            "6"
+          ],
+          "text": "Justice K. Vinod Chandran to sit in Court 16 from 2:00 PM to take up Court 16's left-over matters",
+          "keys": [
+            "leftover|Justice K. Vinod Chandran|16"
+          ]
+        },
+        {
           "courts": [
             "16"
+          ],
+          "text": "Justice K. Vinod Chandran to sit in Court 16 from 2:00 PM to take up Court 16's left-over matters",
+          "keys": [
+            "leftover|Justice K. Vinod Chandran|16"
+          ]
+        },
+        {
+          "courts": [
+            "9"
+          ],
+          "text": "Regular bench to sit only until 1:00 PM",
+          "keys": [
+            "until|9|1:00 PM"
+          ]
+        },
+        {
+          "courts": [
+            "9"
+          ],
+          "text": "Left over matters of this court except part-heard matters if any, will be taken up in court no",
+          "keys": [
+            "raw|LEFTOVERMATTERSOFTHISCOURTEXCEPTPARTHEARDMATTERSIFANYWILLBETAKENUPINCOURTNO"
+          ]
+        },
+        {
+          "courts": [
+            "13"
+          ],
+          "text": "Regular bench to sit only until 1:00 PM",
+          "keys": [
+            "until|13|1:00 PM"
+          ]
+        },
+        {
+          "courts": [
+            "13"
+          ],
+          "text": "Justice K.V. Viswanathan to leave at 2:00 PM for the Special Bench in Court 6",
+          "keys": [
+            "sbjoin|Justice K.V. Viswanathan|6"
+          ]
+        },
+        {
+          "courts": [
+            "9"
+          ],
+          "text": "Justice Arun Palli to sit in Court 18 from 2:00 PM to take up Court 9's left-over matters",
+          "keys": [
+            "leftover|Justice Arun Palli|9"
+          ]
+        },
+        {
+          "courts": [
+            "13"
+          ],
+          "text": "Justice Arun Palli to sit in Court 18 from 2:00 PM to take up Court 9's left-over matters",
+          "keys": [
+            "leftover|Justice Arun Palli|9"
+          ]
+        },
+        {
+          "courts": [
+            "14"
+          ],
+          "text": "Regular bench to sit only until 1:00 PM",
+          "keys": [
+            "until|14|1:00 PM"
+          ]
+        },
+        {
+          "courts": [
+            "14"
+          ],
+          "text": "Left-over matters to be taken up from 2:00 PM by Justices Ujjal Bhuyan — Hon'ble Mr and Alok Aradhe",
+          "keys": [
+            "leftover|bench|14"
+          ]
+        },
+        {
+          "courts": [
+            "16"
+          ],
+          "text": "Regular bench to sit only until 1:00 PM",
+          "keys": [
+            "until|16|1:00 PM"
+          ]
+        },
+        {
+          "courts": [
+            "16"
+          ],
+          "text": "Justice Nongmeikapam Kotiswar Singh to leave at 2:00 PM for the Special Bench in Court 3",
+          "keys": [
+            "sbjoin|Justice Nongmeikapam Kotiswar Singh|3"
+          ]
+        },
+        {
+          "courts": [
+            "16"
+          ],
+          "text": "Left-over matters to be taken up from 2:00 PM by Justices Satish Chandra Sharma — Hon'ble Mr and K. Vinod Chandran",
+          "keys": [
+            "leftover|bench|16"
           ]
         }
       ],
