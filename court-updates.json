@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-07T06:11:08.663266Z",
+  "generated_at": "2026-10-07T09:02:22.681761Z",
   "parser_version": 16,
   "window": [
     "2026-10-07",
@@ -700,15 +700,130 @@
             "supp": 4
           },
           "18": {
-            "coram": "",
-            "total": "0",
+            "coram": "HON'BLE MR. JUSTICE MANMOHAN HON'BLE MR. JUSTICE SHEEL NAGU",
+            "total": "38",
             "fresh": "",
-            "items": {},
-            "advocates": {},
+            "items": {
+              "6.2": "Connected STATE OF ODISHA AND ANR. VERSUS ASHOK KUMAR PARIDA AND ORS.",
+              "6.3": "Connected THE STATE OF ODISHA AND ORS. VERSUS MAITRIRANI BISWAL",
+              "7": "SLP(C) No. UNION OF INDIA AND ORS. VERSUS TRIBHUWAN PRATAP SINGH AND ORS.",
+              "8": "SLP(C) No. SHIKANDAR BADASHA VERSUS YALLAVVA AND ORS.",
+              "9": "SLP(C) No. 6874/2024 RATHOD ANIL VERSUS UNION OF INDIA",
+              "10": "T.P.(Crl.) No. 826/2025 PRACHI TEHLAN VERSUS ROHIT SINGH SAROHA",
+              "10.1": "Connected PRACHI TEHLAN VERSUS ROHIT SINGH SAROHA",
+              "10.2": "Connected PRACHI TEHLAN VERSUS ROHIT SINGH SAROHA",
+              "11": "T.P.(C) No. 3209/2025 SWETA SINHA VERSUS PUSHKAR PRATEEK",
+              "12": "T.P.(Crl.) No. 507/2026 HITENDRA VERSUS SAU. NILIMA HITENDRAKUMAR PALASPAGAR AND",
+              "13": "SLP(C) No. 14927/2026 DELHI BIBLE FELOWSHIP VERSUS SUNIL KUMAR AND ORS.",
+              "14": "SLP(Crl) No. GURVINDER SINGH SAINI VERSUS SIMRANDEEP KAUR",
+              "15": "SLP(Crl) No. 7773/2026 DEEPAK PUROHIT VERSUS PUSHPIKA RAJPUROHIT AND ANR.",
+              "16": "Diary No. 44387-2026 STATE OF U.P. AND ORS. VERSUS HARIRAM",
+              "17": "SLP(C) No. 7924/2021 DULO RAM (SINCE DECEASED) THROUGH HIS VERSUS VIKASH SHARMA AND ORS.",
+              "18": "SLP(C) No. 25405/2023 THE STATE OF GUJARAT AND ORS. VERSUS DASHRATHJI JAHUJI RANA AND ANR.",
+              "19": "SLP(C) No. SABIHA VERSUS MAIMOON CONSTRUCTION AND DEVELOPMENT",
+              "19.1": "Connected AKHTAR PARVEZ MAIMOON VERSUS AMA INDUSTRIES PVT LTD AND ORS.",
+              "20": "SLP(C) No. PAWAN BATRA AND ORS. VERSUS BHUPINDER KAUR AND ORS.",
+              "21": "SLP(C) No. 28462/2023 BHARAT BHUSHAN VERSUS UNION OF INDIA AND ORS.",
+              "22": "SLP(C) No. 4095/2024 V. SOUNDARARAJAN VERSUS UNION OF INDIA AND ORS.",
+              "23": "SLP(C) No. 2661/2024 M. I. HASAN VERSUS A. S. VIJAY ANAND",
+              "24": "SLP(C) No. 16807/2024 BALWAN SINGH AND ORS. VERSUS RAM KUMAR (DEAD) AND ORS.",
+              "25": "SLP(C) No. 7564/2024 V. SRINIVAS VERSUS APARNA ALURU",
+              "26": "SLP(C) No. UNION OF INDIA AND ORS. VERSUS ALL INDIA NAVAL CLERKS ASSOCIATION AND ORS.",
+              "26.1": "Connected UNION OF INDIA AND ORS. VERSUS ALL INDIA NAVAL CLERKS ASSOCIATION AND ORS.",
+              "27": "SLP(C) No. 25202/2024 STATE OF ODISHA AND ORS. VERSUS DEBENDRA DEEP AND ORS. JAI ANANT DEHADRAI- 4013",
+              "28": "SLP(C) No. 24760/2024 SAVITA AND ORS. VERSUS THE DIVISIONAL CONTROLLER, NEKRTC",
+              "29": "SLP(C) No. 19627/2024 SHAMIM ILYAS VOHRA VERSUS STATE OF GUJARAT AND ANR.",
+              "30": "SLP(C) No. 27337/2024 SUMANTA KUMAR SENGUPTA AND ANR. VERSUS STATE OF JHARKHAND AND ORS.",
+              "30.1": "Connected MAHESH CHANDRA MAHTO VERSUS THE STATE OF JHARKHAND AND ORS.",
+              "30.2": "Connected ARBIND KUMAR LAL AND ORS. VERSUS STATE OF JHARKHAND AND ORS. TULIKA MUKHERJEE- 2201",
+              "32": "SLP(C) No. 21013/2025 A V THOMAS VERSUS JOHNEY JOSEPH AND ANR.",
+              "33": "SLP(C) No. 20604/2025 SATISH KUMAR AND ANR. VERSUS LILU RAM AND ORS.",
+              "34": "SLP(C) No. P.RAJALAKSHMI VERSUS J. THIRUVENKATESAN",
+              "35": "CONMT.PET.(C) No. BHUVANESHWAR SINGH VERSUS KRISHNA KANT PATHAK",
+              "36": "SLP(C) No. 21393/2025 EXECUTIVE ENGINEER HYDROELECTRIC VERSUS RAMDEEN",
+              "37": "SLP(C) No. 32308/2025 STATE OF RAJASTHAN AND ORS. VERSUS HEMANT GIRI GOSWAMI AND ANR.",
+              "37.1": "Connected STATE OF RAJASTHAN AND ORS. VERSUS SUNITA AND ANR.",
+              "37.2": "Connected THE STATE OF RAJASTHAN AND ORS. VERSUS LEELRAJ SINGH",
+              "37.3": "Connected STATE OF RAJASTHAN AND ORS. VERSUS NAGINA BANO",
+              "37.4": "Connected STATE OF RAJASTHAN AND ORS. VERSUS HARI SINGH KANAWAT AND ORS.",
+              "38": "SLP(C) No. 26737/2025 MANISHA SHRAVAN MANE AND ORS. VERSUS THE STATE OF MAHARASHTRA AND ORS.",
+              "39": "CONMT.PET.(C) No. SARAT LENKA VERSUS DEORANJAN KUMAR SINGH AND ANR.",
+              "40": "SLP(C) No. 28950/2025 SAROJ AND ORS. VERSUS UNION OF INDIA",
+              "41": "Diary No. 44113-2025 NEETU AND ORS. VERSUS THE STATE OF HARYANA AND ORS.",
+              "42": "SLP(C) No. 32511/2025 TARA PRASANNA PAL AND ORS. VERSUS UNION OF INDIA AND ORS.",
+              "43": "SLP(C) No. 8349/2026 SUPREETY JAGOTA VERSUS HEPESH JAGOTA",
+              "44": "SLP(C) No. 10623/2026 REVABEN NATHABHAI DAMOR VERSUS THE STATE OF GUJARAT AND ORS.",
+              "45": "SLP(C) No. 31979/2026 PREMAKUMARI VERSUS CHINNAMMA AND ORS."
+            },
+            "advocates": {
+              "8": {
+                "pet": "DHARMAPRABHAS LAW"
+              },
+              "11": {
+                "pet": "NAGARKATTI KARTIK UDAY"
+              },
+              "12": {
+                "pet": "VACHHER AND AGRUD"
+              },
+              "15": {
+                "pet": "YADAV NARENDER SINGH"
+              },
+              "21": {
+                "pet": "RAJESH SINGH CHAUHAN"
+              },
+              "24": {
+                "pet": "SURENDER SINGH HOODA"
+              },
+              "26.1": {
+                "pet": "SHREEKANT NEELAPPA"
+              },
+              "28": {
+                "pet": "SHASHIBHUSHAN P"
+              },
+              "29": {
+                "pet": "SANTOSH KUMAR PANDEY"
+              },
+              "30": {
+                "pet": "MANISH KUMAR SARAN"
+              },
+              "30.1": {
+                "pet": "MANISH KUMAR SARAN"
+              },
+              "30.2": {
+                "pet": "MANISH KUMAR SARAN"
+              },
+              "35": {
+                "pet": "CHITRANGDA RASTRAVARA"
+              },
+              "37": {
+                "pet": "S.. UDAYA KUMAR SAGAR"
+              },
+              "37.1": {
+                "pet": "S.. UDAYA KUMAR SAGAR"
+              },
+              "37.2": {
+                "pet": "S.. UDAYA KUMAR SAGAR"
+              },
+              "37.3": {
+                "pet": "S.. UDAYA KUMAR SAGAR"
+              },
+              "41": {
+                "pet": "NISCHAL KUMAR NEERAJ"
+              },
+              "42": {
+                "pet": "KEDAR NATH TRIPATHY"
+              },
+              "43": {
+                "pet": "ANKIT ANANDRAJ SHAH"
+              },
+              "44": {
+                "pet": "SHIVANSH BHARATKUMAR"
+              }
+            },
             "times": {},
             "withItem": {},
             "main": 0,
-            "supp": 0
+            "supp": 38
           },
           "9": {
             "coram": "HON'BLE MR. JUSTICE AHSANUDDIN AMANULLAH HON'BLE MR. JUSTICE MANMOHAN",
@@ -3769,6 +3884,34 @@
         },
         {
           "courts": [
+            "9",
+            "18"
+          ],
+          "text": "Following left over matters of Court No. 9 will now be taken up for hearing by this bench except part-heard and specifically directed matters, if any",
+          "keys": [
+            "raw|FOLLOWINGLEFTOVERMATTERSOFCOURTNO9WILLNOWBETAKENUPFORHEARINGBYTHISBENCHEXCEPTPAR"
+          ]
+        },
+        {
+          "courts": [
+            "18"
+          ],
+          "text": "Regular bench to sit only until 3:55 PM",
+          "keys": [
+            "until|18|3:55 PM"
+          ]
+        },
+        {
+          "courts": [
+            "18"
+          ],
+          "text": "Justice Manmohan to leave at 4:00 PM for the Special Bench in Court 10",
+          "keys": [
+            "sbjoin|Justice Manmohan|10"
+          ]
+        },
+        {
+          "courts": [
             "7"
           ],
           "text": "Justice Dipankar Datta to sit in the Special Bench here at 2:00 PM",
@@ -5955,7 +6098,7 @@
   "sources": {
     "2026-10-07": {
       "M_J_1": 1713827,
-      "M_J_2": 733232,
+      "M_J_2": 682190,
       "F_J_1": 1158284,
       "F_J_2": 804284,
       "M_R_1": 526755,
