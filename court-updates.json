@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-07T19:45:20.768133Z",
+  "generated_at": "2026-10-08T09:16:44.491336Z",
   "parser_version": 16,
   "window": [
     "2026-10-08",
@@ -1413,15 +1413,73 @@
             "supp": 3
           },
           "18": {
-            "coram": "",
-            "total": "0",
+            "coram": "HON'BLE MR. JUSTICE MANMOHAN HON'BLE MR. JUSTICE ARUN PALLI",
+            "total": "26",
             "fresh": "",
-            "items": {},
-            "advocates": {},
+            "items": {
+              "18": "SLP(Crl) No. 1147/2026 DNYANESHWAR MAROTRAO MAHADULE AND ANR. VERSUS OMPRAKASH SHOBHARAM GAWHANE AND ORS.",
+              "19": "SLP(Crl) No. 897/2026 N.M.NARENDRA VERSUS C.GOPALAN AND ANR.",
+              "20": "SLP(Crl) No. ROSHAN @ BUTRU RAM CHELAK VERSUS STATE OF CHHATTISGARH",
+              "21": "T.P.(C) No. 108/2025 RACHNA VERSUS MAHENDER SINGH",
+              "24": "SLP(Crl) No. STATE OF BIHAR THROUGH CBI VERSUS DINESH KUMAR",
+              "25": "SLP(Crl) No. THE STATE OF UTTAR PRADESH VERSUS VIJAI AND ANR. ETC.",
+              "26": "SLP(Crl) No. C. GURUNATHAN VERSUS STATE REP BY THE INSPECTOR OF POLICE",
+              "27": "SLP(Crl) No. ANITA PATLE KHARE VERSUS STATE OF CHHATTISGARH AND ORS.",
+              "29": "SLP(Crl) No. SUDIPTA GHOSH VERSUS TAPAS PAL",
+              "31": "SLP(Crl) No. 9739/2026 REWAT SINGH AND ANR. VERSUS THE STATE OF RAJASTHAN",
+              "32": "SLP(C) No. 22361/2019 PUSHPLATA SHUKLA VERSUS ANIL KUMAR SHUKLA",
+              "33": "SLP(C) No. 4684/2022 RAM KISHUN AND ANR. VERSUS VISHUN RAM AND ORS. KARUNAKAR MAHALIK-",
+              "34": "SLP(C) No. 19363/2023 UNION OF INDIA AND ANR. VERSUS M. BALAKRISHNA REDDY AND ANR.",
+              "35": "SLP(C) No. 23540/2023 K. MURUGAN VERSUS ICICI LOMBARD GENERAL INSURANCE COMPANY",
+              "36": "SLP(C) No. 5056/2024 PRAVEEN KUMAR N PRABHA AND ORS. VERSUS PREENA G",
+              "37": "SLP(C) No. 26819/2024 AREA MANAGER, FOOD CORPORATION OF INDIA, VERSUS S. SUNDARAM AND ORS.",
+              "38": "SLP(C) No. 22864/2025 RAJESHWARIKUMARI JANAKSINH CHAUHAN AND VERSUS ORIENTAL INSURANCE CO LTD. AND ORS.",
+              "39": "SLP(C) No. 31912/2025 ROHIT KUMAR AND ANR. VERSUS ANIL KUMAR SHARMA AND ORS.",
+              "40": "SLP(C) No. 34397/2025 S. SAVITHRAMMA VERSUS S. PADMAVATHAMMA AND ORS.",
+              "41": "SLP(C) No. 2928/2026 K. BHARATHI VERSUS THE PRINCIPAL SECRETARY AND ORS.",
+              "43": "SLP(C) No. 6563/2026 NIRUPAMA JENA AND ORS. VERSUS BHOLESWAR MAHANTA AND ORS.",
+              "44": "SLP(C) No. 4532/2026 D. DHANASEKARAN VERSUS P. KARTHIGA",
+              "45": "SLP(C) No. 7574/2026 TENALI SAI LAKSHMI ANANYA VERSUS NIMMALA PAVAN KUMAR",
+              "46": "SLP(C) No. STATE OF UTTAR PRADESH VERSUS BADAL CHATTERJEE AND ANR.",
+              "49": "SLP(C) No. 28462/2023 BHARAT BHUSHAN VERSUS UNION OF INDIA AND ORS.",
+              "50": "SLP(C) No. 24760/2024 SAVITA AND ORS. VERSUS THE DIVISIONAL CONTROLLER, NEKRTC"
+            },
+            "advocates": {
+              "19": {
+                "pet": "ANURADHA MUTATKAR"
+              },
+              "20": {
+                "pet": "RAJEEV KUMAR BANSAL"
+              },
+              "24": {
+                "pet": "SHREEKANT NEELAPPA"
+              },
+              "26": {
+                "pet": "G. SIVABALAMURUGAN"
+              },
+              "31": {
+                "pet": "CHITRANGDA RASTRAVARA"
+              },
+              "32": {
+                "pet": "CHRISTOPHER DSOUZA"
+              },
+              "34": {
+                "pet": "GURMEET SINGH MAKKER"
+              },
+              "43": {
+                "pet": "BHUSHAN MAHENDRA OZA"
+              },
+              "49": {
+                "pet": "RAJESH SINGH CHAUHAN"
+              },
+              "50": {
+                "pet": "SHASHIBHUSHAN P"
+              }
+            },
             "times": {},
             "withItem": {},
             "main": 0,
-            "supp": 0
+            "supp": 26
           },
           "15": {
             "coram": "HON'BLE MR. JUSTICE S.V.N. BHATTI HON'BLE MR. JUSTICE N.V. ANJARIA",
@@ -3825,6 +3883,25 @@
         },
         {
           "courts": [
+            "14"
+          ],
+          "text": "Following left over matters of this court will now be taken up by this bench",
+          "keys": [
+            "raw|FOLLOWINGLEFTOVERMATTERSOFTHISCOURTWILLNOWBETAKENUPBYTHISBENCH"
+          ]
+        },
+        {
+          "courts": [
+            "9",
+            "18"
+          ],
+          "text": "Following left over matters of Court No. 9 will now be taken up for hearing by this bench except part-heard and specifically directed matters, if any",
+          "keys": [
+            "raw|FOLLOWINGLEFTOVERMATTERSOFCOURTNO9WILLNOWBETAKENUPFORHEARINGBYTHISBENCHEXCEPTPAR"
+          ]
+        },
+        {
+          "courts": [
             "2"
           ],
           "text": "Justice Vikram Nath to sit in Court 2 at 2:00 PM",
@@ -4676,7 +4753,7 @@
   "sources": {
     "2026-10-08": {
       "M_J_1": 793428,
-      "M_J_2": 560103,
+      "M_J_2": 574339,
       "F_J_1": 1244706,
       "M_C_1": 504991,
       "M_R_1": 529030,
