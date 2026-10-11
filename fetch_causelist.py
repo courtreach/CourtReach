@@ -52,7 +52,7 @@ OUTPUT_FILE = "court-updates.json"
 # based change-detection reuses a cached parse when the PDF is unchanged; without
 # this, a parser FIX never reaches already-cached dates (their PDFs don't change).
 # A version mismatch forces a full re-parse of every date in the window.
-PARSER_VERSION = 17  # bumped: Misc items tagged Part A (fresh) / B (after notice) + supplementary-list membership (circular 23/Judl./2026)
+PARSER_VERSION = 18  # bumped: totals ignore stray item numbers far past the clean 1..N run
 HEADERS = {"User-Agent": "Mozilla/5.0 (compatible; courtreach-causelist-bot/1.0)"}
 
 COURT_RE = re.compile(r"COURT\s*NO\.?\s*[:\-]?\s*([0-9]+)", re.I)
@@ -1378,7 +1378,17 @@ def n_matters(items):
         except ValueError:
             return False
         return n >= 1 and not (300 <= n < 400) and n < 800
-    return sum(1 for k in items if "." not in k and real(k))
+    nums = sorted({int(k) for k in items if "." not in k and real(k)})
+    # A stray far past the clean 1..N run is a PDF fragment read as an item number (live: a
+    # 50-item list "containing" 670) — it must not inflate the total. Only applied when the
+    # list does run from 1; otherwise every number counts, as before.
+    run = 0
+    present = set(nums)
+    while run + 1 in present:
+        run += 1
+    if run:
+        nums = [n for n in nums if n <= run + 20]
+    return len(nums)
 
 
 def build_for_date(date_str, prev_day=None, prev_sizes=None):

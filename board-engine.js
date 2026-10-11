@@ -227,9 +227,14 @@
       if (isNaN(n) || n < 1 || isReservedItem(n)) continue;
       info[n] = { part: mp.part[k] === "B" ? "B" : "A", supp: supp.has(k) };
     }
-    const all = Object.keys(info).map(Number).sort((a, b) => a - b);
+    let all = Object.keys(info).map(Number).sort((a, b) => a - b);
     if (!all.length) return null;
-    for (let i = 0; i < all.length; i++) if (all[i] !== i + 1) return null;
+    // The list must number 1..N cleanly. A stray FAR beyond the clean run (live data: a 50-item
+    // list "containing" 670, 142, 400 — PDF fragments read as item numbers) is ignored; a gap
+    // INSIDE the run, or near its end, is a missed item, and the circular order stays off.
+    let run = 0; while (info[run + 1]) run++;
+    if (!run || all.some(n => n > run && n <= run + 20)) return null;
+    all = all.filter(n => n <= run);
     const grp = (p, sp) => all.filter(n => info[n].part === p && info[n].supp === sp);
     const A = grp("A", false).concat(grp("A", true)), B = grp("B", false).concat(grp("B", true));
     return { order: A.concat(B), freshEnd: A.length, partOf: n => (info[Math.floor(n)] || {}).part || null };
@@ -283,7 +288,7 @@
     const { seq } = eff;
     const po = passoverItemsFor(ctx, court);
     const queueAll = Object.keys(po).map(k => parseInt(k, 10)).filter(n => !isNaN(n)).sort((a, b) => (callPos(seq, a) - callPos(seq, b)));
-    const total = miscTotalFor(ctx, court), end = miscEnd(seq, total);
+    const total = miscTotalFor(ctx, court), end = eff.circular ? seq.length : miscEnd(seq, total);
     const cur = bc ? bc.item : null, curP = (cur != null && !isReservedItem(Math.floor(parseFloat(cur)))) ? callPos(seq, cur) : null;
     const reach = bc ? reachOf(ctx, court, seq, total, cur) : 0;
     const recalled = hasRecalledPO(ctx, court);
