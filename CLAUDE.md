@@ -25,7 +25,7 @@ CourtReach's own.
 | `courtreach.html` | THE app — one file, vanilla JS, Firebase v10.12.2 ESM. `const DEMO=false;` |
 | `index.html` | **Byte-identical mirror** of courtreach.html (`cp courtreach.html index.html && diff -q`). Always mirror before committing. |
 | `board-engine.js` | The pure proximity engine (no DOM, no Firestore). Loaded by the app; **embedded verbatim** in worker.js. |
-| `engine-tests/` | The engine's stress tests (`sim-day.js`, `sim-round2.js`, `sim-fixed-time.js`, `sim-circular.js`). Run all FOUR (must print 0 fails) before shipping an engine change. |
+| `engine-tests/` | The engine's stress tests (`sim-day.js`, `sim-round2.js`, `sim-fixed-time.js`, `sim-circular.js`, `sim-stress.js`). Run all FIVE (must print 0 fails) before shipping an engine change. `sim-stress.js` mixes every factor at random — see below. |
 | `worker.js` | **Not in the repo (gitignored)** — lives only at `~/Projects/CourtReach/worker.js`. CourtReach's Cloudflare Worker: board relay + push + cron watcher. Pasted by hand into the Cloudflare dashboard. |
 | `firestore.rules` | **Gitignored.** Source of truth for what is pasted into the Firebase console (project `courtreach-ee02b`). |
 | `sw.js` | Service worker: push/notificationclick only — no caching layer by design. |
@@ -96,6 +96,43 @@ pass-over gets NO estimate; Misc only (Regular lists have no such split).
   sequence the Sequence row spells out the circular order; pass-overs are described as two
   queues. `sim-circular.js` (0 / 782,872; ticks between a second pass-over and the first
   after-notice call are unscored — the board can't show the bench's intent there).
+
+**The stress simulator (`sim-stress.js`, owner: "Do stress test. Conduct multiple and
+variable factors", 11 Oct 2026).** Nine families, 60 random court-days each, ~360k scored
+checks + ~8k invariant-only ticks, every factor at once: circular order, announced sequence
+(blocks / full) over the circular rest, "X WITH Y" and causelist links, fresh AND after-notice
+pass-overs, a typed-in pass-over, a matter disposed OUT OF TURN, mentioning / special bench /
+idle interruptions, a tracked special-bench matter, Regular-list matters, a time-fixed item,
+a manual "over" mark, stray part keys, second pass-overs. It found SEVEN real engine faults,
+all fixed the same day:
+1. A causelist "taken up along with item N" link still held a slot for everyone else (the
+   sequence's own WITH form already vacated it) — `effSeq()` now vacates both.
+2. A numbered Misc item with a FIXED TIME held a slot ("[TO BE TAKEN UP AT 2.00 P.M.]" on a
+   list item is real — Court 9) — vacated too, which needs the court's fixed times in ctx:
+   `fixedTimesByCourt()` in the app (causelist `times` + typed), `sbTimes` in the worker.
+   `sim-fixed-time`'s "the next item is unaffected" assertion was WRONG and now expects one
+   closer.
+3. ...and one named in the ANNOUNCED sequence ("10 TO 19", 19 fixed) was vacated only from the
+   unmentioned rest — now from the declared part too, the "passovers" point moving with it.
+4. The recall-at-end point used the causelist's serial count, which still counts vacated
+   items — `effSeq().full` marks an order that IS the whole list; its length is the end.
+5. `reachOf()`: a lone OVER remark (or high board number) FAR AHEAD of the current item is an
+   out-of-turn disposal, not reach — it dragged reach to the end and collapsed the progress
+   bar. A position ahead now counts only if the two before it are finished / passed over /
+   current. Judged only once the remark column reports a finished matter (a column with none
+   — `sim-round2` section C — keeps the old reading).
+6. A passed-over matter's distance didn't drop items disposed out of turn between the court
+   and its recall point (the plain branch always did).
+7. Regular-list distance counted an out-of-turn disposal ahead as "Misc to go", and used the
+   serial count instead of the effective order; and "into after-notice" is now denied while
+   the board shows a Part-A item (a fresh pass-over being recalled is proof the court is
+   still in fresh); fresh queue is "now" once all fresh called and recalls are seen.
+Known, deliberate: a matter disposed out of turn that sits IMMEDIATELY after the current
+item is indistinguishable from the court moving on (one unscored tick); the discretionary
+second pass-over is unforeseeable for Misc matters but counts as Misc business for Regular
+ones; a manual mark on a matter covers the matters taken up WITH it. Debug a failure with
+`jsc -e 'globalThis.STRESS_DEBUG=true; load("sim-stress.js")'` — it dumps the first failing
+day of each family (factors, sequence text, truth order vs the engine's order).
 
 **Causelist-published item links** ("TO BE TAKEN UP ALONG WITH ITEM NO. 23" — a fact the
 SC's own list states, not a passover, nothing typed in; owner: "our app needs to take into

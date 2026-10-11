@@ -10,5 +10,8 @@ k=ENG.classify({courtNo:"5",itemNo:"32"}, bc, {...base, nowMins:880, fixedTimes:
 k=ENG.classify({courtNo:"5",itemNo:"32"}, {court:"5",item:"",status:"NOT IN SESSION"}, {...base, nowMins:600, fixedTimes:{"5_32":"14:30"}}); eq([k.tier,k.short],["later","at 2:30 PM"],"court not sitting yet, still a clock");
 k=ENG.classify({courtNo:"5",itemNo:"32"}, bc, {...base, nowMins:880, fixedTimes:{"5_32":"14:30"}, remarksByCourt:{"5":{items:{"32":"OVER"}}}}); eq([k.tier,!!k.over],["passed",true],"board OVER still wins");
 k=ENG.classify({courtNo:"5",itemNo:"32"}, bc, {...base, nowMins:880, fixedTimes:{"5_32":"14:30"}, doneMarks:{"5_32":{v:"att"}}}); eq([k.tier,!!k.done],["passed",true],"user mark still wins");
-k=ENG.classify({courtNo:"5",itemNo:"33"}, bc, {...base, nowMins:880, fixedTimes:{"5_32":"14:30"}}); eq([k.gap,k.fixed],[13,undefined],"the next item is unaffected");
+// 12, not 13: a numbered item fixed for a time holds no slot in the morning run — the court
+// skips it at its number and takes it at 2:30 — so the item after it is one closer (changed
+// 11 Oct 2026 with the stress simulator; it used to assert "unaffected", 13)
+k=ENG.classify({courtNo:"5",itemNo:"33"}, bc, {...base, nowMins:880, fixedTimes:{"5_32":"14:30"}}); eq([k.gap,k.fixed],[12,undefined],"the next item is one closer (the timed item's slot is empty)");
 print(`sim3 fixed-time: ${c} checks, ${f} fails`);

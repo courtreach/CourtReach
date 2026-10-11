@@ -2061,12 +2061,24 @@ function courtCtx(){
   return { nowMins:nowMinsIST(), boardByCourt:boardByCourt(),
     seqByCourt:effSeqByCourt(), remarksByCourt, boardPO:boardPO.marks, recalledPO:recalledPO.set, poMarks:po, doneMarks:done,
     miscTotalByCourt:miscTotalByCourt(), itemHi:itemHi.max, withItem:withItemByCourt(),
-    specialBenches:courtUpdates?.by_date?.[todayISO()]?.specialBenches||[], miscParts:miscPartsByCourt() };
+    specialBenches:courtUpdates?.by_date?.[todayISO()]?.specialBenches||[], miscParts:miscPartsByCourt(), fixedTimes:fixedTimesByCourt() };
+}
+/* Every fixed time known for a court today — the causelist's own per-item times and the
+   typed-in ones — not only the tracked matter's: a numbered item with a fixed time holds no
+   slot in the call order, and the engine can only vacate it if it knows about it. */
+function fixedTimesByCourt(){
+  const out={}, today=todayISO(), lists=courtUpdates?.by_date?.[today]?.lists||{};
+  for(const t of CAUSELIST_TYPES){ const by=lists[t]||{}; for(const court in by){ const times=by[court].times||{};
+    for(const item in times){ if(times[item] && ENG.clockMins(times[item])!=null) out[String(parseInt(court,10))+"_"+item]=times[item]; } } }
+  for(const bag of [timesOwn, timesOrg]){ for(const k in bag){ const r=bag[k]; if(!r||!r.t) continue;
+    const [d,court,...rest]=k.split("_"); if(d!==today) continue; out[String(parseInt(court,10))+"_"+rest.join("_").replace(/-/g,".")]=r.t; } }
+  return out;
 }
 function classify(e){ const bc=boardByCourt()[String(e.courtNo)];
   const ctx=courtCtx();
   const ft=fixedTimeFor(e.courtNo,e.itemNo,todayISO());
-  if(ft) ctx.fixedTimes={[String(e.courtNo)+"_"+String(e.itemNo)]:ft};
+  ctx.fixedTimes=Object.assign({}, fixedTimesByCourt());
+  if(ft) ctx.fixedTimes[String(e.courtNo)+"_"+String(e.itemNo)]=ft;
   return ENG.classify({courtNo:String(e.courtNo),itemNo:String(e.itemNo),listType:e.listType||""}, bc, ctx); }
 // Where this court's passovers will be taken, and in what order — the engine's own answer.
 function courtPlan(court){ return ENG.passoverPlan(courtCtx(), String(court), boardByCourt()[String(court)]); }
@@ -2910,7 +2922,7 @@ function openCourtModal(court,_refetched){
      passover are subtracted from that to give what is actually finished. */
   const plan=courtPlan(court);
   const poOut=plan.queue.length;
-  const reach=(!idle && bc && !isNaN(curNum)) ? ENG.reachOf(courtCtx(), court, plan.seq||[], miscTotal||null, bc.item) : 0;
+  const reach=(!idle && bc && !isNaN(curNum)) ? ENG.reachOf(courtCtx(), court, plan.seq||[], miscTotal||null, bc.item, plan.vacated) : 0;
   const doneN=Math.max(0, Math.min(reach, miscTotal||reach) - poOut - 1);
   // curNum<800: a reserved-series item (803 = mentioning) is a PHASE, not a Regular-list
   // position — without the gate the hero read "Misc list done · Regular list on" while the

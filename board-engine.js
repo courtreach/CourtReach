@@ -245,15 +245,46 @@
      order is the sequence and its fresh pass-over point is the passIdx. Without Part data this
      is exactly seqInfo(), so every pre-circular behaviour is unchanged. */
   function effSeq(ctx, court, seqTxt) {
-    const s = seqInfo(seqTxt);
+    let s = seqInfo(seqTxt);
     const circ = circularOrder(ctx, court);
     const none = () => null;
-    if (!circ) return { seq: s.seq, passIdx: s.passIdx, withMap: s.withMap, circular: false, partOf: none, freshEnd: null };
-    if (!s.seq.length)
-      return { seq: circ.order, passIdx: circ.freshEnd, withMap: s.withMap, circular: true, partOf: circ.partOf, freshEnd: circ.freshEnd };
-    const inSeq = new Set(s.seq), linked = new Set(Object.keys(s.withMap).map(Number));
+    // Items heard TOGETHER with another item hold no slot of their own — the sequence's own
+    // "23 WITH 58" (seqInfo already keeps those out of `seq`) and the causelist's "TO BE TAKEN
+    // UP ALONG WITH ITEM NO. 23" alike. The stress simulator caught the second kind still
+    // counting as a position for everyone else: with 1 to be taken up along with 5, every
+    // other matter in that court read one further away than it was.
+    const linked = new Set(Object.keys(s.withMap).map(Number));
+    const prefix = String(court) + "_";
+    for (const key in (ctx.withItem || {})) if (key.indexOf(prefix) === 0 && ctx.withItem[key]) { const n = parseInt(key.slice(prefix.length), 10); if (!isNaN(n)) linked.add(n); }
+    // ...and so does a numbered matter the court has FIXED A TIME for ("[TO BE TAKEN UP AT
+    // 2.00 P.M.]" printed against a Misc item): it is taken at its time, not at its number, so
+    // its slot is empty for everyone else (stress simulator: every other matter in such a court
+    // read one further away all day). Needs the court's fixed times in ctx, not only ours.
+    for (const key in (ctx.fixedTimes || {})) if (key.indexOf(prefix) === 0 && clockMins(ctx.fixedTimes[key]) != null) { const n = parseInt(key.slice(prefix.length), 10); if (!isNaN(n) && n >= 1 && !isReservedItem(n)) linked.add(n); }
+    // a fixed-time or linked matter named in the announced order leaves it too (the court takes
+    // it at its time / with its partner, not at that slot); the "passovers" point moves with it
+    const declared = s.seq.filter(n => !linked.has(n));
+    const passIdx = s.passIdx == null ? null : s.seq.slice(0, s.passIdx).filter(n => !linked.has(n)).length;
+    s = { seq: declared, passIdx, withMap: s.withMap };
+    const inSeq = new Set(s.seq);
+    // `full`: the order below is the WHOLE list, explicitly — its own length is then the end of
+    // the list (where after-notice / unannounced pass-overs are recalled), not the causelist's
+    // serial count, which still counts the vacated items.
+    if (!circ) {
+      if (!linked.size) return { seq: s.seq, passIdx: s.passIdx, withMap: s.withMap, circular: false, partOf: none, freshEnd: null, full: false, vacated: linked };
+      const total = miscTotalFor(ctx, court);
+      const ceiling = total != null ? total : Math.max(0, ...s.seq);
+      const rest = []; for (let n = 1; n <= ceiling; n++) if (!inSeq.has(n) && !linked.has(n)) rest.push(n);
+      if (!s.seq.length && total == null) return { seq: s.seq, passIdx: s.passIdx, withMap: s.withMap, circular: false, partOf: none, freshEnd: null, full: false, vacated: linked };
+      return { seq: s.seq.concat(rest), passIdx: s.passIdx, withMap: s.withMap, circular: false, partOf: none, freshEnd: null, full: total != null, vacated: linked };
+    }
+    if (!s.seq.length) {
+      const order = circ.order.filter(n => !linked.has(n));
+      const freshEnd = circ.order.slice(0, circ.freshEnd).filter(n => !linked.has(n)).length;
+      return { seq: order, passIdx: freshEnd, withMap: s.withMap, circular: true, partOf: circ.partOf, freshEnd, full: true, vacated: linked };
+    }
     const rest = circ.order.filter(n => !inSeq.has(n) && !linked.has(n));
-    return { seq: s.seq.concat(rest), passIdx: s.passIdx, withMap: s.withMap, circular: false, partOf: circ.partOf, freshEnd: null };
+    return { seq: s.seq.concat(rest), passIdx: s.passIdx, withMap: s.withMap, circular: false, partOf: circ.partOf, freshEnd: null, full: true, vacated: linked };
   }
 
   /* How far along its call order the court has visibly got — a COUNT of positions reached.
@@ -261,21 +292,39 @@
      item it skipped earlier); the highest item number seen and the furthest item marked OVER
      never dip, so the reach is the greatest of the three. Under a sequence the highest NUMBER
      says little (item 12 may be first in the announced order), which is why OVER matters. */
-  function reachOf(ctx, court, seq, miscTotal, curItem) {
+  function reachOf(ctx, court, seq, miscTotal, curItem, vacated) {
     const cur = parseFloat(curItem);
     // The board sitting on a Special Bench / mentioning / judgment item says nothing about how
     // far the numbered lists have got — counting it as a position made reach balloon past the
-    // whole list the moment a 2 PM special bench began.
-    const curP = isReservedItem(Math.floor(cur)) ? null : callPos(seq, curItem);
-    const hi = (ctx.itemHi || {})[String(court)] || 0, hiP = hi ? callPos(seq, hi) : null;
-    let overP = null;
+    // whole list the moment a 2 PM special bench began. Likewise an item that holds no slot of
+    // its own (taken up along with another, or at its fixed time): when the board shows it,
+    // orderPos would put it past the end and saturate the progress bar.
+    const noSlot = n => vacated && vacated.has(Math.floor(n));
+    const ceil = miscTotal != null ? miscTotal : Infinity;
+    const curP = (isReservedItem(Math.floor(cur)) || noSlot(cur)) ? null : callPos(seq, curItem);
+    // positions the court is finished with (any remark that ends the matter today) and the
+    // outstanding pass-overs (called and skipped — their slot IS reached)
+    const done = new Set(), poSet = new Set();
     const r = (ctx.remarksByCourt || {})[String(court)];
-    if (r && r.items) for (const k in r.items) { if (!/^over$/i.test(r.items[k])) continue;
-      const kp = callPos(seq, k); if (kp != null && kp < (miscTotal != null ? miscTotal : Infinity) && (overP == null || kp > overP)) overP = kp; }
-    // ...and an outstanding passover was, by definition, called and skipped — its slot is reached.
-    let poP = null;
+    if (r && r.items) for (const k in r.items) { if (noSlot(k) || !remarkEndsToday(r.items[k])) continue;
+      const kp = callPos(seq, k); if (kp != null && kp < ceil) done.add(kp); }
     const po = passoverItemsFor(ctx, court);
-    for (const k in po) { const kp = callPos(seq, k); if (kp != null && kp < (miscTotal != null ? miscTotal : Infinity) && (poP == null || kp > poP)) poP = kp; }
+    for (const k in po) { if (noSlot(k)) continue; const kp = callPos(seq, k); if (kp != null && kp < ceil) poSet.add(kp); }
+    /* A position AHEAD of the current item is only evidence of reach when the court visibly got
+       there in order — the two slots before it are finished / passed over (or are the current
+       item itself). A lone finished item far ahead is a matter disposed OUT OF TURN (dismissed as
+       withdrawn, a mentioned matter, an adjournment posted early), and a high number shown on the
+       board out of turn is the same thing — either used to drag reach to the end of the list and
+       collapse the progress bar (stress simulator). Only judged when the remark column is in
+       hand at all; without it the old reading stands. */
+    const haveRemarks = done.size >= 1;   // a column that reports no finished matter can't be judged by
+    const inOrder = p => { if (curP != null && p <= curP) return true; if (!haveRemarks) return true;
+      const ok = q => q < 0 || q === curP || done.has(q) || poSet.has(q); return ok(p - 1) && ok(p - 2); };
+    let overP = null; for (const p of done) if (inOrder(p) && (overP == null || p > overP)) overP = p;
+    let poP = null; for (const p of poSet) if (inOrder(p) && (poP == null || p > poP)) poP = p;
+    const hi = (ctx.itemHi || {})[String(court)] || 0;
+    let hiP = (hi && !noSlot(hi)) ? callPos(seq, hi) : null;
+    if (hiP != null && !inOrder(hiP)) hiP = null;
     return Math.max(curP != null ? curP + 1 : 0, hiP != null ? hiP + 1 : 0, overP != null ? overP + 1 : 0, poP != null ? poP + 1 : 0, (!seq.length && !isNaN(cur) && !isReservedItem(Math.floor(cur))) ? cur : 0);
   }
   /* Where THIS court's passovers will be taken, in one place, so the sheet and the distance
@@ -288,9 +337,9 @@
     const { seq } = eff;
     const po = passoverItemsFor(ctx, court);
     const queueAll = Object.keys(po).map(k => parseInt(k, 10)).filter(n => !isNaN(n)).sort((a, b) => (callPos(seq, a) - callPos(seq, b)));
-    const total = miscTotalFor(ctx, court), end = eff.circular ? seq.length : miscEnd(seq, total);
-    const cur = bc ? bc.item : null, curP = (cur != null && !isReservedItem(Math.floor(parseFloat(cur)))) ? callPos(seq, cur) : null;
-    const reach = bc ? reachOf(ctx, court, seq, total, cur) : 0;
+    const total = miscTotalFor(ctx, court), end = eff.full ? seq.length : miscEnd(seq, total);
+    const cur = bc ? bc.item : null, curP = (cur != null && !isReservedItem(Math.floor(parseFloat(cur))) && !eff.vacated.has(Math.floor(parseFloat(cur)))) ? callPos(seq, cur) : null;
+    const reach = bc ? reachOf(ctx, court, seq, total, cur, eff.vacated) : 0;
     const recalled = hasRecalledPO(ctx, court);
     // one recall point -> where the plan stands
     const decide = (passIdx, queue, rec) => {
@@ -301,7 +350,7 @@
       // and this already-known fact vanished from the court sheet (owner: "the passover section
       // ... not showing when the passovers will be taken up").
       const after = (passIdx != null && passIdx > 0) ? seq[passIdx - 1] : null;
-      const base = { queue, after, seq, passIdx, end, circular: eff.circular };
+      const base = { queue, after, seq, passIdx, end, circular: eff.circular, full: eff.full, vacated: eff.vacated };
       if (!bc || curP == null) return Object.assign(base, { at: null, gap: null });
       if (passIdx != null && (reach < passIdx || (reach === passIdx && !rec))) return Object.assign(base, { at: "sequence", gap: passIdx - curP });
       if (passIdx == null && rec) return Object.assign(base, { at: "now", gap: 1 });
@@ -316,9 +365,15 @@
        a second time — the circular leaves that to the bench's discretion, so it gets no
        estimate (owner: "The second pass over is new and cant say when it will be taken up"). */
     const fresh = queueAll.filter(n => eff.partOf(n) !== "B"), an = queueAll.filter(n => eff.partOf(n) === "B");
-    const intoB = reach > eff.freshEnd;
-    const planA = intoB ? { at: "discretion", queue: fresh, gap: null, after: seq[eff.freshEnd - 1] || null, seq, passIdx: eff.freshEnd, end, circular: true }
-                        : decide(eff.freshEnd, fresh, recalled);
+    // the board showing a Part-A item (a fresh matter being called, or a fresh pass-over being
+    // recalled) is direct evidence the court is NOT into after-notice yet, whatever reach says
+    const intoB = reach > eff.freshEnd && !(curP != null && curP < eff.freshEnd);
+    // all fresh matters called and the court is visibly recalling: it is working the fresh
+    // queue now — whatever an out-of-turn disposal just past the fresh point did to reach
+    const workingA = !intoB && recalled && reach >= eff.freshEnd;
+    const planA = intoB ? { at: "discretion", queue: fresh, gap: null, after: seq[eff.freshEnd - 1] || null, seq, passIdx: eff.freshEnd, end, circular: true, full: eff.full, vacated: eff.vacated }
+                : workingA ? { at: "now", queue: fresh, gap: 1, after: seq[eff.freshEnd - 1] || null, seq, passIdx: eff.freshEnd, end, circular: true, full: eff.full, vacated: eff.vacated }
+                : decide(eff.freshEnd, fresh, recalled);
     const planB = decide(null, an, false);
     if (part === "A") return planA;
     if (part === "B") return planB;
@@ -384,8 +439,8 @@
       if (eff && eff.circular) {
         const b = eff.partOf(parseInt(k, 10)) === "B";
         if (!b && curP != null && curP >= eff.freshEnd && !(po[k].after != null)) rp = null;
-        else rp = recallPos(seq, b ? null : passIdx, miscTotal, po[k].after, curP);
-      } else rp = recallPos(seq, passIdx, miscTotal, po[k].after, curP);
+        else rp = recallPos(seq, b ? null : passIdx, seq.length, po[k].after, curP);
+      } else rp = recallPos(seq, passIdx, (eff && eff.full) ? seq.length : miscTotal, po[k].after, curP);
       const aheadOrig = xp > curP && xp < ourP;
       // a recall inserted at position rp is heard before the item that holds rp — so rp == ourP
       // means it comes just before us and counts
@@ -454,7 +509,8 @@
     if (isReservedItem(fl)) return null;                    // its own special bench / other phase
     if (onRegularList(ctx, court, total)) return po;
     const seqTxt = (bc.sequence && bc.sequence.trim()) ? bc.sequence : ((ctx.seqByCourt || {})[court] || "");
-    const reach = reachOf(ctx, court, effSeq(ctx, court, seqTxt).seq, total, bc.item);
+    const effR = effSeq(ctx, court, seqTxt);
+    const reach = reachOf(ctx, court, effR.seq, total, bc.item, effR.vacated);
     return Math.max(0, total - reach) + 1 + po;
   }
 
@@ -671,7 +727,11 @@
           if (plan.at === "discretion")
             return { tier: "later", label: "second pass-over — taken up at the bench's discretion", short: "2nd pass-over", po: true };
           if (plan.gap != null) {
-            gap = plan.gap + queued;
+            let skipped = 0;
+            const rr = (ctx.remarksByCourt || {})[String(e.courtNo)];
+            if (rr && rr.items) for (const k in rr.items) { if (!remarkEndsToday(rr.items[k]) || eff.vacated.has(parseInt(k, 10))) continue;
+              const v = callPos(seq, k); if (v != null && v > curPos && v < curPos + plan.gap) skipped++; }
+            gap = Math.max(0, plan.gap - skipped) + queued;
             tail = eff.circular
               ? (ourPart === "B" ? " · after-notice pass-overs, at the end" : " · fresh pass-overs, after the fresh matters")
               : plan.at === "sequence" ? " · taken after the sequence" : plan.at === "end" ? " · taken at end" : " · in the passover queue";
@@ -704,8 +764,12 @@
         // higher.
         // Progress is measured in CALL-ORDER positions — see reachOf(): the furthest the court
         // has visibly got, which does not dip while it is recalling a low-numbered passover.
-        const miscDone = reachOf(ctx, e.courtNo, seq, miscTotal, bc.item);
-        const miscLeft = Math.max(0, (miscTotal != null ? miscTotal : seq.length) - miscDone);
+        const miscDone = reachOf(ctx, e.courtNo, seq, miscTotal, bc.item, eff.vacated);
+        let outOfTurnAhead = 0;
+        { const rr = (ctx.remarksByCourt || {})[String(e.courtNo)];
+          if (rr && rr.items) for (const k in rr.items) { if (!remarkEndsToday(rr.items[k]) || eff.vacated.has(parseInt(k, 10))) continue;
+            const p = callPos(seq, k); if (p != null && p >= miscDone && p < seq.length) outOfTurnAhead++; } }
+        const miscLeft = Math.max(0, ((miscTotal != null && !eff.full) ? miscTotal : seq.length) - miscDone - outOfTurnAhead);
         // Misc's own outstanding passovers are still Misc business, not yet disposed, and
         // Misc must finish before Regular starts — so they count toward the gap too (owner:
         // "miscellaneous list comes first before the regular list and so also any passover
