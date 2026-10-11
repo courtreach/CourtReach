@@ -1899,6 +1899,16 @@ function miscTotalByCourt(){
     if(!isNaN(t)&&t>0) out[String(court)]=t; }
   return out;
 }
+/* Circular F.No. 23/Judl./2026 (9 Oct 2026): each Miscellaneous list is Part-A (fresh) and
+   Part-B (after notice), and every court takes A-main, A-supp, fresh pass-overs, B-main,
+   B-supp, after-notice pass-overs. The causelist tags every Misc item with its part and
+   supplementary-list membership; the engine builds the default call order from it when no
+   sequence is announced. Misc only — Regular lists have no such split (owner). */
+function miscPartsByCourt(){
+  const out={}, lists=courtUpdates?.by_date?.[todayISO()]?.lists?.["Miscellaneous"]||{};
+  for(const c in lists){ const r=lists[c]||{}; if(r.part && Object.keys(r.part).length) out[String(c)]={part:r.part, supp:r.suppItems||[]}; }
+  return out;
+}
 // Items the CAUSELIST ITSELF says are heard together with a different item in the same
 // court — "item 58 ... TO BE TAKEN UP ALONG WITH ITEM NO. 23" — a published fact, not a
 // passover and nothing anyone types in. Keyed "court_item" so it drops straight into ctx
@@ -2051,7 +2061,7 @@ function courtCtx(){
   return { nowMins:nowMinsIST(), boardByCourt:boardByCourt(),
     seqByCourt:effSeqByCourt(), remarksByCourt, boardPO:boardPO.marks, recalledPO:recalledPO.set, poMarks:po, doneMarks:done,
     miscTotalByCourt:miscTotalByCourt(), itemHi:itemHi.max, withItem:withItemByCourt(),
-    specialBenches:courtUpdates?.by_date?.[todayISO()]?.specialBenches||[] };
+    specialBenches:courtUpdates?.by_date?.[todayISO()]?.specialBenches||[], miscParts:miscPartsByCourt() };
 }
 function classify(e){ const bc=boardByCourt()[String(e.courtNo)];
   const ctx=courtCtx();
@@ -2107,6 +2117,18 @@ function fixedLabelFor(court,item,date){
 // and the distances on the chips can never say two different things.
 function passoverPlanText(plan){
   const q=(plan&&plan.queue)||[]; if(!q.length) return "";
+  // Circular: two queues, each described on its own terms
+  if(plan.circular && (plan.fresh || plan.an)){
+    const one=(p,label,where)=>{ const qq=(p&&p.queue)||[]; if(!qq.length) return "";
+      const list=`${label} pass-over${qq.length>1?"s":""} ${qq.join(", ")}`;
+      const toGo=n=>`${n} item${n===1?"":"s"} to go`;
+      if(p.at==="discretion") return `${list}: passed over again — the bench will take ${qq.length>1?"them":"it"} up at its discretion.`;
+      if(p.at==="now") return `${list}: being taken now.`;
+      return `${list}: taken ${where}${p.gap!=null?` — ${toGo(p.gap)}`:""}.`;
+    };
+    return [one(plan.fresh,"Fresh",`after the fresh matters${plan.fresh&&plan.fresh.after!=null?` (after item ${plan.fresh.after})`:""}`),
+            one(plan.an,"After-notice","at the end of the list")].filter(Boolean).join(" ");
+  }
   const order = q.length>1 ? `, in that order (${q.join(", ")})` : "";
   const toGo = n => `${n} item${n===1?"":"s"} to go`;
   if(plan.at==="now") return `Being taken now — ${q[0]} next${q.length>1?`, then ${q.slice(1).join(", ")}`:""}.`;
@@ -2898,6 +2920,12 @@ function openCourtModal(court,_refetched){
   const leftN=showProg ? Math.max(0, miscTotal-doneN) : 0;
   const pct=showProg ? Math.max(2, Math.min(100, Math.round(doneN/miscTotal*100))) : 0;
   const planLine=passoverPlanText(plan);
+  // which part of the circular's order the court is on (only when that order applies)
+  const partLab = (plan.circular && plan.freshEnd!=null) ? (reach<=plan.freshEnd ? "Fresh matters" : "After notice") : "";
+  // no announced sequence, but the circular gives the order: say it
+  const circLine = (!seq.length && plan.circular && plan.freshEnd!=null)
+    ? `Not announced — by the circular: fresh ${seqRanges(plan.seq.slice(0,plan.freshEnd))||"—"}, fresh pass-overs, then after notice ${seqRanges(plan.seq.slice(plan.freshEnd))||"—"}, after-notice pass-overs`
+    : "";
   $("modalRoot").innerHTML=`<div class="ovl" data-close><div class="sheet cs" data-court="${esc(court)}"><button class="sh-x" data-close>&times;</button>
     <div class="cs-hero">
       <div class="cs-idrow">
@@ -2908,7 +2936,7 @@ function openCourtModal(court,_refetched){
       <div class="cs-prog">
         <div class="cs-progline">
           <span class="cs-on ${idle?"idle":""}">${idle?"Not sitting":`On item ${esc(bc?.item||"·")}`}</span>
-          ${showProg?`<span class="cs-of">${doneN} over · ${leftN} to go${poOut?` · ${poOut} passed over`:""}</span>`
+          ${showProg?`<span class="cs-of">${partLab?partLab+" · ":""}${doneN} over · ${leftN} to go${poOut?` · ${poOut} passed over`:""}</span>`
             :onRegular?`<span class="cs-of">Misc list done${poOut?` · ${poOut} passed over pending`:""} · Regular list on</span>`
             :(miscTotal?`<span class="cs-of">${miscTotal} listed</span>`:"")}
         </div>
@@ -2958,8 +2986,8 @@ function openCourtModal(court,_refetched){
         <span class="cs-body"><span class="cs-title">${esc(e.caseTitle||("item "+e.itemNo))}${who?` <span class="cs-who">· ${esc(who)}</span>`:""}</span>${sbTime?`<span class="cs-note time"><i class="ti ti-clock"></i> ${esc(sbTime)}</span>`:""}${rmk?`<span class="cs-note rmk">${esc(rmk)}</span>`:""}</span>
         ${hideDist?"":`<span class="cs-dist ${esc(band)}">${esc(k.short||"—")}</span>`}</div>`; }).join("")}`:""}
     <div class="cs-reg">
-      <div class="cs-row"><span class="cs-k">Sequence</span><span class="cs-val${seq.length?"":" dim"}">${seq.length
-        ?esc(seqRanges(seq))+(withPairs.length?` (${esc(withPairs.join(", "))})`:"")+", then the rest":"Not declared yet"}${mSeq?`<span class="cs-by">Typed in${mBy?" by "+esc(mBy):""}</span>`:""}</span>
+      <div class="cs-row"><span class="cs-k">Sequence</span><span class="cs-val${seq.length||circLine?"":" dim"}">${seq.length
+        ?esc(seqRanges(seq))+(withPairs.length?` (${esc(withPairs.join(", "))})`:"")+", then the rest":(circLine?esc(circLine):"Not declared yet")}${mSeq?`<span class="cs-by">Typed in${mBy?" by "+esc(mBy):""}</span>`:""}</span>
         <button class="cs-edit" data-cedit="seq"><i class="ti ti-pencil"></i>${mSeq?"Edit":"Add"}</button></div>
       <div class="cs-row"><span class="cs-k">Passed over</span><span class="cs-val${pass.length?"":" dim"}">${pass.length
         ?`<span class="cs-chips">${pass.map(n=>{ const kk=classify({courtNo:court,itemNo:n});

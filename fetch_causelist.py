@@ -52,7 +52,7 @@ OUTPUT_FILE = "court-updates.json"
 # based change-detection reuses a cached parse when the PDF is unchanged; without
 # this, a parser FIX never reaches already-cached dates (their PDFs don't change).
 # A version mismatch forces a full re-parse of every date in the window.
-PARSER_VERSION = 16  # bumped: bracketed notes run to "]"; left-over-in-another-court / after-special-bench phrasings
+PARSER_VERSION = 17  # bumped: Misc items tagged Part A (fresh) / B (after notice) + supplementary-list membership (circular 23/Judl./2026)
 HEADERS = {"User-Agent": "Mozilla/5.0 (compatible; courtreach-causelist-bot/1.0)"}
 
 COURT_RE = re.compile(r"COURT\s*NO\.?\s*[:\-]?\s*([0-9]+)", re.I)
@@ -901,6 +901,13 @@ def courts_in(text):
 # "Versus" sits at the foot of a page, this line is the first thing after it and
 # was wrongly captured as the respondent ("… VERSUS DAILY CAUSE LIST FOR DATED …").
 # Skip it wholesale so the real respondent (further down the next page) is used.
+# Circular F.No. 23/Judl./2026 (9 Oct 2026): Miscellaneous main and supplementary lists are
+# each PART-A (fresh) and PART-B (after notice), and every court takes them A-main, A-supp,
+# fresh pass-overs, B-main, B-supp, after-notice pass-overs. The lists don't print "PART-A/B"
+# yet; owner's rule (11 Oct 2026): by PRINTED POSITION — every item before the first "AFTER
+# NOTICE" heading of a court's section is Part A, every item from it on is Part B. An
+# explicit "PART-A"/"PART-B" heading, once the Registry prints one, is taken as it stands.
+PART_HEAD_RE = re.compile(r"^\[?\s*(?:PART\s*[-\u2013]?\s*([AB])\b|(AFTER\s+NOTICE)\b)", re.I)
 HEADER_SKIP = re.compile(r"DAILY\s+CAUSE\s+LIST", re.I)
 
 
@@ -1043,6 +1050,7 @@ def parse_courts(text):
     cur_time = ""              # that section's declared time (clock time, or a
                                 # verbatim relative-timing note) — "" if undeclared
     note_acc = None            # mid-accumulation of a bracketed note split across lines
+    cur_part = {}              # court -> "A" | "B" for THIS list (see PART_HEAD_RE)
     last_item = None           # the item the CURRENT line's text belongs to — a "taken up
                                 # along with" note appears well after the item/Versus/
                                 # respondent lines are already consumed, so this is the only
@@ -1079,7 +1087,7 @@ def parse_courts(text):
         if court is not None:
             same_court = (court == cur)
             cur = court
-            courts.setdefault(cur, {"coram": "", "total": "", "fresh": "", "items": {}, "times": {}, "withItem": {}})
+            courts.setdefault(cur, {"coram": "", "total": "", "fresh": "", "items": {}, "times": {}, "withItem": {}, "part": {}})
             # collect the bench only until we have it; page headers repeat the
             # court + coram on every page, so re-collecting would duplicate it.
             in_header = not courts[cur]["coram"]
@@ -1137,6 +1145,9 @@ def parse_courts(text):
             else:
                 with_acc = frag
             continue
+        ph = PART_HEAD_RE.match(line)
+        if ph:
+            cur_part[cur] = ph.group(1).upper() if ph.group(1) else "B"
         if SPECIAL_BENCH_RE.search(line):
             in_special_bench = True
         # The declared TIME is captured regardless of in_special_bench — real
@@ -1179,6 +1190,7 @@ def parse_courts(text):
                 caseline = (sm.group(2).strip() + " " + pending_conn["party"]).strip()
                 if key not in courts[cur]["items"]:
                     courts[cur]["items"][key] = re.sub(r"\s+", " ", caseline).strip()[:70]
+                    courts[cur]["part"][key] = cur_part.get(cur, "A")
                     if cur_time and in_special_bench:
                         courts[cur]["times"][key] = cur_time
                     pending = (cur, key); await_resp = False
@@ -1195,6 +1207,7 @@ def parse_courts(text):
             last_item = it
             if it not in courts[cur]["items"]:
                 courts[cur]["items"][it] = re.sub(r"\s+", " ", im.group(2)).strip()[:70]
+                courts[cur]["part"][it] = cur_part.get(cur, "A")
                 if cur_time and in_special_bench:
                     courts[cur]["times"][it] = cur_time
                 pending = (cur, it); await_resp = False
@@ -1355,7 +1368,17 @@ def n_matters(items):
     them UNDER their main item — they are not separate serial matters, so they
     must NOT inflate a court's total/main/supp counts (Court 5's 30 matters were
     reading 32 because of two connected sub-items)."""
-    return sum(1 for k in items if "." not in k)
+    # ...and only real LIST positions: not a stray "0", not the Special Bench 300s, not the
+    # 800s/1500s+ phase numbers a list can carry (Court 5, 12 Oct 2026: 1501, 1502 and 3776
+    # made a 57-item list read as 60, which pushed the circular's "end of the list" — where
+    # after-notice pass-overs are recalled — three positions too far)
+    def real(k):
+        try:
+            n = int(k)
+        except ValueError:
+            return False
+        return n >= 1 and not (300 <= n < 400) and n < 800
+    return sum(1 for k in items if "." not in k and real(k))
 
 
 def build_for_date(date_str, prev_day=None, prev_sizes=None):
@@ -1421,8 +1444,15 @@ def build_for_date(date_str, prev_day=None, prev_sizes=None):
                 # printout can show the breakup ("Main 50 · Supp 10").
                 ex = merged.setdefault(court, {"coram": "", "total": "", "fresh": "",
                                                "items": {}, "advocates": {}, "times": {},
-                                               "withItem": {}, "main": 0, "supp": 0})
+                                               "withItem": {}, "part": {}, "suppItems": [],
+                                               "main": 0, "supp": 0})
                 before = n_matters(ex["items"])
+                # which matters came from the SUPPLEMENTARY list, and each matter's part
+                # (A fresh / B after notice) — the circular's call order needs both
+                if variant == "supp":
+                    ex["suppItems"] += [k for k in info.get("items", {}) if k not in ex["items"]]
+                for k, v in info.get("part", {}).items():
+                    ex["part"].setdefault(k, v)
                 ex["items"].update(info.get("items", {}))
                 ex["times"].update(info.get("times", {}))
                 # a "taken up with item N" note is self-contained (N is just a number, not

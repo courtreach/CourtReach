@@ -25,7 +25,7 @@ CourtReach's own.
 | `courtreach.html` | THE app — one file, vanilla JS, Firebase v10.12.2 ESM. `const DEMO=false;` |
 | `index.html` | **Byte-identical mirror** of courtreach.html (`cp courtreach.html index.html && diff -q`). Always mirror before committing. |
 | `board-engine.js` | The pure proximity engine (no DOM, no Firestore). Loaded by the app; **embedded verbatim** in worker.js. |
-| `engine-tests/` | The engine's stress tests (`sim-day.js`, `sim-round2.js`, `sim-fixed-time.js`). Run all three (must print 0 fails) before shipping an engine change. |
+| `engine-tests/` | The engine's stress tests (`sim-day.js`, `sim-round2.js`, `sim-fixed-time.js`, `sim-circular.js`). Run all FOUR (must print 0 fails) before shipping an engine change. |
 | `worker.js` | **Not in the repo (gitignored)** — lives only at `~/Projects/CourtReach/worker.js`. CourtReach's Cloudflare Worker: board relay + push + cron watcher. Pasted by hand into the Cloudflare dashboard. |
 | `firestore.rules` | **Gitignored.** Source of truth for what is pasted into the Firebase console (project `courtreach-ee02b`). |
 | `sw.js` | Service worker: push/notificationclick only — no caching layer by design. |
@@ -68,6 +68,34 @@ Rendering is imperative: `render()` → `renderBoard()` (islands + route rail) /
    recalling, distance = place in the queue. Misc passovers come before the Regular list.
 6. Being past the item in call order with nothing posted = over (`over:true`, `approx` when
    no sequence exists).
+
+**The 9 Oct 2026 circular (F.No. 23/Judl./2026) — Miscellaneous call order.** Main and
+supplementary Misc lists are each Part-A (fresh) and Part-B (after notice); every court takes
+A-main, A-supp, passed-over fresh, (second pass-over of fresh — bench's discretion), B-main,
+B-supp, passed-over after-notice. Owner's decisions (11 Oct 2026): Part = PRINTED POSITION
+(everything before a court's first "AFTER NOTICE" heading is A — bail, freshly adjourned,
+transfer petitions etc. included; an explicit "PART-A/B" heading wins once printed); a second
+pass-over gets NO estimate; Misc only (Regular lists have no such split).
+- `fetch_causelist.py` tags each Misc item `part{item:"A"|"B"}` and lists `suppItems`
+  (parser v17); `n_matters()` now counts only real list positions (no 0, no 300s, nothing
+  >=800 — Court 5's 1501/1502/3776 had made 57 read as 60).
+- Engine: `circularOrder()` builds the default order (null unless items number 1..N without
+  gaps — an unparsed item would otherwise jump to the end and saturate reach); `effSeq()` =
+  the announced sequence when there is one (the circular only orders the unmentioned rest),
+  else the circular order with passIdx = the fresh pass-over point. `passoverPlan(..., part)`
+  keeps two queues (fresh at the fresh point, after-notice at the end); a fresh pass-over still
+  outstanding once the court is into Part B returns `at:"discretion"` -> classify() says
+  "second pass-over — taken up at the bench's discretion", no gap. `poAdjust` and
+  `passoversBeforeOurs` are part-aware. `approx` is set when the order is only the default.
+  Without part data everything is exactly as before (the three old simulators are unchanged).
+- What it fixed, real 12 Oct Court 5 data, board on 30: supplementary fresh 56 was "26 away"
+  (now 15 — right after main fresh); passed-over fresh 12 was "28 away" (now 17 — recalled
+  after the fresh matters, not at the end); and with the board on supp 56, main after-notice
+  50 used to read "OVER" (numerically lower) — now "9 away".
+- Court sheet: progress line says "Fresh matters" / "After notice"; with no announced
+  sequence the Sequence row spells out the circular order; pass-overs are described as two
+  queues. `sim-circular.js` (0 / 782,872; ticks between a second pass-over and the first
+  after-notice call are unscored — the board can't show the bench's intent there).
 
 **Causelist-published item links** ("TO BE TAKEN UP ALONG WITH ITEM NO. 23" — a fact the
 SC's own list states, not a passover, nothing typed in; owner: "our app needs to take into

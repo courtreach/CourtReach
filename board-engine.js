@@ -30,6 +30,10 @@
                                                           rule — "after the normal work of Courts
                                                           4, 10 & 16 is over" — used to measure
                                                           its matters (300s) from those courts
+     miscParts        {court: {part:{item:"A"|"B"}, supp:[items]}}  Misc list Part-A (fresh) /
+                                                          Part-B (after notice) and which items
+                                                          are supplementary — the circular's
+                                                          default call order (9 Oct 2026)
      withItem         {"court_item": "otherItem"}  the CAUSELIST's own word that this item
                                                      will be heard together with a different
                                                      item in the same court ("TO BE TAKEN UP
@@ -202,6 +206,51 @@
     return seq.length || null;
   }
 
+  /* THE CIRCULAR'S ORDER (F.No. 23/Judl./2026, 9 Oct 2026). Miscellaneous main and
+     supplementary lists are each Part-A (fresh) and Part-B (after notice), and every court
+     takes them: A-main, A-supp, passed-over fresh, B-main, B-supp, passed-over after-notice.
+     ctx.miscParts[court] = {part:{item:"A"|"B"}, supp:[items]} comes from the causelist
+     (fetch_causelist.py, by printed position — owner's rule). Returns the full default call
+     order, how many Part-A positions open it (the fresh pass-over point), and each item's part
+     — or null when the data isn't there or doesn't number 1..N without gaps (a gap means the
+     parse missed an item, and an unknown current item would otherwise jump to the end and
+     saturate the progress bar — the exact failure the reserved-series fix chased). Regular
+     lists have no such split (owner), so the app only ever passes Misc data. */
+  function circularOrder(ctx, court) {
+    const mp = (ctx.miscParts || {})[String(court)];
+    if (!mp || !mp.part) return null;
+    const supp = new Set((mp.supp || []).map(String));
+    const info = {};
+    for (const k in mp.part) {
+      if (k.indexOf(".") >= 0) continue;               // connected sub-items ride on their main item
+      const n = parseInt(k, 10);
+      if (isNaN(n) || n < 1 || isReservedItem(n)) continue;
+      info[n] = { part: mp.part[k] === "B" ? "B" : "A", supp: supp.has(k) };
+    }
+    const all = Object.keys(info).map(Number).sort((a, b) => a - b);
+    if (!all.length) return null;
+    for (let i = 0; i < all.length; i++) if (all[i] !== i + 1) return null;
+    const grp = (p, sp) => all.filter(n => info[n].part === p && info[n].supp === sp);
+    const A = grp("A", false).concat(grp("A", true)), B = grp("B", false).concat(grp("B", true));
+    return { order: A.concat(B), freshEnd: A.length, partOf: n => (info[Math.floor(n)] || {}).part || null };
+  }
+  /* The call order the engine actually uses for a court. A sequence the court ANNOUNCED wins
+     (and its own "passovers" point); the circular only orders whatever it leaves unmentioned
+     ("then the rest") instead of plain item numbers. With NO announced sequence, the circular's
+     order is the sequence and its fresh pass-over point is the passIdx. Without Part data this
+     is exactly seqInfo(), so every pre-circular behaviour is unchanged. */
+  function effSeq(ctx, court, seqTxt) {
+    const s = seqInfo(seqTxt);
+    const circ = circularOrder(ctx, court);
+    const none = () => null;
+    if (!circ) return { seq: s.seq, passIdx: s.passIdx, withMap: s.withMap, circular: false, partOf: none, freshEnd: null };
+    if (!s.seq.length)
+      return { seq: circ.order, passIdx: circ.freshEnd, withMap: s.withMap, circular: true, partOf: circ.partOf, freshEnd: circ.freshEnd };
+    const inSeq = new Set(s.seq), linked = new Set(Object.keys(s.withMap).map(Number));
+    const rest = circ.order.filter(n => !inSeq.has(n) && !linked.has(n));
+    return { seq: s.seq.concat(rest), passIdx: s.passIdx, withMap: s.withMap, circular: false, partOf: circ.partOf, freshEnd: null };
+  }
+
   /* How far along its call order the court has visibly got — a COUNT of positions reached.
      The current item is one reading, but it dips during a recall (the court is back on a low
      item it skipped earlier); the highest item number seen and the furthest item marked OVER
@@ -228,30 +277,48 @@
      maths can never disagree. `at` is "after"/"sequence"/"end"/"now"/null; `queue` is the
      outstanding passovers in the order they will be recalled; `gap` is how many items the
      court still has to call before the first recall (null when unknown). */
-  function passoverPlan(ctx, court, bc) {
+  function passoverPlan(ctx, court, bc, part) {
     const seqTxt = (bc && bc.sequence && bc.sequence.trim()) ? bc.sequence : ((ctx.seqByCourt || {})[String(court)] || "");
-    const { seq, passIdx } = seqInfo(seqTxt);
+    const eff = effSeq(ctx, court, seqTxt);
+    const { seq } = eff;
     const po = passoverItemsFor(ctx, court);
-    const queue = Object.keys(po).map(k => parseInt(k, 10)).filter(n => !isNaN(n)).sort((a, b) => (callPos(seq, a) - callPos(seq, b)));
+    const queueAll = Object.keys(po).map(k => parseInt(k, 10)).filter(n => !isNaN(n)).sort((a, b) => (callPos(seq, a) - callPos(seq, b)));
     const total = miscTotalFor(ctx, court), end = miscEnd(seq, total);
     const cur = bc ? bc.item : null, curP = (cur != null && !isReservedItem(Math.floor(parseFloat(cur)))) ? callPos(seq, cur) : null;
     const reach = bc ? reachOf(ctx, court, seq, total, cur) : 0;
     const recalled = hasRecalledPO(ctx, court);
-    // The item the sequence's own "passovers" marker sits right after — "1 TO 10 25 TO 50
-    // PASSOVERS" declares them after item 50 — known the moment passIdx is, independent of
-    // which branch below the plan resolves to. It used to live ONLY on the "sequence" branch,
-    // so the moment the court finished its declared list (reach reaching passIdx — which,
-    // since passIdx routinely equals the list's own end, is almost immediately), the plan
-    // fell to the "end" branch and this already-known fact vanished from the court sheet
-    // (owner: "the passover section ... not showing when the passovers will be taken up" —
-    // "1-10, 25-50 and then passovers" should say "after 50" regardless of which branch).
-    const after = (passIdx != null && passIdx > 0) ? seq[passIdx - 1] : null;
-    if (!bc || curP == null) return { at: null, queue, gap: null, after, seq, passIdx, end };
-    if (passIdx != null && (reach < passIdx || (reach === passIdx && !recalled))) return { at: "sequence", queue, gap: passIdx - curP, after, seq, passIdx, end };
-    if (passIdx == null && recalled) return { at: "now", queue, gap: 1, after, seq, passIdx, end };
-    if (end != null && reach < end && !(passIdx != null && recalled && reach === passIdx)) return { at: "end", queue, gap: end - curP, after, seq, passIdx, end };
-    if (end != null || recalled) return { at: "now", queue, gap: 1, after, seq, passIdx, end };
-    return { at: null, queue, gap: null, after, seq, passIdx, end };
+    // one recall point -> where the plan stands
+    const decide = (passIdx, queue, rec) => {
+      // The item the sequence's own "passovers" marker sits right after — "1 TO 10 25 TO 50
+      // PASSOVERS" declares them after item 50 — known the moment passIdx is, independent of
+      // which branch below the plan resolves to. It used to live ONLY on the "sequence" branch,
+      // so the moment the court finished its declared list the plan fell to the "end" branch
+      // and this already-known fact vanished from the court sheet (owner: "the passover section
+      // ... not showing when the passovers will be taken up").
+      const after = (passIdx != null && passIdx > 0) ? seq[passIdx - 1] : null;
+      const base = { queue, after, seq, passIdx, end, circular: eff.circular };
+      if (!bc || curP == null) return Object.assign(base, { at: null, gap: null });
+      if (passIdx != null && (reach < passIdx || (reach === passIdx && !rec))) return Object.assign(base, { at: "sequence", gap: passIdx - curP });
+      if (passIdx == null && rec) return Object.assign(base, { at: "now", gap: 1 });
+      if (end != null && reach < end && !(passIdx != null && rec && reach === passIdx)) return Object.assign(base, { at: "end", gap: end - curP });
+      if (end != null || rec) return Object.assign(base, { at: "now", gap: 1 });
+      return Object.assign(base, { at: null, gap: null });
+    };
+    if (!eff.circular) return decide(eff.passIdx, queueAll, recalled);
+    /* Circular: fresh pass-overs are recalled once the fresh matters (main, then supplementary)
+       are done, before after-notice begins; after-notice pass-overs at the very end. A fresh
+       matter still outstanding once the court has moved INTO after-notice has been passed over
+       a second time — the circular leaves that to the bench's discretion, so it gets no
+       estimate (owner: "The second pass over is new and cant say when it will be taken up"). */
+    const fresh = queueAll.filter(n => eff.partOf(n) !== "B"), an = queueAll.filter(n => eff.partOf(n) === "B");
+    const intoB = reach > eff.freshEnd;
+    const planA = intoB ? { at: "discretion", queue: fresh, gap: null, after: seq[eff.freshEnd - 1] || null, seq, passIdx: eff.freshEnd, end, circular: true }
+                        : decide(eff.freshEnd, fresh, recalled);
+    const planB = decide(null, an, false);
+    if (part === "A") return planA;
+    if (part === "B") return planB;
+    const lead = fresh.length ? planA : planB;
+    return Object.assign({}, lead, { queue: queueAll, fresh: planA, an: planB, freshEnd: eff.freshEnd });
   }
 
   // Items the board has already marked OVER that sit between the court and us IN CALL ORDER —
@@ -295,7 +362,7 @@
   }
   /* How OUR distance changes because of the court's OTHER outstanding passovers: one that was
      between us and the court is skipped (-1), one recalled between now and us is added (+1). */
-  function poAdjust(ctx, court, curItem, ours, seq, passIdx, miscTotal) {
+  function poAdjust(ctx, court, curItem, ours, seq, passIdx, miscTotal, eff) {
     const po = passoverItemsFor(ctx, court); const keys = Object.keys(po); if (!keys.length) return 0;
     seq = seq || [];
     const curP = callPos(seq, curItem), ourP = callPos(seq, ours);
@@ -305,7 +372,15 @@
     for (const k of keys) {
       if (parseInt(k, 10) === ourN) continue;
       const xp = callPos(seq, k); if (xp == null) continue;
-      const rp = recallPos(seq, passIdx, miscTotal, po[k].after, curP);
+      // circular: an after-notice pass-over comes back at the end, a fresh one at the fresh
+      // pass-over point — or, once the court is into after-notice, at the bench's discretion
+      // (no position at all, so it can't be counted as coming before us)
+      let rp;
+      if (eff && eff.circular) {
+        const b = eff.partOf(parseInt(k, 10)) === "B";
+        if (!b && curP != null && curP >= eff.freshEnd && !(po[k].after != null)) rp = null;
+        else rp = recallPos(seq, b ? null : passIdx, miscTotal, po[k].after, curP);
+      } else rp = recallPos(seq, passIdx, miscTotal, po[k].after, curP);
       const aheadOrig = xp > curP && xp < ourP;
       // a recall inserted at position rp is heard before the item that holds rp — so rp == ourP
       // means it comes just before us and counts
@@ -317,10 +392,17 @@
   }
   // The passover QUEUE is taken in the order the matters were passed over, which is their call
   // order — so this counts the outstanding ones that were reached before ours.
-  function passoversBeforeOurs(ctx, court, ours, seq) {
+  function passoversBeforeOurs(ctx, court, ours, seq, partOf) {
     const po = passoverItemsFor(ctx, court); seq = seq || [];
     const ourP = callPos(seq, ours); if (ourP == null) return 0;
-    let n = 0; for (const k in po) { const kp = callPos(seq, k); if (kp != null && kp < ourP) n++; }
+    // circular: each part has its own queue — a fresh pass-over is never queued ahead of an
+    // after-notice one (it was recalled before after-notice began, or is at the bench's discretion)
+    const mine = partOf ? partOf(Math.floor(parseFloat(ours))) : null;
+    let n = 0;
+    for (const k in po) {
+      if (partOf && partOf(parseInt(k, 10)) !== mine) continue;
+      const kp = callPos(seq, k); if (kp != null && kp < ourP) n++;
+    }
     return n;
   }
   // Has this court recalled ANY previously passed-over item today? Direct evidence the court
@@ -367,7 +449,7 @@
     if (isReservedItem(fl)) return null;                    // its own special bench / other phase
     if (onRegularList(ctx, court, total)) return po;
     const seqTxt = (bc.sequence && bc.sequence.trim()) ? bc.sequence : ((ctx.seqByCourt || {})[court] || "");
-    const reach = reachOf(ctx, court, seqInfo(seqTxt).seq, total, bc.item);
+    const reach = reachOf(ctx, court, effSeq(ctx, court, seqTxt).seq, total, bc.item);
     return Math.max(0, total - reach) + 1 + po;
   }
 
@@ -552,7 +634,8 @@
     // 301 would call every list item "over" and put the court hundreds of positions ahead.
     if (isSpecialBenchItem(curBoardNum))
       return { tier: "later", label: "Special Bench is sitting — the list resumes after it", short: "special bench", special: true };
-    const { seq, passIdx } = seqInfo(seqTxt);
+    const eff = effSeq(ctx, e.courtNo, seqTxt);
+    const { seq, passIdx } = eff;
     const miscTotalHere = miscTotalFor(ctx, e.courtNo);
     const curPos = callPos(seq, bc.item);          // null only when the board's item isn't a number
     const mark = poFor(ctx, e.courtNo, ours)
@@ -571,17 +654,22 @@
          was reached before ours. Before any recall is seen, the recall point is trusted; the
          failure mode of that choice is under-promising, which is the safer one. */
       let gap = null, tail = "";
-      const queued = passoversBeforeOurs(ctx, e.courtNo, ours, seq);
+      const queued = passoversBeforeOurs(ctx, e.courtNo, ours, seq, eff.circular ? eff.partOf : null);
       const explicitAfter = (mark.mode === "after" && mark.after) ? mark.after : null;
       if (curPos != null) {
         if (explicitAfter != null) {
           const rp = recallPos(seq, null, null, explicitAfter, curPos);
           if (rp != null) { gap = Math.max(0, rp - curPos); tail = " · taken after item " + String(explicitAfter); }
         } else {
-          const plan = passoverPlan(ctx, e.courtNo, bc);
+          const ourPart = eff.circular ? (eff.partOf(oursNum) === "B" ? "B" : "A") : null;
+          const plan = passoverPlan(ctx, e.courtNo, bc, ourPart);
+          if (plan.at === "discretion")
+            return { tier: "later", label: "second pass-over — taken up at the bench's discretion", short: "2nd pass-over", po: true };
           if (plan.gap != null) {
             gap = plan.gap + queued;
-            tail = plan.at === "sequence" ? " · taken after the sequence" : plan.at === "end" ? " · taken at end" : " · in the passover queue";
+            tail = eff.circular
+              ? (ourPart === "B" ? " · after-notice pass-overs, at the end" : " · fresh pass-overs, after the fresh matters")
+              : plan.at === "sequence" ? " · taken after the sequence" : plan.at === "end" ? " · taken at end" : " · in the passover queue";
           }
         }
       }
@@ -653,12 +741,13 @@
         return { tier: "later", label: "Regular — ~" + gap + " away · " + detail, short: gap + " away", gap, reg: true };
       }
     }
-    let gap = null, approx = false;
+    // `approx` also when the order is only the circular's DEFAULT — no announced sequence
+    let gap = null, approx = !!eff.circular;
     if (seq.length) { const op = orderPos(seq, ours), cp = orderPos(seq, bc.item); if (op != null && cp != null) gap = op - cp; }
     if (gap == null) { const c = parseFloat(bc.item); if (!isNaN(c)) { gap = Math.floor(oursNum) - Math.floor(c); approx = true; } }
     if (gap != null && gap > 0) { const done = overAhead(ctx, e.courtNo, bc.item, ours, seq); if (done > 0) gap = Math.max(0, gap - done); }
     let poNote = "";
-    if (gap != null) { const pa = poAdjust(ctx, e.courtNo, bc.item, ours, seq, passIdx, miscTotalHere); if (pa) { gap = Math.max(0, gap + pa); poNote = pa < 0 ? " · " + (-pa) + " passed over ahead" : " · " + pa + " recalled first"; } }
+    if (gap != null) { const pa = poAdjust(ctx, e.courtNo, bc.item, ours, seq, passIdx, miscTotalHere, eff); if (pa) { gap = Math.max(0, gap + pa); poNote = pa < 0 ? " · " + (-pa) + " passed over ahead" : " · " + pa + " recalled first"; } }
     if (gap == null) { const pg = preStartGap(seqTxt, ours); if (pg != null) return preStartResult(pg); }
     if (gap == null) return { tier: "unknown", label: "position unclear", short: "—" };
     // Nothing posted, and the court is past this item in the TRUE call order — so it is over
@@ -676,7 +765,7 @@
     return { tier: "later", label: gap + " items away" + poNote, short: gap + " away", gap, approx, poNote };
   }
 
-  const API = { classify, courtRemaining, isReservedItem, isSpecialBenchItem, seqInfo, orderPos, parseSequenceLine, preStartGap, preStartResult, isMentioning, MENT_END, REG_BASE, passoverItemsFor, detailRemark, remarkEndsToday, callPos, recallPos, miscEnd, reachOf, passoverPlan, passoversBeforeOurs, clockMins, fmtClock };
+  const API = { classify, courtRemaining, circularOrder, effSeq, isReservedItem, isSpecialBenchItem, seqInfo, orderPos, parseSequenceLine, preStartGap, preStartResult, isMentioning, MENT_END, REG_BASE, passoverItemsFor, detailRemark, remarkEndsToday, callPos, recallPos, miscEnd, reachOf, passoverPlan, passoversBeforeOurs, clockMins, fmtClock };
   root.BoardEngine = API;
   if (typeof module !== "undefined" && module.exports) module.exports = API;
 })(typeof self !== "undefined" ? self : (typeof globalThis !== "undefined" ? globalThis : this));
