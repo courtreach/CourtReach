@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-10-11T10:14:39.462393Z",
-  "parser_version": 17,
+  "generated_at": "2026-10-11T10:22:56.536713Z",
+  "parser_version": 18,
   "window": [
     "2026-10-12",
     "2026-10-13",
@@ -30,7 +30,7 @@
         "Miscellaneous": {
           "1": {
             "coram": "HON'BLE THE CHIEF JUSTICE HON'BLE MR. JUSTICE JOYMALYA BAGCHI HON'BLE MRS. JUSTICE V. MOHANA",
-            "total": "53",
+            "total": "52",
             "fresh": "",
             "items": {
               "1": "C.A. No. 5981/2023 THE STATE OF CHHATTISGARH AND ORS. VERSUS MAHESH RAM THAWAIT AND ORS.",
@@ -296,7 +296,7 @@
               "51",
               "52"
             ],
-            "main": 51,
+            "main": 50,
             "supp": 2
           },
           "12": {
@@ -5197,7 +5197,7 @@
           },
           "2": {
             "coram": "HON'BLE MR. JUSTICE VIKRAM NATH HON'BLE MR. JUSTICE R. MAHADEVAN HON'BLE MR. JUSTICE APARESH KUMAR SINGH",
-            "total": "57",
+            "total": "50",
             "fresh": "",
             "items": {
               "1": "Crl.A. No. 884/2016 SAHIL VERSUS THE STATE OF HIMACHAL PRADESH",
@@ -5531,7 +5531,7 @@
               "49": "B"
             },
             "suppItems": [],
-            "main": 57,
+            "main": 50,
             "supp": 0
           },
           "5": {
@@ -6951,7 +6951,7 @@
           },
           "10": {
             "coram": "HON'BLE MR. JUSTICE ARAVIND KUMAR HON'BLE MR. JUSTICE VIPUL M. PANCHOLI",
-            "total": "51",
+            "total": "50",
             "fresh": "",
             "items": {
               "1": "Crl.A. No. 1470/2024 MD MOINUL HAQUE AND ORS. VERSUS MUSTT MONOWARA BEGUM AND ANR.",
@@ -7218,7 +7218,7 @@
               "50": "B"
             },
             "suppItems": [],
-            "main": 51,
+            "main": 50,
             "supp": 0
           },
           "11": {
@@ -10573,7 +10573,7 @@
           },
           "3": {
             "coram": "HON'BLE MR. JUSTICE M.M. SUNDRESH HON'BLE MR. JUSTICE PRASANNA B. VARALE",
-            "total": "47",
+            "total": "46",
             "fresh": "",
             "items": {
               "1": "SLP(Crl) No. DAMANJOT SINGH PAHWA VERSUS STATE OF PUNJAB",
@@ -10743,7 +10743,7 @@
               "46": "B"
             },
             "suppItems": [],
-            "main": 47,
+            "main": 46,
             "supp": 0
           },
           "4": {
@@ -10879,7 +10879,7 @@
           },
           "5": {
             "coram": "HON'BLE MR. JUSTICE J.B. PARDIWALA HON'BLE MR. JUSTICE K. VINOD CHANDRAN",
-            "total": "20",
+            "total": "17",
             "fresh": "",
             "items": {
               "1": "SLP(Crl) No. 7471/2026 THE STATE OF MAHARASHTRA VERSUS JITENDRA SUNDARDAS PANJABI AND ANR.",
@@ -11326,7 +11326,7 @@
               "2437": "B"
             },
             "suppItems": [],
-            "main": 20,
+            "main": 17,
             "supp": 0
           },
           "14": {
