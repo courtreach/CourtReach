@@ -236,9 +236,20 @@ old behaviour, the owner's "past it in sequence = over" rule. Deliberate blind s
 board history, the items called in the 1–2 ticks before a recall dip are unknowable when the
 column is thin or lags; a matter taken out of turn one to seven slots ahead reads as the court
 moving on until the court reaches it; a complete column that simply STOPS reads further
-progress as a jump until a remark appears (the app's history vetoes that). Remark density on
-the real board is the one input not yet measured against this (courts had just begun sitting
-when the sweep closed — see the session notes).
+progress as a jump until a remark appears (the app's history vetoes that).
+**The real remark column, measured 12 Oct 2026 at 10:55** (every sitting court's
+`display_court_all_cases.php` page, raw): it varies from court to court — Court 3 had 12 of 14
+finished matters marked, Court 8 three of four, Court 5 eleven of twenty-one, Court 21 only the
+last five of twenty-six, Court 6 six PASS OVERs and no OVER at all, Courts 12 and 17 nothing.
+The texts are "OVER (Dismissed)", "OVER (List On (Date): 27-11-2026)", "OVER (Leave Granted /
+Rule NISI / Appeal Admitted)", "OVER (Disposed off)", "OVER (List After (Weeks): 3)", "OVER
+(Notice Returnable: D:0,W:0,M:0)", "PASS OVER", and "HEARING" on the item on now. The worker's
+`parseRemarks` used to DROP every OVER longer than 24 characters (most of them), so the engine
+saw a thinner column than the operator wrote — fixed the same day (an OVER keeps its reason up
+to 60 characters; `remarkEndsToday` reads `^OVER\b`; HEARING is never "dealt with"). So the
+engine must work from a column that is anything from complete to empty, which is exactly what
+the thin-column / no-remark / dense families test; the jump test only ever engages on a
+complete record.
 
 **Causelist-published item links** ("TO BE TAKEN UP ALONG WITH ITEM NO. 23" — a fact the
 SC's own list states, not a passover, nothing typed in; owner: "our app needs to take into

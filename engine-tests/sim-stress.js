@@ -25,7 +25,10 @@ const range = (a, b) => { const r = []; for (let k = a; k <= b; k++) r.push(k); 
 
 // what the display-board operator writes against a finished matter (worker's parseRemarks keeps
 // OVER / PASS OVER / PART HEARD / DISPOSED and any other short remark verbatim)
-const VOCAB = ["OVER", "OVER", "OVER", "OVER", "OVER", "DISPOSED", "DISMISSED", "ADJOURNED", "LIST ON 15.10.2026", "HEARD", "ORDER RESERVED", "ALLOWED", "WITHDRAWN", "PART HEARD", "NOT PRESSED"];
+// (measured on the live board, 12 Oct 2026: "OVER (Dismissed)", "OVER (List On (Date): 27-11-2026)",
+// "OVER (Leave Granted / Rule NISI / Appeal Admitted)", "OVER (Disposed off)", "OVER (List After
+// (Weeks): 3)", "OVER (Notice Returnable: D:0,W:0,M:0)", "PASS OVER", "HEARING" on the current item)
+const VOCAB = ["OVER", "OVER", "OVER", "OVER (Dismissed)", "OVER (List On (Date): 27-11-2026)", "OVER (Leave Granted / Rule NISI / Appeal Admitted)", "OVER (Disposed off)", "OVER (List After (Weeks): 3)", "OVER (Notice Returnable: D:0,W:0,M:0)", "DISPOSED", "DISMISSED", "ADJOURNED", "LIST ON 15.10.2026", "HEARD", "ORDER RESERVED", "ALLOWED", "WITHDRAWN", "PART HEARD", "NOT PRESSED"];
 
 /* ---------- the court's sequence line, in the wordings the Supreme Court actually publishes ---------- */
 function renderSeq(F, segs, withPairs, fixedNote) {
@@ -179,9 +182,9 @@ function buildDay(F) {
     const c = ri(1, Math.max(1, Math.min(ootIdx, ev.length - 3))), pe = ev[c - 1];
     // (after a CALL, so the remark column already shows a finished matter — the engine judges order only then)
     const callsBefore = ev.slice(0, c).filter(x => x.kind === "call" && !x.oot).length;   // the column must already vouch for three finished matters
-    // the engine's two tiers (reachInfo): ten complete positions vouch for a jump of five slots, four for a jump of eight
+    // the engine's rule (reachInfo): ten complete positions vouch for a jump of five slots
     const jump = order.indexOf(outOfTurn) - order.indexOf(pe.item);
-    if (pe.kind === "call" && !pe.oot && ((callsBefore >= 10 && jump >= 5) || (callsBefore >= 4 && jump >= 8))) ootAt = c;
+    if (pe.kind === "call" && !pe.oot && callsBefore >= 10 && jump >= 5) ootAt = c;
   }
   ev.forEach((e, i) => {
     if (i === ootAt) ticks.push({ board: String(outOfTurn), kind: "oot", item: outOfTurn });
@@ -226,7 +229,7 @@ function runDay(day, log) {
   const doneMarks = doneItem != null ? { [court + "_" + doneItem]: { v: "att" } } : {};
   // the fixed time: from the causelist / typed in (ctx.fixedTimes), or ONLY from the sequence line
   const fixedTimes = (fixedItem != null && !(F.seqFixed && !F.ctxFixed)) ? { [court + "_" + fixedItem]: "14:30" } : {};
-  let bad = 0, total = 0, unscored = 0, secondPassed = false, ootDone = false; const outstanding = new Set();
+  let bad = 0, total = 0, unscored = 0, secondPassed = false, ootDone = false, progressIdx = -1; const outstanding = new Set();
   let evIdx = 0;
   for (let t = 0; t < day.ticks.length; t++) {
     const tk = day.ticks[t];
@@ -271,7 +274,8 @@ function runDay(day, log) {
     for (const n in outs) boardPO[court + "_" + n] = true;
     if (isEvent && (tk.kind === "recall" || tk.kind === "recall2")) { const key = court + "_" + tk.item; const wasAfter = !!(poMarks[key] && poMarks[key].mode === "after"); delete remarks[tk.item]; delete remarks[tk.item + ".1"]; delete poMarks[key]; delete boardPO[key]; recalledPO[key] = wasAfter ? { after: true } : true; }
     const bn = parseInt(tk.board, 10); if (!isNaN(bn) && !ENG.isReservedItem(bn) && tk.kind !== "idle" && tk.kind !== "absent") { itemHi[court] = Math.max(itemHi[court] || 0, bn); if (F.seen && bc) seen.push(bc.item); }   // the oot item latches itemHi too — as it would in the app
-    const ctx = { nowMins: 700, seqByCourt: day.seqText ? { [court]: day.seqText } : {}, remarksByCourt: { [court]: { items: { ...remarks } } },
+    const remNow = { ...remarks }; if (isEvent && tk.kind === "call" && !F.noRemarks && chance(.7)) remNow[tk.item] = "HEARING";   // the live column marks the item on now
+    const ctx = { nowMins: 700, seqByCourt: day.seqText ? { [court]: day.seqText } : {}, remarksByCourt: { [court]: { items: remNow } },
       boardPO: { ...boardPO }, recalledPO: { ...recalledPO }, itemHi: { ...itemHi }, boardByCourt: bc ? { [court]: bc } : {},
       miscTotalByCourt: (day.regOnly || F.noTotal) ? {} : { [court]: day.T }, regTotalByCourt: (F.regTotalKnown && day.R > 0) ? { [court]: day.R } : {},   // (the app passes a size only for a list that exists)
       seenItems: F.seen ? { [court]: seen.slice() } : {},
@@ -281,7 +285,8 @@ function runDay(day, log) {
     // and, without board history, the one or two ticks where a matter taken out of turn earlier
     // sits one or two slots ahead of the court (its latched item number reads as reach, within
     // the engine's deliberate lag tolerance)
-    const ootAhead = ootDone && !F.seen && isEvent && day.order.indexOf(day.outOfTurn) > day.order.indexOf(tk.item) && day.order.indexOf(day.outOfTurn) - day.order.indexOf(tk.item) <= 7;
+    if (isEvent && (tk.kind === "call" || tk.kind === "po")) progressIdx = Math.max(progressIdx, day.order.indexOf(tk.item));   // the court's in-order progress (a recall dip does not move it)
+    const ootAhead = ootDone && !F.seen && isEvent && day.order.indexOf(day.outOfTurn) > progressIdx && day.order.indexOf(day.outOfTurn) - progressIdx <= 7;
     const window = (secondPassed && !F.secondNoParts && evIdx < day.firstB) || (isEvent && tk.item === day.beforeOut)
       || (F.noRemarks && isEvent && (tk.kind === "recall" || tk.kind === "recall2" || tk.kind === "po2")) || ootAhead || F.invariantsOnly
       || ((lag > 0 || density < 1) && !F.seen && isEvent && (tk.kind === "recall" || tk.kind === "recall2" || tk.kind === "po2"));   // a thin or lagging column, no board history: the items before a recall dip are unknowable

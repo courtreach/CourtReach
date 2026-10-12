@@ -220,8 +220,9 @@
     if (!s) return false;
     if (/pass\s*over/i.test(s)) return false;
     if (/part\s*heard/i.test(s)) return false;
-    return /^over$/i.test(s)
-      || /dismiss|dispos|allowed|withdraw|adjourn|deleted|deferred|not\s*press|\bheard\b|reserved|order|judgment|judgement|decree/i.test(s)
+    if (/hearing/i.test(s)) return false;   // "HEARING": the matter is on right now
+    return /^over\b/i.test(s)                 // "OVER", "OVER (Dismissed)", "OVER (List On (Date): 27-11-2026)"
+      || /dismiss|dispos|allowed|withdraw|adjourn|deleted|deferred|not\s*press|\bheard\b|reserved|order|judgment|judgement|decree|leave\s*granted|rule\s*nisi|notice|admitted/i.test(s)
       || /list(ed)?\s*(on|after)/i.test(s)
       || /\bafter\b.*\bweek/i.test(s);
   }
@@ -387,7 +388,7 @@
     const touched = new Set(), poSet = new Set();
     const r = (ctx.remarksByCourt || {})[String(court)];
     if (r && r.items) for (const k in r.items) { const v = String(r.items[k] || "").trim(); if (!v || noSlot(k)) continue;
-      const kp = callPos(seq, k); if (kp == null || kp >= ceil) continue; if (/pass\s*over/i.test(v)) poSet.add(kp); else touched.add(kp); }
+      const kp = callPos(seq, k); if (kp == null || kp >= ceil) continue; if (/pass\s*over/i.test(v)) poSet.add(kp); else if (!/hearing/i.test(v)) touched.add(kp); }   // ("HEARING" = on now, not dealt with)
     const po = passoverItemsFor(ctx, court);
     for (const k in po) { if (noSlot(k)) continue; const kp = callPos(seq, k); if (kp != null && kp < ceil) poSet.add(kp); }
     // On a Regular-hearing day (no Misc list) the Regular items' positions start after a hundred
@@ -430,15 +431,16 @@
       let near = -1; for (let q = p - 1; q >= floorP; q--) if (known(q)) { near = q; break; }
       if (near < floorP) return false;
       let holes = 0, explained = 1; for (let q = floorP; q < near; q++) { if (known(q)) explained++; else holes++; }
-      // The record must be complete (one miss tolerated only in a long one), and the longer it
-      // is the smaller the jump it can vouch for: four complete positions catch a jump of eight
-      // slots, ten complete positions a jump of five. A column that marks only some matters
-      // never qualifies — everything then reads as reach, the old behaviour.
+      // The record must be complete (one miss tolerated only in a long one): ten complete
+      // positions — remarks, pass-overs, the board history — vouch for a jump of five slots. A
+      // column that marks only some matters never qualifies, and everything then reads as
+      // reach, the old behaviour. (Measured 12 Oct 2026: real columns run from complete to
+      // empty; a half-marked one can leave seven blanks in a row, which is why four complete
+      // positions are not enough to call an eight-slot gap a jump.)
       const gap = p - near;
       if (holes === 0 && explained >= 10) return gap >= 5;
       if (holes <= 1 && explained >= 20) return gap >= 5;
-      if (holes === 0 && explained >= 4) return gap >= 8;
-      return false;
+      return false;   // (a shorter record cannot be told from a column that marks only some matters — Court 5 had 11 of 21)
     };
     const curOut = curP0 != null && isMiscNum(Math.floor(cur), miscTotal) && isJumpCur(curP0);
     const curP = curOut ? null : curP0;
@@ -624,14 +626,14 @@
     const mine = partOf ? partOf(Math.floor(parseFloat(ours))) : null;
     let n = 0;
     for (const k in po) {
-      if (partOf && partOf(parseInt(k, 10)) !== mine) continue;
       const kp = callPos(seq, k); if (kp == null) continue;
       if (rp && ourR != null) {
-        const kt = poTwice(ctx, court, k), ot = poTwice(ctx, court, ours);
-        if (kt !== ot) { if (!kt) n++; continue; }           // a second-timer is behind every first-timer
+        if (!partOf) { const kt = poTwice(ctx, court, k), ot = poTwice(ctx, court, ours);
+          if (kt !== ot) { if (!kt) n++; continue; } }       // a second-timer is behind every first-timer
         // same point: a matter with its own "after item X" direction is taken first; then slot order
         const kA = !!(po[k] && po[k].after != null), oA = !!(po[Math.floor(parseFloat(ours))] && po[Math.floor(parseFloat(ours))].after != null);
         const kr = rp(k, kp); if (kr != null && (kr < ourR || (kr === ourR && (kA !== oA ? kA : kp < ourP)))) n++; continue; }
+      if (partOf && partOf(parseInt(k, 10)) !== mine) continue;
       if (kp < ourP && (!(passIdxs && passIdxs.length) || markerOf(kp) === ourM)) n++;
     }
     return n;
@@ -930,7 +932,15 @@
       if (curPos0 != null && !bc.passover && orderPos(seq, ours) === curPos0) return { tier: "now", label: "recalled — item on now", short: "NOW", gap: 0, po: true };
       const endHere = endFor(ctx, e.courtNo, seq, miscTotalHere, eff.full, bc.item);
       const poAll = passoverItemsFor(ctx, e.courtNo);
-      const rpOf = eff.circular ? null : ((item, pos) => recallPos(seq, passIdx, miscTotalHere, (poAll[Math.floor(parseFloat(item))] || {}).after, curPos0, eff.full, pos, eff.passIdxs, endHere));
+      const afterOf = item => (poAll[Math.floor(parseFloat(item))] || {}).after;
+      const curRI2 = reachInfo(ctx, e.courtNo, seq, miscTotalHere, bc.item, eff.vacated);
+      const intoB2 = eff.circular && curRI2.reach > eff.freshEnd && !(curPos0 != null && curPos0 < eff.freshEnd);
+      const rpOf = eff.circular
+        // the circular's two queues: an "after item X" direction wins; fresh ones come back at
+        // the fresh point (none foreseeable once the court is into after-notice); after-notice at the end
+        ? ((item, pos) => { const a = afterOf(item); if (a != null) { const ap = callPos(seq, a); return ap != null ? ap + 1 : null; }
+            return eff.partOf(Math.floor(parseFloat(item))) === "B" ? endHere : (intoB2 ? null : eff.freshEnd); })
+        : ((item, pos) => recallPos(seq, passIdx, miscTotalHere, afterOf(item), curPos0, eff.full, pos, eff.passIdxs, endHere));
       const queued = passoversBeforeOurs(ctx, e.courtNo, ours, seq, eff.circular ? eff.partOf : null, eff.circular ? null : eff.passIdxs, rpOf);
       const explicitAfter = (mark.mode === "after" && mark.after) ? mark.after : null;
       if (curPos != null) {
