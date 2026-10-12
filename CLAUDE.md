@@ -228,9 +228,10 @@ Engine faults it found (11–20), all fixed:
 20. A Regular list size of 0 is no list (`regTotalFor > 0`).
 **The jump test** (`reachInfo`, documented in code): a position is a jump (out of turn, not
 reach) only when the record below the nearest reached position is COMPLETE — ten complete
-positions vouch for a jump of five slots, four complete positions for a jump of eight, twenty
-with one miss for five; the board's own item and the board history (`seenItems`: the app's
-noteItemHi records every item shown; the worker has none) count as known positions. A column
+positions vouch for a jump of five slots, twenty with one miss likewise; the board's own item
+and the board history (`seenItems`: the app's noteItemHi records every item shown; the worker
+has none) count as known positions. (A shorter record cannot be told from a half-marked
+column, which can leave seven blanks in a row — Court 5 had 11 of 21 marked.) A column
 that marks only some matters never qualifies, and every position then reads as reach — the
 old behaviour, the owner's "past it in sequence = over" rule. Deliberate blind spots: with no
 board history, the items called in the 1–2 ticks before a recall dip are unknowable when the
