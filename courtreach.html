@@ -1211,17 +1211,72 @@ async function loadCourtUpdates(){
       if(r.ok){ courtUpdates=await r.json(); courtUpdatesAt=Date.now(); return; } }catch(e){}
   }
 }
-const _titleCase = s => String(s||"").toLowerCase().replace(/\b([a-z])/g,(_,c)=>c.toUpperCase()).replace(/\bM\/s\b/,"M/s");
+/* Cause titles and AoR names, as SD-Chamber (the chamber app) writes them — ported Oct 2026
+   (owner: "the causelist fetching of the name of the case and the AoR has to be accurate. Learn
+   from the Chamber Management app"). The fetcher now publishes the case number gathered across
+   wrapped rows and the parties without advocate names leaking in; here each side is cleaned
+   (case number, "in SLP(C) No. …" parent reference, [R-1]/[CAVEAT]/{Mention Memo} markers,
+   "@ alias", anything after "& Ors."/"and Anr.") and the title is written with joining words in
+   lower case ("Union of India and Ors. vs Satish Kumar"), "Ors."/"Anr." kept. */
+const titleCase=s=>String(s||"").toLowerCase().replace(/\b([a-z])/g,m=>m.toUpperCase());
+const cleanCauseSide=side=>{
+  side=String(side||"").replace(/^Connected\s+/i,"").trim();          // sub-item marker
+  side=side.replace(/^.*?[\/\-](?:19|20)\d{2}\s+/,"").trim();         // "MA 1829/2026 " / "C.A. No. 283/2022 " -> ""
+  // "MA 1829/2026 in C.A. …": drop the lowercase "in" linking to the PARENT case and its
+  // case-type reference (only the lowercase connector, so "IN RE …" and real names stay)
+  if(/^in\s+/.test(side)){
+    side=side.replace(/^in\s+/,"").trim();
+    side=side.replace(/^(?:SLP|W\.?P|CRL\.?A|CRL\.?M\.?P|C\.?A|C\.?C|T\.?P|R\.?P|M\.?A|I\.?A|CONMT|CONT|ARB|CUR|DIARY|SMC)\b\.?(?:\s*\([A-Za-z]+\))?\.?\s*(?:No\.?\s*)?(?:\d[\d\-]*\/(?:19|20)\d{2}|\d+)?\s+/i,"").trim();
+  }
+  side=side.replace(/^[A-Z][A-Za-z.()&\/]*\.?\s*No\.?\s+/i,"").trim();// "SLP(C) No. " (number on next line) -> ""
+  side=side.replace(/^[0-9IVXLC][0-9IVXLC.\/\-]*\s+/,"").trim();      // stray leading number / roman
+  side=side.replace(/\[[^\]]*\]?/g,"").replace(/\{[^}]*\}?/g,"").trim();// [R-1]/[CAVEAT]/{Mention Memo}
+  side=side.replace(/\s+@\s+.*$/i,"").trim();                         // drop "@ alias ..."
+  const m=side.match(/^(.*?\b(?:AND\s+ANR|AND\s+ORS|&\s+ANR|&\s+ORS|ETC)\b\.?)/i);
+  if(m) side=m[1];                                                    // cut anything after "& Ors."/"and Anr."
+  return titleCase(side.trim()).replace(/\bM\/S\b/g,"M/s");
+};
+// joining words lower case unless they start a party ("The State …", "In Re …")
+const TITLE_SMALL=new Set(["and","or","of","the","for","in","on","at","to","by","with","from","through","thr","into","as","an","a","nor","but"]);
+function titleWords(t){
+  t=String(t||"");
+  if(!/[a-z]/.test(t)&&/[A-Z]{4,}/.test(t)) t=t.split(/(\s+)/).map(w=>/^(?:VS\.?|V\.|VERSUS)$/.test(w)?"vs":/^(ORS|ANR|ETC)\.?,?$/.test(w)?w.charAt(0)+w.slice(1).toLowerCase():/\./.test(w)||/^[^AEIOUY]{2,4}[):,]*$/.test(w)?w:w.toLowerCase().replace(/(^|[-'(\/])([a-z])/g,(m,a,b)=>a+b.toUpperCase())).join("");
+  const ws=t.split(/(\s+)/); let startOfParty=true;
+  return ws.map(w=>{
+    if(/^\s+$/.test(w)) return w;
+    if(/^(?:vs\.?|v\.?|versus|v\/s\.?)$/i.test(w)){ startOfParty=true; return w; }
+    const bare=w.replace(/[^A-Za-z]/g,"");
+    const out=(!startOfParty&&TITLE_SMALL.has(bare.toLowerCase())&&w.replace(/[^A-Za-z]/g,"")===bare&&!/\./.test(w)) ? w.toLowerCase() : w;
+    startOfParty=false; return out;
+  }).join("");
+}
 function titleFromCauseLine(line){
   if(!line) return "";
-  let s=String(line).replace(/\s+/g," ").trim();
-  s=s.replace(/^\s*connected\s*(?:with\s*)?/i,"");   // drop a leading "Connected" (sub-item / connected-matter marker)
-  s=s.replace(/^\s*(?:diary\s*no\.?|[a-z][a-z().\/]*\s*no\.?)?\s*\d{2,6}\s*[-\/]\s*\d{4}\s+/i,"");   // drop "C.A. No. 9667/2013 " or "Diary No. 14857-2026 "
-  const parts=s.split(/\s+VERSUS\s+/i);
-  const clean=x=>String(x||"").replace(/\s*&?\s*(AND\s+)?(ORS?\.?|ANR\.?|OTHERS?)\.?\s*$/i,"").replace(/[,.\s]+$/,"").trim();
-  const pet=clean(parts[0]), resp=clean(parts[1]||"");
-  return resp ? _titleCase(pet)+" vs "+_titleCase(resp) : _titleCase(pet);
+  const parts=String(line).replace(/\s+/g," ").split(/\s+VERSUS\s+/i);
+  const pet=cleanCauseSide(parts[0]), resp=parts.length>=2?cleanCauseSide(parts[1]):"";
+  return titleWords(resp ? pet+" vs "+resp : pet);
 }
+// Names (AoRs) with only the first letter of each word capital — "SANCHIT GARGA" -> "Sanchit
+// Garga" — keeping initials ("K.V.", "N."), known acronyms ("LLP", "(JSA)"), "&", "M/s".
+const NAME_KEEP_UP=new Set(["LLP","LLC","AOR","AAG","ASG","SG","AG","II","III","IV","SCLSC","LLB","LLM","JSA","AZB","CAM","SAM","IP","HSA","DSK","ELP","PSA","UK","USA","HDFC","ICICI","SBI"]);
+const NAME_SMALL=new Set(["and","of","the","for","de","da","van","von","bin","al"]);
+function nameCase(str){
+  const s=String(str||"").replace(/\s+/g," ").trim(); if(!s) return s;
+  return s.split(" ").map((w,i)=>{
+    const core=w.replace(/^[(\["']+|[)\]"',.;:]+$/g,"");
+    if(!core) return w;
+    if(/^[A-Za-z]\.([A-Za-z]\.)*$/.test(core+".")&&core.length<=6&&/\./.test(w)) return w.toUpperCase();      // K.V. / N.
+    if(/^([A-Za-z]\.){1,4}[A-Za-z]?$/.test(core)) return w.toUpperCase();
+    if(/^m\/s\.?$/i.test(core)) return w.replace(/m\/s/i,"M/s");
+    if(core==="&") return w;
+    if(NAME_KEEP_UP.has(core.toUpperCase())&&(core===core.toUpperCase()||/^\(/.test(w))) return w.replace(core,core.toUpperCase());
+    if(/^\(/.test(w)&&/^[A-Z]{2,5}$/.test(core)) return w;                                          // (JSA)
+    if(i>0&&NAME_SMALL.has(core.toLowerCase())) return w.replace(core,core.toLowerCase());
+    const cased=core.toLowerCase().replace(/(^|[-'’.])([a-z])/g,(m,a,b)=>a+b.toUpperCase()).replace(/^Mc([a-z])/,(m,a)=>"Mc"+a.toUpperCase());
+    return w.replace(core,cased);
+  }).join(" ");
+}
+const _titleCase = s => String(s||"").toLowerCase().replace(/\b([a-z])/g,(_,c)=>c.toUpperCase()).replace(/\bM\/s\b/,"M/s");
 // "HON'BLE MR. JUSTICE A B SHARMA" -> "Justice A B Sharma". The honorific is stripped and
 // re-applied in one consistent form rather than echoing whatever the PDF happened to use
 // (owner: "add Justice before the name of the judges in coram"). The C.J.I. keeps its own
@@ -1246,8 +1301,16 @@ function lookupItem(date,type,court,item){
   if(key==null && rec.items){ const subs=Object.keys(rec.items).filter(k=>Math.floor(parseFloat(k))===parseInt(n,10)).sort((a,b)=>parseFloat(a)-parseFloat(b)); key=subs[0]||null; }
   const line=(key&&rec.items)?rec.items[key]:"";
   const adv=(key&&rec.advocates&&rec.advocates[key])||{};
+  // the court's DROP NOTE: this item was deleted from today's list (or shifted)
+  const dr=rec.dropped&&(rec.dropped[it]||rec.dropped[n]);
+  if(!line && dr) return {found:false, dropped:true, reason:"Item "+item+" was deleted from the "+type+" list for "+date+(dr.to?" (shifted to item "+dr.to+")":"")+" — per the court's drop note.", bench:cleanCoram(rec.coram)};
   if(!line) return {found:false, reason:"Item "+item+" not in the "+type+" list.", bench:cleanCoram(rec.coram)};
-  return {found:true, title:titleFromCauseLine(line), bench:cleanCoram(rec.coram), aorPet:_titleCase(adv.pet||""), aorResp:_titleCase(adv.resp||"")};
+  // every AoR of each side (the first real one is the one stored); amicus / in-person left out
+  // (an AoR acting only for impleaders / intervenors is not that side's AoR — kept out)
+  const names=list=>(list||[]).filter(e=>e&&e.n&&e.tag!=="amicus"&&e.tag!=="in-person"&&!/^(?:\s*(?:IMPL|INT)\s*,?)+$/i.test(e.p||"")).map(e=>nameCase(e.n));
+  const petAll=names(adv.petAll), respAll=names(adv.respAll);
+  return {found:true, title:titleFromCauseLine(line), bench:cleanCoram(rec.coram),
+    aorPet:nameCase(adv.pet||petAll[0]||""), aorResp:nameCase(adv.resp||respAll[0]||""), aorPetAll:petAll, aorRespAll:respAll};
 }
 
 const $ = id => document.getElementById(id);
@@ -1926,6 +1989,14 @@ function miscPartsByCourt(){
 // the same way fixedTimes/doneMarks/poMarks already are; classify() measures the matter as
 // if it WERE the referenced item. Misc list only for now — the Regular list's own such
 // notes aren't wired up yet.
+// The causelist's DROP NOTE tables: matters deleted from today's list (or shifted), per court
+// (Misc and Regular — their numbers never collide). The engine gives them no slot.
+function droppedByCourt(){
+  const out={}, lists=courtUpdates?.by_date?.[todayISO()]?.lists||{};
+  for(const t of ["Miscellaneous","Regular"]){ const by=lists[t]||{};
+    for(const court in by){ const d=by[court]&&by[court].dropped; if(d) for(const item in d) out[court+"_"+item]=d[item]; } }
+  return out;
+}
 function withItemByCourt(){
   const out={}, lists=courtUpdates?.by_date?.[todayISO()]?.lists?.["Miscellaneous"]||{};
   for(const court in lists){ const w=lists[court]&&lists[court].withItem;
@@ -2071,7 +2142,7 @@ function courtCtx(){
   const {done,po}=statusMarks();
   return { nowMins:nowMinsIST(), boardByCourt:boardByCourt(),
     seqByCourt:effSeqByCourt(), remarksByCourt, boardPO:boardPO.marks, recalledPO:recalledPO.set, poMarks:po, doneMarks:done,
-    miscTotalByCourt:miscTotalByCourt(), regTotalByCourt:regTotalByCourt(), itemHi:itemHi.max, seenItems:seenItemsByCourt(), withItem:withItemByCourt(),
+    miscTotalByCourt:miscTotalByCourt(), regTotalByCourt:regTotalByCourt(), itemHi:itemHi.max, seenItems:seenItemsByCourt(), withItem:withItemByCourt(), dropped:droppedByCourt(),
     specialBenches:courtUpdates?.by_date?.[todayISO()]?.specialBenches||[], miscParts:miscPartsByCourt(), fixedTimes:fixedTimesByCourt() };
 }
 /* Every fixed time known for a court today — the causelist's own per-item times and the
@@ -2940,14 +3011,17 @@ function openCourtModal(court,_refetched){
   const plan=courtPlan(court);
   const poOut=plan.queue.length;
   const reach=(!idle && bc && !isNaN(curNum)) ? ENG.reachOf(courtCtx(), court, plan.seq||[], miscTotal||null, bc.item, plan.vacated) : 0;
-  const doneN=Math.max(0, Math.min(reach, miscTotal||reach) - poOut - 1);
+  // the list's real size: its serials less the ones holding no slot (deleted by the drop note,
+  // taken up with another item, fixed for a time) — none of them is ever "to go"
+  const listN=miscTotal ? Math.max(1, miscTotal - [...(plan.vacated||[])].filter(n=>n>=1&&n<=miscTotal).length) : 0;
+  const doneN=Math.max(0, Math.min(reach, listN||reach) - poOut - 1);
   // curNum<800: a reserved-series item (803 = mentioning) is a PHASE, not a Regular-list
   // position — without the gate the hero read "Misc list done · Regular list on" while the
   // court was actually doing its morning mentioning.
-  const onRegular = miscTotal>0 && curNum>=ENG.REG_BASE && !ENG.isReservedItem(Math.floor(curNum)) && reach>miscTotal;
+  const onRegular = miscTotal>0 && curNum>=ENG.REG_BASE && !ENG.isReservedItem(Math.floor(curNum)) && reach>listN;
   const showProg=!idle && !isNaN(curNum) && curNum>0 && !ENG.isReservedItem(Math.floor(curNum)) && miscTotal>0 && !onRegular;
-  const leftN=showProg ? Math.max(0, miscTotal-doneN) : 0;
-  const pct=showProg ? Math.max(2, Math.min(100, Math.round(doneN/miscTotal*100))) : 0;
+  const leftN=showProg ? Math.max(0, listN-doneN) : 0;
+  const pct=showProg ? Math.max(2, Math.min(100, Math.round(doneN/listN*100))) : 0;
   const planLine=passoverPlanText(plan);
   // which part of the circular's order the court is on (only when that order applies)
   const partLab = (plan.circular && plan.freshEnd!=null) ? (reach<=plan.freshEnd ? "Fresh matters" : "After notice") : "";
@@ -3512,10 +3586,10 @@ function addMatterForm(){
       fetched={title:r.title, bench:r.bench, aor:(f.party==="Petitioner"?r.aorPet:r.aorResp), aorPet:r.aorPet, aorResp:r.aorResp};
       pv.innerHTML=`<div class="pv-row"><span class="pv-k">Cause title</span><span class="pv-v">${esc(r.title||"—")}</span></div>
         <div class="pv-row"><span class="pv-k">Bench</span><span class="pv-v">${esc(r.bench||"—")}</span></div>
-        <div class="pv-row"><span class="pv-k">AoR · ${esc(f.party)}</span><span class="pv-v">${esc((f.party==="Petitioner"?r.aorPet:r.aorResp)||"—")}</span></div>`;
+        <div class="pv-row"><span class="pv-k">AoR · ${esc(f.party)}</span><span class="pv-v">${esc((f.party==="Petitioner"?r.aorPet:r.aorResp)||"—")}${(()=>{ const all=(f.party==="Petitioner"?r.aorPetAll:r.aorRespAll)||[], first=(f.party==="Petitioner"?r.aorPet:r.aorResp); const rest=all.filter(x=>x!==first); return rest.length?`<span style="color:var(--mut)"> · also ${esc(rest.slice(0,3).join(", "))}${rest.length>3?` and ${rest.length-3} more`:""}</span>`:""; })()}</span></div>`;
     } else {
       fetched=null;
-      pv.innerHTML=`<div class="pv-miss">${esc(r.reason||"Not found.")}${r.bench?`<br><b>Bench:</b> ${esc(r.bench)}`:""}<br><span style="color:var(--mut)">You can still track it — the details fill once the list is published.</span></div>`;
+      pv.innerHTML=`<div class="pv-miss">${esc(r.reason||"Not found.")}${r.bench?`<br><b>Bench:</b> ${esc(r.bench)}`:""}${r.dropped?"":`<br><span style="color:var(--mut)">You can still track it — the details fill once the list is published.</span>`}</div>`;
     }
   };
   const save=async()=>{

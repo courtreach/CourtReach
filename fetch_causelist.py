@@ -52,7 +52,7 @@ OUTPUT_FILE = "court-updates.json"
 # based change-detection reuses a cached parse when the PDF is unchanged; without
 # this, a parser FIX never reaches already-cached dates (their PDFs don't change).
 # A version mismatch forces a full re-parse of every date in the window.
-PARSER_VERSION = 18  # bumped: totals ignore stray item numbers far past the clean 1..N run
+PARSER_VERSION = 19  # bumped: SD-Chamber parser v10 ported — case numbers gathered across wrapped rows, items need "No."/"Connected", advocates per side
 HEADERS = {"User-Agent": "Mozilla/5.0 (compatible; courtreach-causelist-bot/1.0)"}
 
 COURT_RE = re.compile(r"COURT\s*NO\.?\s*[:\-]?\s*([0-9]+)", re.I)
@@ -977,37 +977,199 @@ ITEM_SNO_RE = re.compile(r"^[0-9]{1,4}(?:\.[0-9]{1,3})?[.\)]?$")
 ADV_SNO_RE = re.compile(r"^([0-9]{1,4}(?:\.[0-9]{1,3})?)[.\)]?$")  # same, capturing the number
 
 
+# --- Case-number column (ported from SD-Chamber's fetcher, parser v9/v10, Oct 2026) ---------
+# The list is a table: serial (x<60) · CASE-NO column (60–180; a long number WRAPS onto the next
+# row, and the registry SECTION code sits under it: "II-E", "XVI-A", "PIL-W") · parties
+# (185–415) · advocate (>=415). The case-number column is gathered over ALL the rows of an item
+# and written whole on the item's first line, so a wrapped number is never lost and never
+# leaks into the party names. Before the port ~40 % of Misc items carried no number and some
+# Regular titles came out scrambled ("SECRETARY THE STATE OF MAHARASHTRA THROUGH THE").
+CASE_COL_X = 180
+CASE_SECTION_RE = re.compile(r"^(?:[IVXL]{1,5}(?:-[A-Z]{1,2})?|PIL(?:-W)?|[IVXL]{1,5}[A-Z])$")
+_NUM = r"\d{1,7}(?:\s*-\s*\d{1,7})?\s*[/-]\s*(?:19|20)\d{2}"
+_TYPE = r"(?:[A-Za-z][A-Za-z.()&]*\.{0,3}\s?){1,4}?"
+CASE_NO_RE = re.compile(
+    rf"(?:Connected\s+)?{_TYPE}(?:No(?:s|\(s\))?\.?\s*-?\s*)?{_NUM}"
+    rf"(?:\s+in\s+{_TYPE}(?:No(?:s|\(s\))?\.?\s*-?\s*)?{_NUM})*", re.I)
+_HAS_NUM = re.compile(r"\d{1,7}(?:-\d{1,7})?\s*[/-]\s*(?:19|20)\d{2}")
+
+
+def _serial_wraps(prev_sno, prev_case_words, prev_key, key, first_word):
+    """The serial column is narrow too: "39.11" can print as "39.1" / "1" (and "102." / "2" in
+    Regular lists). A row starting with a bare number right after a "Connected" sub-item row
+    that has no case number yet is the rest of THAT serial, not a new item."""
+    return (prev_sno is not None and "." in prev_sno and key - prev_key <= 9
+            and not _HAS_NUM.search(" ".join(prev_case_words))
+            and re.fullmatch(r"[0-9]{1,3}", first_word or "") is not None)
+
+
+def _case_text(words):
+    """Words of the case-number column -> one clean number, e.g. 'SLP(Crl) No. 18858/2026'
+    or 'CONMT.PET.(C) No. 21/2026 in C.A. No. 2004/2019'. Section codes, notes ("[FRESH")
+    and the digital-signature stamp that can sit in that column are left out."""
+    t = " ".join(w for w in words if not CASE_SECTION_RE.match(w))
+    t = re.sub(r"\s+", " ", t).strip()
+    m = CASE_NO_RE.search(t)
+    if m:
+        num = m.group(0)
+        num = re.sub(r"(No(?:s|\(s\))?\.)\s*-?\s*(?=\d)", r"\1 ", num)
+        num = re.sub(r"\s*-\s*(?=\d)", "-", num)
+        return num.strip()
+    m = re.match(r"(?:Connected\s+)?[A-Za-z][A-Za-z.()&]*(?:\s+No(?:s|\(s\))?\.)?", t)
+    return m.group(0) if m else ""
+
+
+# --- DROP NOTE tables (CourtReach, 12 Oct 2026; SD-Chamber reads these wrongly too) --------
+# A court's list can open with a "DROP NOTE:-" table of matters DELETED from today's list (or
+# shifted): "Item No. | Case No. | Petitioner/Respondent | Advocate | Shifted to | Reason", e.g.
+# "17 SLP(C) No./35608/2026 ASHUTOSH GHADE- 2909 - DELETED.". Its columns sit elsewhere than the
+# list's (parties at ~153, advocates at ~270), so read as list rows they made junk items —
+# "SLP(C) No. ASHUTOSH GHADE- 2909" as item 17's title, and, being first, they shadowed the
+# real item of the same number and lent it the wrong AoR. The table's own header gives its
+# "Shifted"/"Reason" column positions (they vary list to list); a row with a mark in the
+# shifted-to column ("-" or an item number) and a reason is a drop row; the table ends at the
+# first serial row without that signature, or at another court.
+# A COURT HEADER is a line of its own — "COURT NO. : 2", "IN COURT NO. : 4", "CHIEF JUSTICE'S
+# COURT", "Registrar Court No. 1" (every header in the 12–14 Oct 2026 lists). Searching ANY line
+# for "COURT NO. 2" switched court on a note — "[THIS BENCH WILL RE-ASSEMBLE AFTER HEARING IN
+# SPECIAL BENCH MATTER LISTED IN COURT NO. 2 AT 2:00 PM …]" printed under Court 17 filed Court
+# 17's item 1 (Keval Singh Rathiya) as Court 2's item 1. Used by the title / AoR passes.
+COURT_HEAD_RE = re.compile(
+    r"^\s*(?:IN\s+)?(?:(?:REGISTRAR\s+)?COURT\s*NO\.?\s*:?\s*([0-9]{1,2})|CHIEF\s+JUSTICE'?S\s+COURT)\s*$", re.I)
+
+
+def court_header(line):
+    """The court a header line opens ("1" for the Chief Justice's court), else None."""
+    m = COURT_HEAD_RE.match(line or "")
+    if not m:
+        return None
+    return m.group(1) if m.group(1) else "1"
+
+
+class DropTable:
+    def __init__(self):
+        self.active = False; self.court = None; self.shift_x = None; self.reason_x = None
+        self.dropped = {}        # court -> {item: {"to": "", "reason": "DELETED."}}
+
+    def feed(self, court, ws, full):
+        """True when this row belongs to a drop table (the caller skips it)."""
+        if court != self.court:
+            self.active = False; self.court = court
+        if re.match(r"^DROP\s+NOTE", full, re.I):
+            self.active = True; self.shift_x = self.reason_x = None
+            return True
+        if not self.active:
+            return False
+        for w in ws:                                   # the table's own header row(s)
+            if w["text"] == "Shifted": self.shift_x = w["x0"]
+            if w["text"] == "Reason": self.reason_x = w["x0"]
+        if re.search(r"\b(?:Shifted|Reason|Petitioner/Respondent)\b", full) or full.strip() in ("No. to", "No."):
+            return True
+        is_serial = ws[0]["x0"] < 70 and re.match(r"^[0-9]{1,4}(?:\.[0-9]{1,3})?$", ws[0]["text"])
+        rx = self.reason_x or 505
+        sx = self.shift_x or 455
+        reason = [w for w in ws if w["x0"] >= rx - 8 and re.match(r"^[A-Za-z]", w["text"])]
+        shift = [w for w in ws if sx - 10 <= w["x0"] < rx - 8 and re.match(r"^(?:-|[0-9]{1,4}(?:\.[0-9]+)?)$", w["text"])]
+        if is_serial and reason and shift:
+            to = shift[-1]["text"]
+            self.dropped.setdefault(court, {})[ws[0]["text"]] = {
+                "to": "" if to == "-" else to, "reason": " ".join(w["text"] for w in reason).strip()}
+            return True
+        if is_serial:                                  # a list row: the table is over
+            self.active = False
+            return False
+        # a continuation row of the table — but never swallow a section heading of the list
+        # proper ("[FRESH (FOR ADMISSION) ...]", "AFTER NOTICE ...", a NOTE)
+        if ws[0]["x0"] < 200 and (full.startswith("[") or PART_HEAD_RE.match(full) or re.match(r"^NOTE\b", full)):
+            self.active = False
+            return False
+        return True
+
+
 def pdf_texts(data):
     """(column_text, full_text) from ONE pdfplumber pass. column_text drops the advocate
-    column from item rows (for cause titles); full_text keeps every row whole. NOTE:- blocks
-    and special-bench headers must be read from full_text: a long note line printed after an
-    item row spills past the advocate-column edge and was being cut off mid-sentence (7 Oct
-    2026: "HON'BLE MR. JUSTICE PRASHANT KUMAR MISHRA WILL SIT IN SPECIAL BENCH IN" — the rest,
-    "THIS COURT AT 3.00 P.M.", sat in the dropped column). (None, None) without pdfplumber."""
+    column from item rows and writes each item's case number WHOLE on its first line (see
+    above); full_text keeps every row whole. NOTE:- blocks and special-bench headers must be
+    read from full_text: a long note line printed after an item row spills past the
+    advocate-column edge and was being cut off mid-sentence (7 Oct 2026). A continuation row
+    whose left part is a bracketed note ("[TO BE TAKEN UP ALONG WITH ITEM NO. 23]", a time
+    note) is kept whole, wherever it starts, so the notes parser still sees all of it.
+    (None, None) without pdfplumber."""
     try:
         import pdfplumber
     except Exception:
         return None, None
     try:
         out, whole = [], []
+        drops = DropTable(); court = None
+        pdf_texts.dropped = {}
+        # An item can run across a page break (its "Versus" and respondent on the next page): the
+        # item state therefore lives across pages. Restarting it per page (as SD-Chamber's reader
+        # does) copied the new page's first rows WHOLE, advocate column included — "MAHESH
+        # MAHENDRABHAI MODI KRISHNAMOHAN K.- 2561" as a respondent (12 Oct 2026, Court 5 #14).
+        in_items = False
+        item = None          # {"idx": line index, "sno", "case": [words], "party", "key"}
+
+        def close():
+            if item is not None:
+                num = _case_text(item["case"])
+                out[item["idx"]] = " ".join(x for x in (item["sno"], num, item["party"]) if x)
+
         with pdfplumber.open(io.BytesIO(data)) as pdf:
-            for page in pdf.pages:
+            for pno, page in enumerate(pdf.pages):
                 rows = {}
                 for w in page.extract_words(use_text_flow=True):
-                    rows.setdefault(round(w["top"] / 2), []).append(w)
-                in_items = False
+                    # row keys unique across pages, so an item's "key" distance (wrapped-serial
+                    # test) never compares rows of different pages as neighbours
+                    rows.setdefault(pno * 100000 + round(w["top"] / 2), []).append(w)
                 for key in sorted(rows):
                     ws = sorted(rows[key], key=lambda w: w["x0"])
                     full = " ".join(w["text"] for w in ws)
                     whole.append(full)
-                    if REG_RE.search(full) or COURT_RE.search(full) or CJ_RE.search(full):
+                    hdr = court_header(full)
+                    if hdr is not None:
+                        if hdr == court and in_items:
+                            # the same court's header re-printed at the top of a new page: the
+                            # item carries on (its respondent often starts here). Treating it as
+                            # a fresh header copied the next rows WHOLE, advocate column and all
+                            # — "DLF HOME DEVELOPERS LTD. KARANJAWALA & CO.- 1707" as a respondent.
+                            out.append(full); continue
+                        court = hdr
+                        close(); item = None
                         in_items = False           # a court header — coram follows
-                    elif ws[0]["x0"] < SNO_COL_X and ITEM_SNO_RE.match(ws[0]["text"]):
+                        out.append(full); continue
+                    if court is not None and drops.feed(court, ws, full):
+                        close(); item = None; in_items = False
+                        continue                   # a DROP NOTE row — never a list item
+                    if HEADER_SKIP.search(full):
+                        out.append(full); continue  # page-header boilerplate; the item carries on
+                    if ws[0]["x0"] < SNO_COL_X and ITEM_SNO_RE.match(ws[0]["text"]):
                         in_items = True            # a serial-numbered item row
+                        if item is not None and _serial_wraps(item["sno"], item["case"], item["key"], key, ws[0]["text"]):
+                            item["sno"] = item["sno"] + ws[0]["text"]          # "39.1"+"1" -> "39.11", "102."+"2" -> "102.2"
+                            item["case"] += [w["text"] for w in ws[1:] if w["x0"] < CASE_COL_X]
+                            more = " ".join(w["text"] for w in ws[1:] if CASE_COL_X <= w["x0"] < ADV_COL_X)
+                            if more: item["party"] = (item["party"] + " " + more).strip()
+                            item["key"] = key
+                            out.append(""); continue
+                        close()
+                        item = {"idx": len(out), "sno": ws[0]["text"], "key": key,
+                                "case": [w["text"] for w in ws[1:] if w["x0"] < CASE_COL_X],
+                                "party": " ".join(w["text"] for w in ws[1:] if CASE_COL_X <= w["x0"] < ADV_COL_X)}
+                        out.append("")
+                        continue
                     if in_items:
-                        out.append(" ".join(w["text"] for w in ws if w["x0"] < ADV_COL_X))
+                        left = " ".join(w["text"] for w in ws if w["x0"] < ADV_COL_X).strip()
+                        if left.startswith("[") or re.match(r"^(?:NOTE|TIME|\(TIME)", left, re.I):
+                            out.append(left); continue   # a note: keep it whole (see docstring)
+                        if item is not None:
+                            item["case"] += [w["text"] for w in ws if SNO_COL_X <= w["x0"] < CASE_COL_X]
+                            item["key"] = key
+                        out.append(" ".join(w["text"] for w in ws if CASE_COL_X <= w["x0"] < ADV_COL_X))
                     else:
                         out.append(full)
+        close()
+        pdf_texts.dropped = drops.dropped
         return "\n".join(out), "\n".join(whole)
     except Exception as e:
         print("  column extraction failed:", e)
@@ -1032,6 +1194,35 @@ ITEM_LINE_RE = re.compile(r"^([0-9]{1,4}(?:\.[0-9]{1,3})?)[.\)]?\s+(.+)$")
 CONNECTED_RE = re.compile(r"^([0-9]{1,4})\.\s+Connected\s+(.+)$", re.I)
 SUBINDEX_RE = re.compile(r"^([0-9]{1,3})\b\s*(.*)$")
 
+# An advocate's name + code that slipped into the party column at the END of a respondent line
+# ("UNION OF INDIA AND ORS. AMRISH KUMAR- 2986 [R-1],"). Up to three name words, never a word
+# that belongs to a party ("ORS.", "OF", "INDIA", …), followed by "- 1234". (SD-Chamber v9)
+_ADV_WORD = r"(?!(?:ORS|ANR|ETC|LTD|LIMITED|OF|AND|THE|INDIA|STATE|UNION|GOVT|CO)\b)[A-Z][A-Z']*"
+ADV_TAIL_RE = re.compile(rf"\s+(?:{_ADV_WORD}\s+){{0,2}}{_ADV_WORD}-\s?\d{{3,4}}\s*(?:[\[,].*)?$")
+
+
+# A party name that WRAPS onto the next row ("THE DIRECTOR OF PUBLIC HEALTH AND" / "PREVENTIVE
+# MEDICINE"; "THE STATE OF" / "BIHAR"): continuation rows are plain party text — capitals,
+# digits and . , & ' ( ) / @ : - — and never one of the annotations that follow a case
+# ("{Mention Memo}", "[ ONLY IA …]", "FOR ADMISSION", "IA No. …", "O.T.", "C/C OF …").
+# Both SD-Chamber and the old reader kept only the first row of each side.
+PARTY_CONT_RE = re.compile(r"^[A-Z0-9][A-Z0-9 .,&'()/@:\-]*$")
+PARTY_STOP_RE = re.compile(
+    r"^(?:\{|\[|IA\b|I\.A\.|FOR\b|O\.T\.|C/C\b|WITH\b|ONLY\b|NOTE\b|ITEM\b|TO\s+BE\b|"
+    r"IN\s+(?:SLP|C\.A|W\.P|T\.P|CRL|CIVIL|CONMT|M\.A|R\.P)|PRAYER|APPLICATION|STAY\b|EXEMPTION|"
+    r"CONDONATION|PERMISSION|DIRECTION|MODIFICATION|CLARIFICATION|IMPLEADMENT|INTERVENTION|"
+    r"VERSUS$|AFTER\s+NOTICE|FRESH\b|PART\b|BAIL\b|REGULAR\b|MISCELLANEOUS\b)", re.I)
+
+
+# the next section's headings: "SUPREME COURT OF INDIA" (the page heading that opens a court's
+# list), a coram line, a Registrar's name ("MS. GRACY L. BAWITLUNG, REGISTRAR")
+SECTION_HEAD_RE = re.compile(r"^SUPREME\s+COURT\s+OF\s+INDIA$|^HON'?BLE\b|,\s*REGISTRAR\b|^(?:LIST\s+OF|CURATIVE\s+&|IN\s+THE\s+CHAMBERS)", re.I)
+
+
+def _party_cont(line):
+    return (bool(PARTY_CONT_RE.match(line)) and not PARTY_STOP_RE.match(line)
+            and not SECTION_HEAD_RE.search(line) and len(line) <= 70)
+
 
 def parse_courts(text):
     """Text of one list PDF ->
@@ -1046,6 +1237,8 @@ def parse_courts(text):
     pending = None      # (court, item) awaiting a "Versus" respondent
     await_resp = False
     pending_conn = None # a "N. Connected <party>" awaiting its sub-index next line
+    pet_more = 0        # petitioner continuation rows taken for the pending item (max 3)
+    resp_more = None    # (court, item, rows taken) — respondent continuation (max 2)
     in_special_bench = False   # currently inside a SPECIAL BENCH section
     cur_time = ""              # that section's declared time (clock time, or a
                                 # verbatim relative-timing note) — "" if undeclared
@@ -1078,12 +1271,7 @@ def parse_courts(text):
             continue
         if HEADER_SKIP.search(line):      # page-header boilerplate — never data
             continue
-        court = None
-        m = REG_RE.search(line) or COURT_RE.search(line)
-        if m:
-            court = m.group(1)
-        elif CJ_RE.search(line):
-            court = "1"
+        court = court_header(line)     # a header line of its own only — never a note's "COURT NO. 2"
         if court is not None:
             same_court = (court == cur)
             cur = court
@@ -1189,11 +1377,11 @@ def parse_courts(text):
                 last_item = key
                 caseline = (sm.group(2).strip() + " " + pending_conn["party"]).strip()
                 if key not in courts[cur]["items"]:
-                    courts[cur]["items"][key] = re.sub(r"\s+", " ", caseline).strip()[:70]
+                    courts[cur]["items"][key] = re.sub(r"\s+", " ", caseline).strip()[:110]
                     courts[cur]["part"][key] = cur_part.get(cur, "A")
                     if cur_time and in_special_bench:
                         courts[cur]["times"][key] = cur_time
-                    pending = (cur, key); await_resp = False
+                    pending = (cur, key); await_resp = False; pet_more = 0; resp_more = None
                 pending_conn = None
                 continue
             pending_conn = None   # next line wasn't a sub-index — abandon
@@ -1201,29 +1389,48 @@ def parse_courts(text):
         # only; page-header repeats won't overwrite). The respondent is captured
         # from the line after "Versus" so the title reads "Petitioner vs Resp".
         im = ITEM_LINE_RE.match(line)
-        if im and re.search(r"[A-Za-z]{3}", im.group(2)):
+        # an item only if it carries a case number ("No.") or is a "Connected" matter —
+        # advocate codes like "1866 [IMPL], VARUN" and court notices are not items (SD v9)
+        if im and re.search(r"[A-Za-z]{3}", im.group(2)) \
+                and (re.search(r"\bNo(?:s|\(s\))?\.", im.group(2)[:60]) or re.match(r"Connected\b", im.group(2), re.I)):
             in_header = False
             it = im.group(1)
             last_item = it
             if it not in courts[cur]["items"]:
-                courts[cur]["items"][it] = re.sub(r"\s+", " ", im.group(2)).strip()[:70]
+                courts[cur]["items"][it] = re.sub(r"\s+", " ", im.group(2)).strip()[:110]
                 courts[cur]["part"][it] = cur_part.get(cur, "A")
                 if cur_time and in_special_bench:
                     courts[cur]["times"][it] = cur_time
-                pending = (cur, it); await_resp = False
+                pending = (cur, it); await_resp = False; pet_more = 0; resp_more = None
             else:
-                pending = None
+                pending = None; resp_more = None
             continue
+        if resp_more is not None:
+            rc, rit, rn = resp_more
+            if rn < 2 and _party_cont(line) and not re.search(r"\b(?:ORS|ANR)\.?$", courts[rc]["items"][rit]):
+                courts[rc]["items"][rit] = (courts[rc]["items"][rit] + " " + ADV_TAIL_RE.sub("", re.sub(r"\s+", " ", line)).strip())[:200]
+                resp_more = (rc, rit, rn + 1)
+                continue
+            resp_more = None
         if pending is not None:
             if re.match(r"^versus$", line, re.I):
                 await_resp = True
                 continue
+            if not await_resp and pet_more < 3 and _party_cont(line):
+                pc, pit = pending
+                if " VERSUS " not in courts[pc]["items"][pit]:
+                    courts[pc]["items"][pit] = (courts[pc]["items"][pit] + " " + re.sub(r"\s+", " ", line).strip())[:160]
+                    pet_more += 1
+                    continue
             if await_resp and re.search(r"[A-Za-z]{3}", line) \
                     and not re.match(r"^[\[{(]", line):   # skip [CAVEAT] etc.
-                resp = re.sub(r"\s+", " ", line).strip()[:50]
+                resp = re.sub(r"\s+", " ", line).strip()
+                # an advocate that slipped into the party column: "… AND ORS. AMRISH KUMAR- 2986 [R-1],"
+                resp = ADV_TAIL_RE.sub("", resp).strip()[:60]
                 pc, pit = pending
                 courts[pc]["items"][pit] += " VERSUS " + resp
                 pending = None; await_resp = False
+                resp_more = (pc, pit, 0)
                 continue
         if in_header:
             if is_coram(line):
@@ -1260,7 +1467,7 @@ def _clean_adv(s):
 def _valid_adv(s):
     """STRICTLY an advocate / firm NAME: letters plus . , & / ' - and spaces only,
     short, no digits, and none of the party/case/bench/officer words."""
-    if not s or len(s) > 45 or not re.search(r"[A-Za-z]", s):
+    if not s or len(s) > 60 or not re.search(r"[A-Za-z]", s):
         return False
     if re.search(r"[0-9]", s):
         return False
@@ -1271,82 +1478,145 @@ def _valid_adv(s):
     return True
 
 
+# One advocate entry in the advocate column, as the SC prints it (SD-Chamber v10):
+#   "MUKESH KUMAR MARORIA- 2324 [R-1], [R-2], [R-3]"   (name - AoR code [parties])
+#   "DAKSH KADIAN AC"                                  (amicus curiae)
+#   "PETITIONER-IN-PERSON" / "APPLICANT-IN-PERSON"
+# Names and codes WRAP over rows, and a side can have several AoRs.
+_NAME = r"[A-Z][A-Z.'&@/() ]*?[A-Z.)]"
+ADV_CODED_RE = re.compile(rf"({_NAME})\s*-\s*(\d{{1,5}})\s*((?:\[[^\]]*\][\s,]*)*)")
+ADV_AC_RE = re.compile(rf"({_NAME})\s+AC\b\s*((?:\[[^\]]*\][\s,]*)*)")
+ADV_INPERSON_RE = re.compile(r"\b(PETITIONER|APPLICANT|RESPONDENT|APPELLANT)-IN-PERSON\b")
+
+
+def _adv_entries(text):
+    """The advocate column of ONE side of ONE case -> [{n: name, p: "R-1, R-2", tag?}].
+    Only the NAME is kept — the AoR code, party tags and separators are never part of it."""
+    t = re.sub(r"\s+", " ", text or "").strip()
+    out, taken = [], []
+    def tags(s):
+        return ", ".join(x.strip() for x in re.findall(r"\[([^\]]*)\]", s or "") if x.strip())
+    def tidy(raw):
+        name = re.sub(r"\s+", " ", raw).strip(" ,-")
+        # keep the full stop of a trailing initial or short abbreviation ("KRISHNAMOHAN K.",
+        # "KARANJAWALA & CO."); drop any other trailing one
+        if name.endswith(".") and not re.search(r"(?:^|\s)[A-Z]{1,3}\.$", name):
+            name = name.rstrip(".")
+        return name.strip(" ,-")
+    for m in ADV_CODED_RE.finditer(t):
+        name = tidy(m.group(1))
+        name = re.sub(r"^(?:AND|&)\s+", "", name)
+        if _valid_adv(name):
+            e = {"n": name, "p": tags(m.group(3))}
+            if "CAVEAT" in e["p"].upper():
+                e["tag"] = "caveat"
+            out.append(e); taken.append(m.span())
+    for m in ADV_AC_RE.finditer(t):
+        if any(a <= m.start() < b for a, b in taken):
+            continue
+        name = tidy(m.group(1))
+        name = re.sub(r"^.*\]\s*,?\s*", "", name)            # never a tag before it
+        if _valid_adv(name):
+            out.append({"n": name, "p": tags(m.group(2)), "tag": "amicus"})
+    for m in ADV_INPERSON_RE.finditer(t):
+        out.append({"n": m.group(1).title() + " in person", "p": "", "tag": "in-person"})
+    return out
+
+
 def parse_advocates(data, real_items):
-    """{court: {item: {pet?, resp?}}} — the AoR for each side, taken only from the
-    advocate column and validated. `real_items` = {court: set(item)} from
-    parse_courts, so a note/header line mis-read as an item is dropped (intersection).
-    Empty / invalid values are omitted."""
+    """{court: {item: {pet, resp, petAll, respAll}}} — every advocate of each side, read from
+    the advocate column only (x >= ADV_COL_X), so nothing from the party/number columns can
+    leak in. Petitioner side = the item's rows up to "Versus"; respondent side = the rows
+    after it, up to the next item — including names that wrap onto the next row and items
+    that run onto the next page. `pet`/`resp` = the first real AoR of that side;
+    `petAll`/`respAll` = all of them with their parties. (Ported from SD-Chamber v10.)"""
     try:
         import pdfplumber
     except Exception:
         return {}
-    out = {}
+    raw = {}           # court -> item -> {"pet": [text], "resp": [text]}
+    st = {"court": None, "item": None, "side": "pet", "pend": None}
+    drops = DropTable()
+
+    def commit():
+        """The serial row seen last becomes the current item (decided one row late, because
+        the next row may be the rest of a wrapped serial such as "39.1" / "1" = 39.11)."""
+        p = st["pend"]; st["pend"] = None
+        if p is None:
+            return
+        c, sno = st["court"], p["sno"].rstrip(".")
+        if c in real_items and sno in real_items[c]:
+            st["item"] = sno; st["side"] = "pet"
+            raw.setdefault(c, {})[sno] = {"pet": [x for x in p["at"] if x], "resp": []}
+        else:
+            st["item"] = None
+
     try:
         with pdfplumber.open(io.BytesIO(data)) as pdf:
             for page in pdf.pages:
                 rows = {}
                 for w in page.extract_words(use_text_flow=True):
                     rows.setdefault(round(w["top"] / 2), []).append(w)
-                court = item = None
-                seen_v = pet_lock = resp_lock = False
                 for key in sorted(rows):
                     ws = sorted(rows[key], key=lambda w: w["x0"])
                     left = [w for w in ws if w["x0"] < ADV_COL_X]
                     lt = " ".join(w["text"] for w in left).strip()
-                    adv = _clean_adv(" ".join(w["text"] for w in ws if w["x0"] >= ADV_COL_X))
-                    m = REG_RE.search(lt) or COURT_RE.search(lt)
-                    if m:
-                        court = m.group(1); item = None; continue
-                    if CJ_RE.search(lt):
-                        court = "1"; item = None; continue
-                    if court is None:
+                    at = " ".join(w["text"] for w in ws if w["x0"] >= ADV_COL_X).strip()
+                    if HEADER_SKIP.search(lt):
+                        continue                     # page header — the item carries on
+                    hdr = court_header(lt)
+                    if hdr is not None:
+                        if hdr != st["court"]:       # a new court: start afresh
+                            commit(); st["court"] = hdr; st["item"] = None
+                        continue                     # same court repeated on a new page: carry on
+                    if st["court"] is None:
+                        continue
+                    if drops.feed(st["court"], ws, " ".join(w["text"] for w in ws)):
+                        commit(); st["item"] = None  # a DROP NOTE row: not the list item of that number
                         continue
                     if left and left[0]["x0"] < SNO_COL_X and ADV_SNO_RE.match(left[0]["text"]):
-                        cand = ADV_SNO_RE.match(left[0]["text"]).group(1)
-                        if court in real_items and cand in real_items[court]:
-                            item = cand; seen_v = pet_lock = resp_lock = False
-                            out.setdefault(court, {}).setdefault(item, {"pet": "", "resp": ""})
-                            if adv:
-                                out[court][item]["pet"] = adv     # petitioner AoR on the serial row
+                        case_w = [w["text"] for w in left[1:] if w["x0"] < CASE_COL_X]
+                        p = st["pend"]
+                        if p is not None and _serial_wraps(p["sno"], p["case"], p["key"], key, left[0]["text"]):
+                            p["sno"] = p["sno"] + left[0]["text"]; p["case"] += case_w; p["at"].append(at); p["key"] = key
+                            continue
+                        commit()
+                        st["pend"] = {"sno": left[0]["text"].rstrip(")"),   # keep a trailing "." ("102." + "2" = 102.2)
+                                      "case": case_w, "key": key, "at": [at]}
+                        continue
+                    if st["pend"] is not None:
+                        p = st["pend"]
+                        if not VERSUS_ONLY_RE.match(lt) and not _HAS_NUM.search(" ".join(p["case"])):
+                            p["case"] += [w["text"] for w in left if SNO_COL_X <= w["x0"] < CASE_COL_X]
+                        if VERSUS_ONLY_RE.match(lt) or key - p["key"] > 9 or _HAS_NUM.search(" ".join(p["case"])):
+                            commit()
                         else:
-                            item = None
+                            p["at"].append(at); p["key"] = key
+                            continue
+                    item = st["item"]
+                    if not item:
                         continue
-                    if not (court and item):
-                        continue
-                    rec = out[court][item]
                     if VERSUS_ONLY_RE.match(lt):
-                        seen_v = True; continue
-                    if not seen_v:
-                        if pet_lock:
-                            continue
-                        if adv and not rec["pet"]:
-                            rec["pet"] = adv
-                        elif adv and not lt:                    # empty-left continuation = same name wrapping
-                            rec["pet"] = (rec["pet"] + " " + adv).strip()
-                        else:
-                            pet_lock = True                     # left content / blank -> stop
-                    else:
-                        if resp_lock:
-                            continue
-                        if adv and not rec["resp"]:
-                            rec["resp"] = adv
-                        elif adv and not lt and rec["resp"]:
-                            rec["resp"] = (rec["resp"] + " " + adv).strip()
-                        elif rec["resp"] and (lt or not adv):   # a blank/annotation row ends respondent capture
-                            resp_lock = True
+                        st["side"] = "resp"
+                        if at:
+                            raw[st["court"]][item]["resp"].append(at)
+                        continue
+                    if at:
+                        raw[st["court"]][item][st["side"]].append(at)
+            commit()
     except Exception as e:
         print("  advocate extraction failed:", e)
     clean = {}
-    for c, its in out.items():
+    for c, its in raw.items():
         for it, rec in its.items():
-            pet = rec["pet"] if _valid_adv(rec["pet"]) else ""
-            resp = rec["resp"] if _valid_adv(rec["resp"]) else ""
-            if pet or resp:
-                d = {}
-                if pet:
-                    d["pet"] = pet
-                if resp:
-                    d["resp"] = resp
+            pe, re_ = _adv_entries(" ".join(rec["pet"])), _adv_entries(" ".join(rec["resp"]))
+            d = {}
+            first = lambda lst: next((e["n"] for e in lst if e.get("tag") not in ("amicus", "in-person")), "")
+            if first(pe): d["pet"] = first(pe)
+            if first(re_): d["resp"] = first(re_)
+            if pe: d["petAll"] = pe
+            if re_: d["respAll"] = re_
+            if d:
                 clean.setdefault(c, {})[it] = d
     return clean
 
@@ -1362,7 +1632,7 @@ def upcoming_days(n):
     return days
 
 
-def n_matters(items):
+def n_matters(items, dropped=None):
     """Count only serially-numbered matters. Connected matters are captured as
     sub-items ("4.1", "102.2") so a clerk can look them up, but the court lists
     them UNDER their main item — they are not separate serial matters, so they
@@ -1378,12 +1648,15 @@ def n_matters(items):
         except ValueError:
             return False
         return n >= 1 and not (300 <= n < 400) and n < 800
-    nums = sorted({int(k) for k in items if "." not in k and real(k)})
+    # a DROPPED serial still holds its number in the list's numbering, exactly like an item
+    # taken up with another or at a fixed time: counted here, vacated by the engine
+    nums = sorted({int(k) for k in items if "." not in k and real(k)}
+                  | {int(k) for k in (dropped or {}) if "." not in k and real(k)})
     # A stray far past the clean 1..N run is a PDF fragment read as an item number (live: a
     # 50-item list "containing" 670) — it must not inflate the total. Only applied when the
     # list does run from 1; otherwise every number counts, as before.
     run = 0
-    present = set(nums)
+    present = set(nums) | {int(k) for k in (dropped or {}) if "." not in k and real(k)}
     while run + 1 in present:
         run += 1
     if run:
@@ -1424,6 +1697,7 @@ def build_for_date(date_str, prev_day=None, prev_sizes=None):
             if not data:
                 continue
             col, full = pdf_texts(data)
+            dropped_here = getattr(pdf_texts, "dropped", {}) or {}
             text = col or pdf_to_text(data)  # drop advocate column (cause titles)
             if not text.strip():
                 continue
@@ -1455,8 +1729,11 @@ def build_for_date(date_str, prev_day=None, prev_sizes=None):
                 ex = merged.setdefault(court, {"coram": "", "total": "", "fresh": "",
                                                "items": {}, "advocates": {}, "times": {},
                                                "withItem": {}, "part": {}, "suppItems": [],
-                                               "main": 0, "supp": 0})
-                before = n_matters(ex["items"])
+                                               "dropped": {}, "main": 0, "supp": 0})
+                before = n_matters(ex["items"], ex["dropped"])
+                # matters DELETED / shifted per the court's DROP NOTE table (see DropTable)
+                for k, v in dropped_here.get(court, {}).items():
+                    ex["dropped"].setdefault(k, v)
                 # which matters came from the SUPPLEMENTARY list, and each matter's part
                 # (A fresh / B after notice) — the circular's call order needs both
                 if variant == "supp":
@@ -1472,7 +1749,7 @@ def build_for_date(date_str, prev_day=None, prev_sizes=None):
                 # is in the main one).
                 ex["withItem"].update(info.get("withItem", {}))
                 # count only the NEW serial matters this list added (not sub-items)
-                ex[variant] = ex.get(variant, 0) + (n_matters(ex["items"]) - before)
+                ex[variant] = ex.get(variant, 0) + (n_matters(ex["items"], ex["dropped"]) - before)
                 # merge the AoR names for this court's items (don't overwrite a name
                 # already captured from the main list with an empty from the supp)
                 for it, ad in advs.get(court, {}).items():
@@ -1481,13 +1758,20 @@ def build_for_date(date_str, prev_day=None, prev_sizes=None):
                         cur["pet"] = ad["pet"]
                     if ad.get("resp") and not cur.get("resp"):
                         cur["resp"] = ad["resp"]
+                    for k in ("petAll", "respAll"):
+                        if ad.get(k) and not cur.get(k):
+                            cur[k] = ad[k]
                 if not ex.get("coram") and info.get("coram"):
                     ex["coram"] = info["coram"]
                 if not ex.get("fresh") and info.get("fresh"):
                     ex["fresh"] = info["fresh"]
-        # SC lists carry no total line — total is the merged serial-matter count
+        # SC lists carry no total line — total is the merged serial-matter count. A matter the
+        # DROP NOTE deleted still holds its serial number (the 1..N run would otherwise break at
+        # it) and is counted; the app and worker pass `dropped` to the engine, which vacates it.
         for c in merged.values():
-            c["total"] = str(n_matters(c["items"]))
+            c["total"] = str(n_matters(c["items"], c.get("dropped")))
+            if not c.get("dropped"):
+                c.pop("dropped", None)
         if merged:
             lists[human] = merged
     return lists_found, lists, bench_summaries(specials) + notes, specials, sizes, False

@@ -252,6 +252,49 @@ engine must work from a column that is anything from complete to empty, which is
 the thin-column / no-remark / dense families test; the jump test only ever engages on a
 complete record.
 
+**Cause titles and AoRs — accurate (owner, 12 Oct 2026: "the causelist fetching of the name of
+the case and the AoR has to be accurate. Learn from the Chamber Management app").** The fetcher
+carried an old copy of SD-Chamber's parser. Ported SD-Chamber's parser v9/v10 (PARSER_VERSION 19):
+the case-number column (x 60–180) gathered across wrapped rows (`_case_text`, `CASE_NO_RE`,
+`CASE_SECTION_RE` drops "II-E"/"XVI-A"); an item only if it carries "No." or "Connected";
+`ADV_TAIL_RE`; wrapped serials (`_serial_wraps`, "39.1"+"1" = 39.11); advocates per side
+(`_adv_entries`/`parse_advocates`: names and codes wrapping over rows, several AoRs, caveat,
+amicus, in-person → `pet`/`resp` + `petAll`/`respAll`). Then FIVE faults SD-Chamber itself has,
+found by checking every difference against the raw PDF rows, fixed here only:
+1. **DROP NOTE tables** (`DropTable`): a court's list can open with deleted/shifted matters in a
+   different column layout; read as items they gave junk titles ("SLP(C) No. ASHUTOSH GHADE-
+   2909") and, being first, shadowed the real item of that number and its AoR. Now skipped by all
+   three passes and published as `dropped:{item:{to,reason}}` per court (12 Oct: Court 4 had 18 of
+   51 deleted). The engine vacates them (`ctx.dropped`, app `droppedByCourt()`, worker) and a
+   tracked deleted matter reads "deleted from today's list (drop note)"; `n_matters` keeps a
+   dropped serial in the count (the engine's total is the highest serial; vacated items are
+   removed separately), `courtRemaining` and the court-sheet bar now measure the EFFECTIVE list
+   (`listEnd` / `listN`) — linked and time-fixed matters were over-counted as "to go" too.
+2. **Court headers inside notes**: any line containing "COURT NO. 2" switched court — Court
+   17's "…SPECIAL BENCH MATTER LISTED IN COURT NO. 2…" note filed Court 17's items as Court 2's
+   (and created phantom courts with no bench). `court_header()` / `COURT_HEAD_RE`: a header is a
+   whole line ("COURT NO. : 2", "IN COURT NO. : 4", "CHIEF JUSTICE'S COURT", "Registrar Court No.
+   1"). Used by the title/AoR passes; notes parsing untouched (verified: notes identical).
+3. **Items across a page break**: the column reader restarted per page, so the next page's
+   first rows (often "Versus" + respondent) were copied whole, advocate column included
+   ("…DLF HOME DEVELOPERS LTD. KARANJAWALA & CO.- 1707"). Item state now spans pages.
+4. **Wrapped party names**: only each side's first row was kept ("THE STATE OF", "…THANE AND
+   THE"). `_party_cont` joins up to 3 petitioner / 2 respondent continuation rows, stopping at
+   annotations (`PARTY_STOP_RE`: {Mention Memo}, [ ONLY IA …], FOR ADMISSION, IA No., O.T., C/C…)
+   and section heads (`SECTION_HEAD_RE`: "SUPREME COURT OF INDIA" alone on a line, coram, a
+   Registrar's name).
+5. AoR names keep the full stop of a trailing initial/abbreviation ("KRISHNAMOHAN K.", "& CO.").
+App (`courtreach.html`): `titleFromCauseLine` is SD-Chamber's (`cleanCauseSide` + `titleWords`:
+"Union of India and Ors. vs Satish Kumar", joining words lower case, "Ors."/"Anr." kept); AoRs
+via SD-Chamber's `nameCase`; `lookupItem` returns `aorPetAll`/`aorRespAll` (impleader/intervenor-
+only AoRs left out) and the Add-case preview shows "· also A, B, C and N more"; a deleted item
+says so. Measured on the 12–14 Oct lists (5,200 items, cached PDFs, harness in the session):
+every item now has its case number (was ~55 %), petitioner AoR 97 % (was ~25 %), respondent AoR
+~70 % where printed (was ~1 %); titles identical to SD-Chamber's except ~900 where CourtReach is
+now the more complete/correct one (all sampled and checked against the PDF); no title carries an
+advocate code, annotation or heading. When SD-Chamber's own list disagreed on an AoR, the raw row
+showed CourtReach right every time. Watch the first live run after any PARSER_VERSION bump.
+
 **Causelist-published item links** ("TO BE TAKEN UP ALONG WITH ITEM NO. 23" — a fact the
 SC's own list states, not a passover, nothing typed in; owner: "our app needs to take into
 account such information", 25 Sep 2026 real example, Court 1 item 58). `classify()` is a

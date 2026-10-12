@@ -36,6 +36,9 @@
                                                           Part-B (after notice) and which items
                                                           are supplementary — the circular's
                                                           default call order (9 Oct 2026)
+     dropped          {"court_item": {to, reason}}  the causelist's DROP NOTE: deleted from today's
+                                                     list (or shifted) — no slot, and the matter
+                                                     itself reads "deleted"
      withItem         {"court_item": "otherItem"}  the CAUSELIST's own word that this item
                                                      will be heard together with a different
                                                      item in the same court ("TO BE TAKEN UP
@@ -322,6 +325,10 @@
     const linked = new Set(Object.keys(s.withMap).map(Number));
     const prefix = String(court) + "_";
     for (const key in (ctx.withItem || {})) if (key.indexOf(prefix) === 0 && ctx.withItem[key]) { const n = parseInt(key.slice(prefix.length), 10); if (!isNaN(n)) linked.add(n); }
+    // ...and a matter the court's DROP NOTE deleted from today's list: never called, no slot
+    // (12 Oct 2026, Court 4: 18 of its 51 serials deleted — every distance behind them was
+    // overstated by the deleted matters ahead)
+    for (const key in (ctx.dropped || {})) if (key.indexOf(prefix) === 0 && ctx.dropped[key]) { const n = parseInt(key.slice(prefix.length), 10); if (!isNaN(n) && key.slice(prefix.length).indexOf(".") < 0) linked.add(n); }
     // ...and so does a numbered matter the court has FIXED A TIME for ("[TO BE TAKEN UP AT
     // 2.00 P.M.]" printed against a Misc item): it is taken at its time, not at its number, so
     // its slot is empty for everyone else (stress simulator: every other matter in such a court
@@ -719,7 +726,10 @@
     const seqTxt = (bc.sequence && bc.sequence.trim()) ? bc.sequence : ((ctx.seqByCourt || {})[court] || "");
     const effR = effSeq(ctx, court, seqTxt);
     const reach = reachOf(ctx, court, effR.seq, total, bc.item, effR.vacated);
-    return Math.max(0, total - reach) + 1 + po;
+    // measured to the end of the EFFECTIVE order: a matter deleted by the drop note, taken up
+    // with another, or fixed for a time holds no slot, so it is not "to go" either
+    const end = listEnd(effR.seq, total, effR.full) || total;
+    return Math.max(0, end - reach) + 1 + po;
   }
 
   // "14:30" / "2.30 PM" / "2 pm" / 870 -> minutes into the day, or null.
@@ -779,6 +789,10 @@
   function classifyRaw(e, bc, ctx) {
     ctx = ctx || {};
     const ours = e.itemNo;
+    // the court's DROP NOTE deleted this matter from today's list (or shifted it)
+    const drp = (ctx.dropped || {})[poKey(e.courtNo, ours)];
+    if (drp) return { tier: "passed", label: drp.to ? "shifted to item " + drp.to + " (drop note)" : "deleted from today's list (drop note)",
+      short: drp.to ? "→ " + drp.to : "deleted", over: true, dropped: true };
     const dn = doneOf(ctx, e.courtNo, ours);
     if (dn) return { tier: "passed",
       label: dn.v === "att" ? "over — attended" : dn.v === "abs" ? "over — not attended" : "not taken up",
