@@ -25,7 +25,7 @@ CourtReach's own.
 | `courtreach.html` | THE app — one file, vanilla JS, Firebase v10.12.2 ESM. `const DEMO=false;` |
 | `index.html` | **Byte-identical mirror** of courtreach.html (`cp courtreach.html index.html && diff -q`). Always mirror before committing. |
 | `board-engine.js` | The pure proximity engine (no DOM, no Firestore). Loaded by the app; **embedded verbatim** in worker.js. |
-| `engine-tests/` | The engine's stress tests (`sim-day.js`, `sim-round2.js`, `sim-fixed-time.js`, `sim-circular.js`, `sim-stress.js`). Run all FIVE (must print 0 fails) before shipping an engine change. `sim-stress.js` mixes every factor at random — see below. |
+| `engine-tests/` | The engine's stress tests (`sim-day.js`, `sim-round2.js`, `sim-fixed-time.js`, `sim-circular.js`, `sim-stress.js`). Run all FIVE (must print 0 fails) before shipping an engine change; run `sim-stress.js` with at least two seeds (`globalThis.STRESS_SEED`). `sim-stress.js` mixes every factor at random, 30 families — see below. |
 | `worker.js` | **Not in the repo (gitignored)** — lives only at `~/Projects/CourtReach/worker.js`. CourtReach's Cloudflare Worker: board relay + push + cron watcher. Pasted by hand into the Cloudflare dashboard. |
 | `firestore.rules` | **Gitignored.** Source of truth for what is pasted into the Firebase console (project `courtreach-ee02b`). |
 | `sw.js` | Service worker: push/notificationclick only — no caching layer by design. |
@@ -164,6 +164,81 @@ Known, deliberate (sweep 2): with no remark column the engine cannot learn an ou
 disposal at all (sim never combines the two); a matter called out of turn that is one or two
 slots ahead reads as the court moving on (see 10); an out-of-turn call before any matter has
 finished is unjudgeable (sim places it after a call).
+
+**Sweep 3 — the comprehensive sweep (owner: "Every sweep is resulting in changes. Why is
+that. Why dont you do a comprehensive sweep", 12 Oct 2026).** Each sweep had only tested the
+situations the simulator modelled, so this one was built from an inventory of the REAL record
+(the owner's ~45 published sequence lines, the live court-updates.json, the worker's remark
+parser, the board's row formats) rather than from imagination. `sim-stress.js` now runs 30
+families by default (9 original + 8 sweep-2 + 13 sweep-3; `STRESS_BASELINE=true` for the
+original nine). New factors: a remark column that is THIN (30–70 % of matters marked) or LAGS
+the board by 1–2 items; every remark wording the operator writes (DISPOSED, DISMISSED,
+ADJOURNED, LIST ON …, HEARD, ORDER RESERVED, ALLOWED, WITHDRAWN, NOT PRESSED, PART HEARD) and
+remarks written against the sub-item row ("12.1"); a Regular-hearing day with NO Misc list;
+the court's own sequence wordings (six styles — "Seq.Item Nos.1 to 16", "1 T 17", "1-30",
+"PO IF ANY", "fresh passover", "passovers", trailing periods, "spl bench at 3pm") run through
+the marquee splitter with other courts' lines around them; two pass-over markers around a
+Regular block ("2 TO 13 FRESH PASSOVER 101 TO 120 PASSOVER IF ANY 14 15"); a time fixed
+INSIDE the sequence line ("ITEM 41 AT 2 PM"); typed "after item X" marks; a second pass-over
+without the circular; phases of every reserved series (1501/1601/1701), a blank board, the
+court's row missing from the board; a missing causelist (no list size); incomplete part data;
+board history (`ctx.seenItems`) present or absent. Four seeds × 60 days × 30 families: 0 /
+~1.16M each.
+Engine faults it found (11–20), all fixed:
+11. `onRegularList()` said "Regular list — after the Miscellaneous list" ALL DAY on a Regular
+   hearing day (no Misc list → total null → never "on Regular"). Now: no Misc total + board on
+   101+ = on the Regular list. `ctx.regTotalByCourt` (app + worker, from the causelist's
+   Regular list) gives the list's end for pass-over recalls; `orderPos()` skips the phantom
+   numbers between the Misc total and 101 (`seq.miscTotal`, set by `effSeq`), and vacated
+   items (`seq.vacated`) — a Regular item named in the sequence sat at position 0 while the
+   next, unnamed, sat a hundred positions away.
+12. The parser dropped a range whose end closed the sentence ("13 to 50.", "1 TO 18.") — items
+   2–17 fell out of the order; and "FRESH PASSOVER." was not a marker. Word tokens lose a
+   trailing period now.
+13. `seqInfo()` returns `fixed` ("ITEM 41 AT 2 PM" → 41 at 14:00) and `passIdxs` (every
+   marker). `effSeq` vacates the fixed item; `classify` measures it in minutes when
+   `ctx.fixedTimes` has nothing; a pass-over comes back at the first marker past its own slot
+   AND the court's position (`recallPos`), the plan at the marker the court is at or heading
+   for; `passoversBeforeOurs` queues by RECALL POINT (a typed "after item X" or a later marker
+   changes the order; at the same point an "after" direction goes first).
+14. `remarkEndsToday` learned heard / reserved / order / judgment; `overAhead` counted only the
+   literal word OVER (a DISMISSED matter ahead was not subtracted); `detailRemark` reads the
+   sub-item row's remark for the main item.
+15. `reachInfo()` (replaces `reachOf`, which now returns `.reach`): any remark but a pass-over
+   is a position DEALT WITH (a PART HEARD / HEARD chain used to break the order test); the
+   board's own item can be out of turn (`curOut`) — see "the jump test" below; the court's
+   WORKING POSITION during a recall dip is the furthest position reached in order (`onRecall`:
+   an outstanding pass-over on the board whose row is NOT flagged passed-over), so distances
+   no longer depend on counting OVERs between the dip and ours (a thin column made that wrong);
+   items at or before that position read "over", ours on the board reads NOW. `onRecall` is
+   false for a fresh pass-over (the row says passed over).
+16. A second pass-over outside the circular (`poTwice`: in `recalledPO` and outstanding
+   again) goes to the back of the queue and comes back at the end. The app's `recordBoardPO`
+   records a recall seen on the board row; a recall at the item's own typed "after item X"
+   point is stored as `{after:true}` and `hasRecalledPO` ignores it (one honoured direction is
+   not the court working its queue).
+17. `endFor()`: the end of the court's CURRENT list — the Regular list's last position when the
+   court is on Regular business (never before the Misc end: a Regular item announced inside
+   the Misc order is not "the court on the Regular list").
+18. `poAdjust`: "has the court passed the recall point" is judged by the board's own item,
+   the slots behind the court by the working position; a recall point the court is in the
+   middle of still counts; the circular's into-after-notice test reads the board's own item.
+19. The "vacated" set reaches `overAhead` too (a linked matter's remark is not an out-of-turn
+   disposal ahead), and the unannounced rest skips vacated items.
+20. A Regular list size of 0 is no list (`regTotalFor > 0`).
+**The jump test** (`reachInfo`, documented in code): a position is a jump (out of turn, not
+reach) only when the record below the nearest reached position is COMPLETE — ten complete
+positions vouch for a jump of five slots, four complete positions for a jump of eight, twenty
+with one miss for five; the board's own item and the board history (`seenItems`: the app's
+noteItemHi records every item shown; the worker has none) count as known positions. A column
+that marks only some matters never qualifies, and every position then reads as reach — the
+old behaviour, the owner's "past it in sequence = over" rule. Deliberate blind spots: with no
+board history, the items called in the 1–2 ticks before a recall dip are unknowable when the
+column is thin or lags; a matter taken out of turn one to seven slots ahead reads as the court
+moving on until the court reaches it; a complete column that simply STOPS reads further
+progress as a jump until a remark appears (the app's history vetoes that). Remark density on
+the real board is the one input not yet measured against this (courts had just begun sitting
+when the sweep closed — see the session notes).
 
 **Causelist-published item links** ("TO BE TAKEN UP ALONG WITH ITEM NO. 23" — a fact the
 SC's own list states, not a passover, nothing typed in; owner: "our app needs to take into

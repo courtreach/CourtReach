@@ -1721,7 +1721,7 @@ let stgMsg="", stgOpen="";   // which Settings section is expanded (one at a tim
 // the board, and each court's highest-seen item. Same sources the SD display board uses.
 let seqByCourt={}, seqLineText="", seqLineAt=0, remarksByCourt={}, _remarkAt={},
     boardPO={date:todayISO(),marks:{}}, recalledPO={date:todayISO(),set:{}},
-    itemHi={date:todayISO(),max:{}}, paceHist={};
+    itemHi={date:todayISO(),max:{},seen:{}}, paceHist={};
 const REMARK_TTL=40000;
 let unsub=[], userDocUnsub=null, pollId=null, tickId=null, pollOn=false, booted=false;
 // COLLABORATE state — peer connections (links) + per-link message threads + peer-board view
@@ -1899,6 +1899,17 @@ function miscTotalByCourt(){
     if(!isNaN(t)&&t>0) out[String(court)]=t; }
   return out;
 }
+/* The Regular list's size per court (items 101..100+N): where a Regular pass-over comes back
+   when nothing was announced, and the whole list on a Regular-hearing day (no Misc list). */
+function regTotalByCourt(){
+  const out={}, lists=courtUpdates?.by_date?.[todayISO()]?.lists?.["Regular"]||{};
+  for(const court in lists){ const rec=lists[court]||{}; let t=parseInt(rec.total,10);
+    if(isNaN(t)||t<=0){ const mm=parseInt(rec.main,10), s=parseInt(rec.supp,10); t=isNaN(mm)?NaN:(mm+(isNaN(s)?0:s)); }
+    if(!isNaN(t)&&t>0) out[String(court)]=t; }
+  return out;
+}
+// Every item the board has shown today, per court (noteItemHi records them).
+function seenItemsByCourt(){ const out={}; for(const c in (itemHi.seen||{})) out[c]=Object.keys(itemHi.seen[c]); return out; }
 /* Circular F.No. 23/Judl./2026 (9 Oct 2026): each Miscellaneous list is Part-A (fresh) and
    Part-B (after notice), and every court takes A-main, A-supp, fresh pass-overs, B-main,
    B-supp, after-notice pass-overs. The causelist tags every Misc item with its part and
@@ -2060,7 +2071,7 @@ function courtCtx(){
   const {done,po}=statusMarks();
   return { nowMins:nowMinsIST(), boardByCourt:boardByCourt(),
     seqByCourt:effSeqByCourt(), remarksByCourt, boardPO:boardPO.marks, recalledPO:recalledPO.set, poMarks:po, doneMarks:done,
-    miscTotalByCourt:miscTotalByCourt(), itemHi:itemHi.max, withItem:withItemByCourt(),
+    miscTotalByCourt:miscTotalByCourt(), regTotalByCourt:regTotalByCourt(), itemHi:itemHi.max, seenItems:seenItemsByCourt(), withItem:withItemByCourt(),
     specialBenches:courtUpdates?.by_date?.[todayISO()]?.specialBenches||[], miscParts:miscPartsByCourt(), fixedTimes:fixedTimesByCourt() };
 }
 /* Every fixed time known for a court today — the causelist's own per-item times and the
@@ -2200,11 +2211,14 @@ const remarkEndsToday = rem => ENG.remarkEndsToday(rem);
 function recordBoardPO(){
   if(boardPO.date!==todayISO()) boardPO={date:todayISO(),marks:{}};
   if(recalledPO.date!==todayISO()) recalledPO={date:todayISO(),set:{}};
+  const {po:typedPO}=statusMarks();
   for(const court in remarksByCourt){
     const outstanding=ENG.passoverItemsFor({remarksByCourt}, court);   // {normalizedItem: {...}}
     for(const key in boardPO.marks){
       const i=key.indexOf("_"); if(i<=0 || key.slice(0,i)!==court) continue;
-      if(!(key.slice(i+1) in outstanding)){ delete boardPO.marks[key]; recalledPO.set[key]=true; }
+      // a matter recalled at its own typed "after item X" point is recorded as such: the engine
+      // does not read that as the court working its pass-over queue (hasRecalledPO)
+      if(!(key.slice(i+1) in outstanding)){ delete boardPO.marks[key]; recalledPO.set[key]=(typedPO[key]&&typedPO[key].mode==="after")?{after:true}:true; }
     }
     for(const n in outstanding) boardPO.marks[court+"_"+n]=true;
   }
@@ -2217,11 +2231,11 @@ function recordBoardPO(){
     const n=Math.floor(parseFloat(c.item)); if(isNaN(n)) continue;
     const key=String(c.court)+"_"+n;
     if(c.passover) boardPO.marks[key]=true;
-    else if(boardPO.marks[key]){ delete boardPO.marks[key]; recalledPO.set[key]=true; }
+    else if(boardPO.marks[key]){ delete boardPO.marks[key]; recalledPO.set[key]=(typedPO[key]&&typedPO[key].mode==="after")?{after:true}:true; }
   }
 }
 function noteItemHi(){
-  if(itemHi.date!==todayISO()) itemHi={date:todayISO(),max:{}};
+  if(itemHi.date!==todayISO()) itemHi={date:todayISO(),max:{},seen:{}};
   // Reserved-series numbers (300s Special Bench, 800s mentioning, 1500s judgments, 1600s Single Judge, 1700s
   // Chamber) are a court PHASE, not a position in the numbered list — same reason showProg()
   // stops drawing the bar past curNum 800. Left unfiltered, one glimpse of the board sitting
@@ -2229,7 +2243,10 @@ function noteItemHi(){
   // (it only resets at midnight), which reachOf() then folds into "reach" as if the court had
   // gotten 850 items into a ~60-item Misc list — doneN saturates at miscTotal and the progress
   // bar collapses to just outstanding-passovers-plus-one "to go", however much is really left.
-  for(const c of board){ const n=parseInt(c.item,10); if(!isNaN(n) && !ENG.isReservedItem(n)) itemHi.max[c.court]=Math.max(itemHi.max[c.court]||0,n); }
+  // ...and every item the board has SHOWN today (ctx.seenItems): the engine uses it only to
+  // VETO a misread — a court that visibly went through items 4..19 is not "out of turn" on 20
+  // just because the remark column is thin (reachInfo in board-engine.js).
+  for(const c of board){ const n=parseInt(c.item,10); if(!isNaN(n) && !ENG.isReservedItem(n)){ itemHi.max[c.court]=Math.max(itemHi.max[c.court]||0,n); (itemHi.seen[c.court]=itemHi.seen[c.court]||{})[String(c.item)]=1; } }
 }
 // Is a court's CURRENT item one that was passed over and has now been recalled (owner: "if a
 // case number 6 which was passed over ... is called again after some time it should show
