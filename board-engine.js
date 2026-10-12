@@ -201,9 +201,28 @@
   const callPos = (seq, item) => orderPos(seq, item);
   // Where the Miscellaneous list ends in call-order positions — the point recalls begin when
   // nothing more specific has been announced. Items occupy positions 0..T-1, so the end is T.
+  // The announced order may carry Regular items too ("ITEM NOS. 101 TO 104, 10 TO 18 ...
+  // PASS OVER IF ANY THEN REST"): they take positions, but they are not Miscellaneous
+  // business, so the Misc list ends `miscTotal` MISC positions in, not `miscTotal` positions
+  // in (stress sweep 2: every distance past the Regular items was short by their number).
+  // A Misc list can itself run past 100 items, so "101+" alone does not make an item Regular:
+  // when the list size is known, anything within it is Misc.
+  const isMiscNum = (n, miscTotal) => n < REG_BASE || (miscTotal != null && n <= miscTotal);
   function miscEnd(seq, miscTotal) {
-    if (miscTotal != null && miscTotal > 0) return Math.max(miscTotal, seq.length);
+    let misc = 0, last = -1;
+    seq.forEach((n, i) => { if (isMiscNum(n, miscTotal)) { misc++; last = i; } });
+    if (miscTotal != null && miscTotal > 0) {
+      const t = Math.max(miscTotal, misc);
+      return misc >= t ? last + 1 : seq.length + (t - misc);
+    }
     return seq.length || null;
+  }
+  // The end of the Misc list when the order in hand is the WHOLE list (effSeq `full`): after
+  // its last Misc position — Regular items announced behind it are not part of it.
+  function listEnd(seq, miscTotal, full) {
+    if (!full) return miscEnd(seq, miscTotal);
+    let last = -1; seq.forEach((n, i) => { if (isMiscNum(n, miscTotal)) last = i; });
+    return last >= 0 ? last + 1 : seq.length;
   }
 
   /* THE CIRCULAR'S ORDER (F.No. 23/Judl./2026, 9 Oct 2026). Miscellaneous main and
@@ -292,7 +311,14 @@
      item it skipped earlier); the highest item number seen and the furthest item marked OVER
      never dip, so the reach is the greatest of the three. Under a sequence the highest NUMBER
      says little (item 12 may be first in the announced order), which is why OVER matters. */
-  function reachOf(ctx, court, seq, miscTotal, curItem, vacated) {
+  const reachOf = (ctx, court, seq, miscTotal, curItem, vacated) => reachInfo(ctx, court, seq, miscTotal, curItem, vacated).reach;
+  // {reach, curOut}: `curOut` — the board's current item was itself called OUT OF TURN (stress
+  // sweep 2: a matter taken up early, shown on the board, made every item numbered below it
+  // read as "over" and dragged reach to its position). Judged only against the remark column:
+  // in order unless the two slots before it are unexplained AND at least three slots lie between
+  // the furthest in-order evidence and it — a remark column that lags the board by an item or
+  // two is not an out-of-turn call. Callers then stand the court at the last in-order position.
+  function reachInfo(ctx, court, seq, miscTotal, curItem, vacated) {
     const cur = parseFloat(curItem);
     // The board sitting on a Special Bench / mentioning / judgment item says nothing about how
     // far the numbered lists have got — counting it as a position made reach balloon past the
@@ -300,8 +326,11 @@
     // its own (taken up along with another, or at its fixed time): when the board shows it,
     // orderPos would put it past the end and saturate the progress bar.
     const noSlot = n => vacated && vacated.has(Math.floor(n));
-    const ceil = miscTotal != null ? miscTotal : Infinity;
-    const curP = (isReservedItem(Math.floor(cur)) || noSlot(cur)) ? null : callPos(seq, curItem);
+    // positions beyond the Misc list (a Regular item disposed early sits far past it) say
+    // nothing about Misc progress — but the list's end is in POSITIONS, which Regular items
+    // announced inside the order push out (stress sweep 2)
+    const ceil = miscTotal != null ? Math.max(miscTotal, miscEnd(seq, miscTotal)) : Infinity;
+    const curP0 = (isReservedItem(Math.floor(cur)) || noSlot(cur)) ? null : callPos(seq, curItem);
     // positions the court is finished with (any remark that ends the matter today) and the
     // outstanding pass-overs (called and skipped — their slot IS reached)
     const done = new Set(), poSet = new Set();
@@ -318,6 +347,12 @@
        collapse the progress bar (stress simulator). Only judged when the remark column is in
        hand at all; without it the old reading stands. */
     const haveRemarks = done.size >= 1;   // a column that reports no finished matter can't be judged by
+    const ok0 = q => q < 0 || done.has(q) || poSet.has(q);
+    let evid = 0; for (const p of done) if (ok0(p - 1) && ok0(p - 2)) evid = Math.max(evid, p + 1);
+    for (const p of poSet) if (ok0(p - 1) && ok0(p - 2)) evid = Math.max(evid, p + 1);
+    // (a Regular item on the board is a jump by nature — the Misc list is simply finished)
+    const curOut = haveRemarks && evid >= 1 && curP0 != null && isMiscNum(Math.floor(cur), miscTotal) && curP0 >= evid + 3 && !ok0(curP0 - 1) && !ok0(curP0 - 2);
+    const curP = curOut ? null : curP0;
     const inOrder = p => { if (curP != null && p <= curP) return true; if (!haveRemarks) return true;
       const ok = q => q < 0 || q === curP || done.has(q) || poSet.has(q); return ok(p - 1) && ok(p - 2); };
     let overP = null; for (const p of done) if (inOrder(p) && (overP == null || p > overP)) overP = p;
@@ -325,7 +360,8 @@
     const hi = (ctx.itemHi || {})[String(court)] || 0;
     let hiP = (hi && !noSlot(hi)) ? callPos(seq, hi) : null;
     if (hiP != null && !inOrder(hiP)) hiP = null;
-    return Math.max(curP != null ? curP + 1 : 0, hiP != null ? hiP + 1 : 0, overP != null ? overP + 1 : 0, poP != null ? poP + 1 : 0, (!seq.length && !isNaN(cur) && !isReservedItem(Math.floor(cur))) ? cur : 0);
+    const reach = Math.max(curP != null ? curP + 1 : 0, hiP != null ? hiP + 1 : 0, overP != null ? overP + 1 : 0, poP != null ? poP + 1 : 0, (!seq.length && !isNaN(cur) && !isReservedItem(Math.floor(cur)) && !curOut) ? cur : 0);
+    return { reach, curOut };
   }
   /* Where THIS court's passovers will be taken, in one place, so the sheet and the distance
      maths can never disagree. `at` is "after"/"sequence"/"end"/"now"/null; `queue` is the
@@ -337,9 +373,10 @@
     const { seq } = eff;
     const po = passoverItemsFor(ctx, court);
     const queueAll = Object.keys(po).map(k => parseInt(k, 10)).filter(n => !isNaN(n)).sort((a, b) => (callPos(seq, a) - callPos(seq, b)));
-    const total = miscTotalFor(ctx, court), end = eff.full ? seq.length : miscEnd(seq, total);
-    const cur = bc ? bc.item : null, curP = (cur != null && !isReservedItem(Math.floor(parseFloat(cur))) && !eff.vacated.has(Math.floor(parseFloat(cur)))) ? callPos(seq, cur) : null;
-    const reach = bc ? reachOf(ctx, court, seq, total, cur, eff.vacated) : 0;
+    const total = miscTotalFor(ctx, court), end = listEnd(seq, total, eff.full);
+    const cur = bc ? bc.item : null; let curP = (cur != null && !isReservedItem(Math.floor(parseFloat(cur))) && !eff.vacated.has(Math.floor(parseFloat(cur)))) ? callPos(seq, cur) : null;
+    const ri = bc ? reachInfo(ctx, court, seq, total, cur, eff.vacated) : { reach: 0, curOut: false }, reach = ri.reach;
+    if (ri.curOut && curP != null) curP = reach - 1;   // the board's item is out of turn: the court stands at the last in-order position
     const recalled = hasRecalledPO(ctx, court);
     // one recall point -> where the plan stands
     const decide = (passIdx, queue, rec) => {
@@ -383,10 +420,10 @@
 
   // Items the board has already marked OVER that sit between the court and us IN CALL ORDER —
   // disposed out of turn, so they will not be called between now and our matter.
-  function overAhead(ctx, court, curItem, ours, seq) {
+  function overAhead(ctx, court, c, ours, seq) {   // c: the court's position in call order
     const r = (ctx.remarksByCourt || {})[String(court)]; if (!r || !r.items) return 0;
     seq = seq || [];
-    const c = callPos(seq, curItem), o = callPos(seq, ours); if (c == null || o == null) return 0;
+    const o = callPos(seq, ours); if (c == null || o == null) return 0;
     let n = 0;
     for (const k in r.items) {
       if (!/^over$/i.test(r.items[k])) continue;
@@ -415,17 +452,17 @@
      item X" mark wins; then the point in the announced sequence where the court said
      "passovers"; otherwise the end of the Miscellaneous list. Null when nothing is known (no
      sequence and no list size). Owner: "a case passed over will be taken up as per sequence". */
-  function recallPos(seq, passIdx, miscTotal, after, curP) {
+  function recallPos(seq, passIdx, miscTotal, after, curP, full) {
     if (after != null && after !== "") { const ap = callPos(seq, after); if (ap != null) return ap + 1; }
     if (passIdx != null && (curP == null || passIdx > curP)) return passIdx;
-    return miscEnd(seq, miscTotal);
+    return listEnd(seq, miscTotal, !!full);
   }
   /* How OUR distance changes because of the court's OTHER outstanding passovers: one that was
      between us and the court is skipped (-1), one recalled between now and us is added (+1). */
-  function poAdjust(ctx, court, curItem, ours, seq, passIdx, miscTotal, eff) {
+  function poAdjust(ctx, court, curItem, ours, seq, passIdx, miscTotal, eff, curPos) {
     const po = passoverItemsFor(ctx, court); const keys = Object.keys(po); if (!keys.length) return 0;
     seq = seq || [];
-    const curP = callPos(seq, curItem), ourP = callPos(seq, ours);
+    const curP = curPos != null ? curPos : callPos(seq, curItem), ourP = callPos(seq, ours);
     if (curP == null || ourP == null || ourP <= curP) return 0;
     const ourN = Math.floor(parseFloat(ours));
     let delta = 0;
@@ -439,8 +476,8 @@
       if (eff && eff.circular) {
         const b = eff.partOf(parseInt(k, 10)) === "B";
         if (!b && curP != null && curP >= eff.freshEnd && !(po[k].after != null)) rp = null;
-        else rp = recallPos(seq, b ? null : passIdx, seq.length, po[k].after, curP);
-      } else rp = recallPos(seq, passIdx, (eff && eff.full) ? seq.length : miscTotal, po[k].after, curP);
+        else rp = recallPos(seq, b ? null : passIdx, miscTotal, po[k].after, curP, true);   // the circular's order is the whole list
+      } else rp = recallPos(seq, passIdx, miscTotal, po[k].after, curP, eff && eff.full);
       const aheadOrig = xp > curP && xp < ourP;
       // a recall inserted at position rp is heard before the item that holds rp — so rp == ourP
       // means it comes just before us and counts
@@ -481,10 +518,13 @@
 
   const miscTotalFor = (ctx, court) => { const v = (ctx.miscTotalByCourt || {})[String(court)]; return (v == null ? null : v); };
 
-  function onRegularList(ctx, court, miscTotal) {
+  function onRegularList(ctx, court, miscTotal, eff) {
     const bc = (ctx.boardByCourt || {})[court]; const cur = bc ? parseInt(bc.item, 10) : NaN;
     if (isNaN(cur)) return false;
     if (miscTotal == null) return false;
+    // a Regular item the court announced INSIDE its order, ahead of Misc business ("101 TO 104
+    // 10 TO 18 ..."), does not mean the Misc list is finished
+    if (eff && eff.seq.indexOf(cur) >= 0 && eff.seq.indexOf(cur) < listEnd(eff.seq, miscTotal, eff.full)) return false;
     if (cur > miscTotal + 2) return true;
     const hi = (ctx.itemHi || {})[court] || 0;
     if (hi >= miscTotal - 3 && cur >= REG_BASE && cur < hi - 5) return true;
@@ -698,7 +738,11 @@
     const eff = effSeq(ctx, e.courtNo, seqTxt);
     const { seq, passIdx } = eff;
     const miscTotalHere = miscTotalFor(ctx, e.courtNo);
-    const curPos = callPos(seq, bc.item);          // null only when the board's item isn't a number
+    // the court's position in call order — null only when the board's item isn't a number;
+    // an item called out of turn puts the court at the last position it reached in order
+    const curRI = reachInfo(ctx, e.courtNo, seq, miscTotalHere, bc.item, eff.vacated);
+    const curPos0 = callPos(seq, bc.item);
+    const curPos = (curRI.curOut && curPos0 != null) ? curRI.reach - 1 : curPos0;
     const mark = poFor(ctx, e.courtNo, ours)
       || (isPassOver(ctx, e.courtNo, ours) ? { mode: "detail" } : null)
       || (boardPOhas(ctx, e.courtNo, ours) ? { mode: "slot" } : null);
@@ -746,8 +790,8 @@
     }
     if (/^reg/i.test((e.listType || "").trim())) {
       const miscTotal = miscTotalFor(ctx, e.courtNo);
-      if (!onRegularList(ctx, e.courtNo, miscTotal)) {
-        const regRank = (Math.floor(oursNum) >= REG_BASE) ? (Math.floor(oursNum) - (REG_BASE - 1)) : Math.max(1, Math.floor(oursNum) || 1);
+      // our Regular matter announced in the court's own order: its place is simply its position
+      if (!onRegularList(ctx, e.courtNo, miscTotal, eff) && seq.indexOf(Math.floor(oursNum)) < 0) {
         if (miscTotal == null && !seq.length)
           return { tier: "later", label: "Regular list — after the Miscellaneous list", short: "after Misc", reg: true };
         const cur = parseInt(bc.item, 10);
@@ -765,11 +809,23 @@
         // Progress is measured in CALL-ORDER positions — see reachOf(): the furthest the court
         // has visibly got, which does not dip while it is recalling a low-numbered passover.
         const miscDone = reachOf(ctx, e.courtNo, seq, miscTotal, bc.item, eff.vacated);
+        // where the Misc list ends in call positions — Regular items announced inside the order
+        // take positions of their own (counted below), so this is NOT simply the Misc total
+        const end = listEnd(seq, miscTotal, eff.full);
         let outOfTurnAhead = 0;
         { const rr = (ctx.remarksByCourt || {})[String(e.courtNo)];
           if (rr && rr.items) for (const k in rr.items) { if (!remarkEndsToday(rr.items[k]) || eff.vacated.has(parseInt(k, 10))) continue;
-            const p = callPos(seq, k); if (p != null && p >= miscDone && p < seq.length) outOfTurnAhead++; } }
-        const miscLeft = Math.max(0, ((miscTotal != null && !eff.full) ? miscTotal : seq.length) - miscDone - outOfTurnAhead);
+            const p = callPos(seq, k); if (p != null && p >= miscDone && p < Math.max(end, seq.length)) outOfTurnAhead++; } }
+        // positions still to be called before Misc is finished (Regular items the court put
+        // inside that stretch included — they ARE called there)
+        const miscLeft = Math.max(0, end - miscDone - outOfTurnAhead);
+        // Regular matters that come before ours: the ones not announced anywhere (they follow in
+        // number order after Misc) plus the announced ones that sit past the Misc end and have
+        // not been reached. Announced ones the court has already called are gone.
+        const inSeq = new Set(seq);
+        let regRank = 1;   // ours itself: "the item right after the current one is 1"
+        for (let n = REG_BASE; n < Math.floor(oursNum); n++) if (!inSeq.has(n)) regRank++;
+        seq.forEach((n, p) => { if (!isMiscNum(n, miscTotal) && n !== Math.floor(oursNum) && p >= Math.max(end, miscDone)) regRank++; });
         // Misc's own outstanding passovers are still Misc business, not yet disposed, and
         // Misc must finish before Regular starts — so they count toward the gap too (owner:
         // "miscellaneous list comes first before the regular list and so also any passover
@@ -811,12 +867,11 @@
       }
     }
     // `approx` also when the order is only the circular's DEFAULT — no announced sequence
-    let gap = null, approx = !!eff.circular;
-    if (seq.length) { const op = orderPos(seq, ours), cp = orderPos(seq, bc.item); if (op != null && cp != null) gap = op - cp; }
-    if (gap == null) { const c = parseFloat(bc.item); if (!isNaN(c)) { gap = Math.floor(oursNum) - Math.floor(c); approx = true; } }
-    if (gap != null && gap > 0) { const done = overAhead(ctx, e.courtNo, bc.item, ours, seq); if (done > 0) gap = Math.max(0, gap - done); }
+    let gap = null, approx = !!eff.circular || !seq.length;   // raw item numbers when nothing was announced
+    if (curPos != null) { const op = orderPos(seq, ours); if (op != null) gap = op - curPos; }
+    if (gap != null && gap > 0) { const done = overAhead(ctx, e.courtNo, curPos, ours, seq); if (done > 0) gap = Math.max(0, gap - done); }
     let poNote = "";
-    if (gap != null) { const pa = poAdjust(ctx, e.courtNo, bc.item, ours, seq, passIdx, miscTotalHere, eff); if (pa) { gap = Math.max(0, gap + pa); poNote = pa < 0 ? " · " + (-pa) + " passed over ahead" : " · " + pa + " recalled first"; } }
+    if (gap != null) { const pa = poAdjust(ctx, e.courtNo, bc.item, ours, seq, passIdx, miscTotalHere, eff, curPos); if (pa) { gap = Math.max(0, gap + pa); poNote = pa < 0 ? " · " + (-pa) + " passed over ahead" : " · " + pa + " recalled first"; } }
     if (gap == null) { const pg = preStartGap(seqTxt, ours); if (pg != null) return preStartResult(pg); }
     if (gap == null) return { tier: "unknown", label: "position unclear", short: "—" };
     // Nothing posted, and the court is past this item in the TRUE call order — so it is over
@@ -834,7 +889,7 @@
     return { tier: "later", label: gap + " items away" + poNote, short: gap + " away", gap, approx, poNote };
   }
 
-  const API = { classify, courtRemaining, circularOrder, effSeq, isReservedItem, isSpecialBenchItem, seqInfo, orderPos, parseSequenceLine, preStartGap, preStartResult, isMentioning, MENT_END, REG_BASE, passoverItemsFor, detailRemark, remarkEndsToday, callPos, recallPos, miscEnd, reachOf, passoverPlan, passoversBeforeOurs, clockMins, fmtClock };
+  const API = { classify, courtRemaining, circularOrder, effSeq, isReservedItem, isSpecialBenchItem, seqInfo, orderPos, parseSequenceLine, preStartGap, preStartResult, isMentioning, MENT_END, REG_BASE, passoverItemsFor, detailRemark, remarkEndsToday, callPos, recallPos, miscEnd, reachOf, passoverPlan, passoversBeforeOurs, reachInfo, clockMins, fmtClock };
   root.BoardEngine = API;
   if (typeof module !== "undefined" && module.exports) module.exports = API;
 })(typeof self !== "undefined" ? self : (typeof globalThis !== "undefined" ? globalThis : this));

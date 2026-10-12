@@ -98,7 +98,7 @@ pass-over gets NO estimate; Misc only (Regular lists have no such split).
   after-notice call are unscored — the board can't show the bench's intent there).
 
 **The stress simulator (`sim-stress.js`, owner: "Do stress test. Conduct multiple and
-variable factors", 11 Oct 2026).** Nine families, 60 random court-days each, ~360k scored
+variable factors", 11 Oct 2026).** Nine families (17 with `STRESS_SWEEP2`), 60 random court-days each, ~360k scored
 checks + ~8k invariant-only ticks, every factor at once: circular order, announced sequence
 (blocks / full) over the circular rest, "X WITH Y" and causelist links, fresh AND after-notice
 pass-overs, a typed-in pass-over, a matter disposed OUT OF TURN, mentioning / special bench /
@@ -133,6 +133,37 @@ second pass-over is unforeseeable for Misc matters but counts as Misc business f
 ones; a manual mark on a matter covers the matters taken up WITH it. Debug a failure with
 `jsc -e 'globalThis.STRESS_DEBUG=true; load("sim-stress.js")'` — it dumps the first failing
 day of each family (factors, sequence text, truth order vs the engine's order).
+
+**Sweep 2 (owner: "Do one more sweep", 12 Oct 2026).** Eight more families behind
+`globalThis.STRESS_SWEEP2=true` (the plain run stays the 9-family baseline): a Misc list of
+100–130 items, the out-of-turn matter SHOWN on the board before it is marked over, a court
+with NO remark column (board pass-over flag only), a supplementary-first announced order,
+two matters linked to one target, Regular items INSIDE the announced order ("101 TO 104 10
+TO 18 ... PASS OVER IF ANY THEN REST"), a full announced order with part data, and
+everything together. `STRESS_SEED` / `STRESS_REPS` / `STRESS_ONLY=<family substring>` steer
+it; run it with at least two seeds (seeds 7, 99 and 2026 × 100 reps are 0 / ~1.2M each).
+Three more engine faults, fixed:
+8. Regular items announced inside the order take call positions but are not Misc business:
+   the Misc end (`miscEnd`/`listEnd`), the recall-at-end point, `reachOf`'s ceiling and the
+   Regular-list distance (`regRank` now skips announced Regulars already called) were all
+   short by their number; `onRegularList()` no longer reads "board on 101" as "Misc is over"
+   when 101 was announced ahead of Misc items; our own Regular matter inside the announced
+   order is placed by position, full stop.
+9. `isMiscNum()`: 101+ is Regular only beyond the Misc total — a 125-item Misc list was
+   being cut off at 100 (the old "REG_BASE collision", no longer deferred).
+10. `reachInfo()` (`reachOf` returns its `.reach`): the board's CURRENT item can itself be out
+   of turn (a matter taken early and shown). Judged only from the remark column: out of turn
+   when at least three slots between the furthest in-order evidence and it are unexplained
+   and the two before it are not finished / passed over — a column lagging an item or two is
+   NOT an out-of-turn call (deliberate: the two are indistinguishable, and under-reading the
+   court's progress is the safer error). Then every branch stands the court at the last
+   in-order position (`curPos` in `classifyRaw`, `curP` in `passoverPlan`, `poAdjust` takes
+   the position, `overAhead` takes a position). A Regular item on the board is never "out of
+   turn" — the Misc list is simply finished.
+Known, deliberate (sweep 2): with no remark column the engine cannot learn an out-of-turn
+disposal at all (sim never combines the two); a matter called out of turn that is one or two
+slots ahead reads as the court moving on (see 10); an out-of-turn call before any matter has
+finished is unjudgeable (sim places it after a call).
 
 **Causelist-published item links** ("TO BE TAKEN UP ALONG WITH ITEM NO. 23" — a fact the
 SC's own list states, not a passover, nothing typed in; owner: "our app needs to take into

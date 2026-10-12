@@ -7,7 +7,7 @@
 // Every tick, every tracked item: the engine's answer is cross-checked against the
 // KNOWABLE truth (what a person in the room could say from the board + the published facts).
 load("../board-engine.js"); const ENG = globalThis.BoardEngine;
-let seed = 97531; const rnd = () => { seed = (seed * 1103515245 + 12345) & 0x7fffffff; return seed / 0x7fffffff; };
+let seed = globalThis.STRESS_SEED || 97531; const REPS = globalThis.STRESS_REPS || 60; const rnd = () => { seed = (seed * 1103515245 + 12345) & 0x7fffffff; return seed / 0x7fffffff; };
 const ri = (a, b) => a + Math.floor(rnd() * (b - a + 1));
 const chance = p => rnd() < p;
 const pick = (arr, n) => { const a = arr.slice(), out = []; while (out.length < Math.min(n, a.length)) out.push(a.splice(ri(0, a.length - 1), 1)[0]); return out; };
@@ -26,6 +26,8 @@ function buildDay(F) {
   if (F.seqWith && F.seqMode !== "none") seqLinked = pick(all, 1)[0];          // target chosen once the declared part exists
   if (F.seqWith && F.seqMode === "none") { const t = pick(all, 1)[0], l = pick(all.filter(n => n !== t), 1)[0]; noteWith = [t, l]; links[l] = t; }  // no sequence to carry it: the causelist does
   if (F.noteWith && !noteWith) { const cands = all.filter(n => n !== seqLinked); const t = pick(cands, 1)[0]; const l = pick(cands.filter(n => n !== t), 1)[0]; if (t && l) { noteWith = [t, l]; links[l] = t; } }
+  let noteWith2 = null;   // a second matter to be taken up with the SAME target
+  if (F.twoLinks && noteWith) { const l2 = pick(all.filter(n => n !== noteWith[0] && !(n in links) && n !== seqLinked), 1)[0]; if (l2) { noteWith2 = [noteWith[0], l2]; links[l2] = noteWith[0]; } }
   if (seqLinked != null && (seqLinked in links || Object.values(links).includes(seqLinked))) seqLinked = null;
   if (seqLinked != null) links[seqLinked] = -1;     // target filled in below
   const linked = new Set(Object.keys(links).map(Number));
@@ -38,10 +40,14 @@ function buildDay(F) {
   if (F.seqMode === "none") order = circ.filter(n => !linked.has(n));   // a linked item rides on its target: no slot of its own
   else {
     const pool = circ.filter(n => !linked.has(n));
-    if (F.seqMode === "full") { const cuts = new Set(); while (cuts.size < 3) cuts.add(ri(1, pool.length - 1)); const cs = [0, ...[...cuts].sort((x, y) => x - y), pool.length];
+    if (F.seqMode === "suppFirst") { declared = pool.filter(n => n > M).concat(pool.filter(n => n <= M).slice(0, ri(2, 6))); }
+    else if (F.seqMode === "full") { const cuts = new Set(); while (cuts.size < 3) cuts.add(ri(1, pool.length - 1)); const cs = [0, ...[...cuts].sort((x, y) => x - y), pool.length];
       const blocks = []; for (let i = 0; i < cs.length - 1; i++) blocks.push(pool.slice(cs[i], cs[i + 1])); for (let i = blocks.length - 1; i > 0; i--) { const j = ri(0, i); [blocks[i], blocks[j]] = [blocks[j], blocks[i]]; }
       declared = blocks.flat(); }
     else { const a = ri(0, Math.max(0, pool.length - 6)), b = Math.min(pool.length - 1, a + ri(2, 9)); declared = pool.slice(a, b + 1); const c = ri(0, pool.length - 1), d = Math.min(pool.length - 1, c + ri(0, 5)); pool.slice(c, d + 1).forEach(n => { if (!declared.includes(n)) declared.push(n); }); }
+    // Regular items named INSIDE the announced order, before "PASS OVER" (the engine's
+    // poException): the court takes them where announced, Misc pass-overs no longer come first
+    if (F.regInSeq && F.R) declared = range(101, 100 + F.R).concat(declared);
     const rest = circ.filter(n => !declared.includes(n) && !linked.has(n));
     order = declared.concat(rest);
     // text: ranges; the WITH link printed right after the range that ends in its target
@@ -49,10 +55,11 @@ function buildDay(F) {
     const runs = []; for (let i = 0; i < declared.length;) { let j = i; while (j + 1 < declared.length && declared[j + 1] === declared[j] + 1) j++; runs.push([declared[i], declared[j]]); i = j + 1; }
     if (seqLinked != null) { const r0 = runs[0]; seqWith = [r0[1], seqLinked]; links[seqLinked] = r0[1]; if (Object.values(links).includes(r0[1]) && links[r0[1]] != null) { /* target can't itself be linked */ } }
     seqText = "SEQUENCE ITEM NOS. " + runs.map((r, i) => (r[0] === r[1] ? String(r[0]) : `${r[0]} TO ${r[1]}`) + (i === 0 && seqWith ? ` WITH ${seqWith[1]}` : "")).join(" ");
-    if (F.seqMode === "blocks" && F.passMarker) { passIdxDeclared = declared.filter(n => n !== fixedItem).length; seqText += " PASS OVER IF ANY THEN REST OF THE MATTERS"; }
+    if ((F.seqMode === "blocks" || F.seqMode === "suppFirst") && F.passMarker) { passIdxDeclared = declared.filter(n => n !== fixedItem && !(n === outOfTurn && !(F.ootBoard && outOfTurn != null))).length; /* index into `order`, which drops the fixed item and a pre-disposed out-of-turn item */ seqText += " PASS OVER IF ANY THEN REST OF THE MATTERS"; }
   }
   const beforeOut = outOfTurn != null ? order[order.indexOf(outOfTurn) - 1] : null;   // see runDay: that tick is unknowable
-  order = order.filter(n => n !== outOfTurn && n !== fixedItem);
+  const ootLater = !!(F.ootBoard && outOfTurn != null);
+  order = order.filter(n => (n !== outOfTurn || ootLater) && n !== fixedItem);
   // --- pass-overs (board remark or typed-in), plus a second pass-over of a fresh one
   const poCands = order.filter(n => !linked.has(n) && !Object.values(links).includes(n));
   const poSet = new Set(pick(poCands, F.nPO));
@@ -68,46 +75,63 @@ function buildDay(F) {
     const it = order[i];
     if (passIdxDeclared != null && i === passIdxDeclared) flush(() => true);
     if (F.seqMode === "none" && F.parts && isB(it) && !flushedA) { flushedA = true; flush(n => !isB(n)); }   // fresh POs come back as Part B begins
+    if (it === outOfTurn) { ev.push({ item: it, kind: "call", oot: true }); continue; }   // ootLater only: dropped from the truth once called out of turn
     if (poSet.has(it)) { ev.push({ item: it, kind: "po" }); pending.push(it); } else ev.push({ item: it, kind: "call" });
   }
   flush(() => true);
   if (second != null) ev.push({ item: second, kind: "recall2" });
-  for (let r = 0; r < F.R; r++) ev.push({ item: 101 + r, kind: "call" });
+  for (let r = 0; r < F.R; r++) if (!order.includes(101 + r)) ev.push({ item: 101 + r, kind: "call" });
   // --- interruptions: mentioning at the start, a special bench mid-day, an idle tick
   const ticks = [];
   if (F.mentioning) for (let k = 0; k < 3; k++) ticks.push({ board: String(801 + k), kind: "phase" });
   const sbAt = F.specialBench ? ri(Math.floor(ev.length * 0.3), Math.floor(ev.length * 0.7)) : -1;
   const idleAt = F.idle ? ri(1, ev.length - 2) : -1;
+  // the out-of-turn matter is CALLED at some moment (shown on the board, then OVER) — not a
+  // remark that was simply there from the start
+  const ootIdx = ev.findIndex(e => e.oot);
+  // before its own slot, and at least three slots ahead of the court's in-order progress: an
+  // item called one or two slots early cannot be told from a remark column that lags the board
+  // by an item or two, and the engine deliberately reads it as in order (reachInfo tolerance)
+  let ootAt = -1;
+  if (ootLater) for (let tries = 0; tries < 30 && ootAt < 0; tries++) {
+    const c = ri(1, Math.max(1, Math.min(ootIdx, ev.length - 3))), pe = ev[c - 1];
+    // (after a CALL, so the remark column already shows a finished matter — the engine judges order only then)
+    if (pe.kind === "call" && !pe.oot && order.indexOf(outOfTurn) - order.indexOf(pe.item) >= 4) ootAt = c;   // three whole slots skipped
+  }
   ev.forEach((e, i) => {
+    if (i === ootAt) ticks.push({ board: String(outOfTurn), kind: "oot", item: outOfTurn });
+    if (e.oot && ootAt >= 0) { ticks.push(Object.assign({ board: String(e.item), skip: true }, e)); return; }
     if (i === sbAt) { ticks.push({ board: "301", kind: "phase" }); ticks.push({ board: "302", kind: "phase" }); }
     if (i === idleAt) ticks.push({ board: String(e.item), kind: "idle" });
     ticks.push(Object.assign({ board: String(e.item) }, e));
   });
   const firstB = ev.findIndex(e => isB(e.item));
-  return { F, ticks, ev, part, supp: suppA.concat(suppB), T: M + S, seqText, links, noteWith, outOfTurn, typedPO, second, firstB, freshEnd, order, fixedItem, beforeOut };
+  return { F, ticks, ev, part, supp: suppA.concat(suppB), T: M + S, seqText, links, noteWith, noteWith2, outOfTurn, typedPO, second, firstB, freshEnd, order, fixedItem, beforeOut, ootLater };
 }
 
 /* ---------- run the engine over the day and cross-check ---------- */
 function runDay(day, log) {
   const court = "6", F = day.F;
   const remarks = {}, boardPO = {}, recalledPO = {}, itemHi = {};
-  if (day.outOfTurn != null) remarks[day.outOfTurn] = "OVER";
+  if (day.outOfTurn != null && !day.ootLater && !F.noRemarks) remarks[day.outOfTurn] = "OVER";
   const fixedItem = day.fixedItem;
   const tracked = pick(range(1, day.T).filter(n => n !== fixedItem), Math.min(10, day.T)).concat(Object.keys(day.links).map(Number));
   if (F.R) tracked.push(101 + ri(0, F.R - 1));
-  const doneItem = F.manualOver ? pick(tracked.filter(n => n < 100 && !(n in day.links)), 1)[0] : null;
+  const doneItem = F.manualOver ? pick(tracked.filter(n => (n in day.part) && !(n in day.links)), 1)[0] : null;
   const sbItem = F.sbMatter ? 301 + ri(0, 2) : null;
   const miscParts = F.parts ? { [court]: { part: Object.fromEntries(Object.entries(day.part).map(([k, v]) => [String(k), v])), supp: day.supp.map(String) } } : {};
   if (F.parts && F.strays) { miscParts[court].part["670"] = "B"; miscParts[court].part["400"] = "A"; }
   const withItem = day.noteWith ? { [court + "_" + day.noteWith[1]]: String(day.noteWith[0]) } : {};
+  if (day.noteWith2) withItem[court + "_" + day.noteWith2[1]] = String(day.noteWith2[0]);
   const poMarks = {};
   const doneMarks = doneItem != null ? { [court + "_" + doneItem]: { v: "att" } } : {};
   const fixedTimes = fixedItem != null ? { [court + "_" + fixedItem]: "14:30" } : {};
-  let bad = 0, total = 0, unscored = 0, secondPassed = false; const outstanding = new Set();
+  let bad = 0, total = 0, unscored = 0, secondPassed = false, ootDone = false; const outstanding = new Set();
   let evIdx = 0;
   for (let t = 0; t < day.ticks.length; t++) {
     const tk = day.ticks[t];
-    const isEvent = tk.kind !== "phase" && tk.kind !== "idle";
+    const isEvent = tk.kind !== "phase" && tk.kind !== "idle" && tk.kind !== "oot";
+    if (tk.skip) { evIdx++; continue; }   // the out-of-turn matter's own slot, already taken
     if (isEvent) { if (tk.kind === "po") outstanding.add(tk.item); if (tk.kind === "po2") secondPassed = true; }
     // KNOWABLE remaining order from here: future POs look like calls (their recall doesn't
     // exist yet); recalls only of matters already outstanding; a discretionary recall only once
@@ -118,66 +142,81 @@ function runDay(day, log) {
     // somewhere before any Regular item — the engine's "Misc passovers" count is right there.
     const idx = {}, idxReg = {}; let pos = 0, posReg = 0;
     for (let j = evIdx; j < day.ev.length; j++) { const x = day.ev[j];
+      if (x.oot) { if (ootDone) continue; }   // the out-of-turn matter: an ordinary future call until the court takes it
       if ((x.kind === "recall" || x.kind === "po2") && !outstanding.has(x.item)) continue;
       if (x.kind === "recall2" && j > evIdx) { if (secondPassed && outstanding.has(x.item)) posReg++; continue; }   // only once the second pass-over has actually happened
       if (x.kind === "po" && j > evIdx) { if (idx[x.item] == null) { idx[x.item] = pos; idxReg[x.item] = posReg; } pos++; posReg++; continue; }
       idx[x.item] = pos; idxReg[x.item] = posReg; pos++; posReg++; }
     if (isEvent && (tk.kind === "recall" || tk.kind === "recall2")) outstanding.delete(tk.item);
+    if (isEvent && tk.oot && ootDone) { evIdx++; continue; }
     const bc = { court, item: tk.board, status: tk.kind === "idle" ? "NOT IN SESSION" : "IN SESSION", passover: tk.kind === "po" || tk.kind === "po2" };
-    if (isEvent && (tk.kind === "po" || tk.kind === "po2")) { if (day.typedPO.has(tk.item)) poMarks[court + "_" + tk.item] = { mode: "detail" }; else remarks[tk.item] = "PASS OVER"; }
+    // a court with NO remark column: pass-overs are known only from the board row's own
+    // "passed over" flag (boardPO), never from remarks; nothing is ever marked OVER
+    if (isEvent && (tk.kind === "po" || tk.kind === "po2")) { if (day.typedPO.has(tk.item) || F.noRemarks) poMarks[court + "_" + tk.item] = { mode: "detail" }; else remarks[tk.item] = "PASS OVER"; }
     // app bookkeeping (recordBoardPO / noteItemHi, with the reserved-series guard)
     const outs = ENG.passoverItemsFor({ remarksByCourt: { [court]: { items: remarks } }, poMarks }, court);
     for (const key in boardPO) { const it = key.split("_")[1]; if (!(it in outs)) { delete boardPO[key]; recalledPO[key] = true; } }
     for (const n in outs) boardPO[court + "_" + n] = true;
     if (isEvent && (tk.kind === "recall" || tk.kind === "recall2")) { delete remarks[tk.item]; delete poMarks[court + "_" + tk.item]; delete boardPO[court + "_" + tk.item]; recalledPO[court + "_" + tk.item] = true; }
-    const bn = parseInt(tk.board, 10); if (!isNaN(bn) && !ENG.isReservedItem(bn) && tk.kind !== "idle") itemHi[court] = Math.max(itemHi[court] || 0, bn);
+    const bn = parseInt(tk.board, 10); if (!isNaN(bn) && !ENG.isReservedItem(bn) && tk.kind !== "idle") itemHi[court] = Math.max(itemHi[court] || 0, bn);   // the oot item latches itemHi too — as it would in the app
     const ctx = { nowMins: 700, seqByCourt: day.seqText ? { [court]: day.seqText } : {}, remarksByCourt: { [court]: { items: { ...remarks } } },
       boardPO: { ...boardPO }, recalledPO: { ...recalledPO }, itemHi: { ...itemHi }, miscTotalByCourt: { [court]: day.T }, boardByCourt: { [court]: bc },
       poMarks: { ...poMarks }, doneMarks, fixedTimes, withItem, miscParts };
     // bench's intent unreadable here; likewise the one tick on the item just before a matter
     // disposed OUT OF TURN — from the board that looks exactly like the court having moved on
-    const window = (secondPassed && evIdx < day.firstB) || (isEvent && tk.item === day.beforeOut);
+    const window = (secondPassed && evIdx < day.firstB) || (isEvent && tk.item === day.beforeOut)
+      || (F.noRemarks && isEvent && (tk.kind === "recall" || tk.kind === "recall2"));
     const check = (X, listType, truthFn, label) => {
       const k = ENG.classify({ courtNo: court, itemNo: String(X), listType }, bc, ctx);
-      if (tk.kind === "phase" || tk.kind === "idle" || window) {
+      if (tk.kind === "phase" || tk.kind === "idle" || tk.kind === "oot" || window) {
         // interruptions: invariants only — never "over", never a numeric distance from a phase number
         unscored++;
         const tgtX = day.links[X]; const overTruth = (tgtX != null ? idx[tgtX] : idx[X]) == null;
-        if (tk.kind === "phase" && X < 100 && !overTruth && !k.done && (k.over || (k.gap != null && !k.ment && !k.special))) { bad++; total++; log.add(`  tick ${t} board ${tk.board}(${tk.kind}) ours=${X}: during a phase got ${JSON.stringify({ gap: k.gap, over: !!k.over, short: k.short })}`); }
+        if (tk.kind === "phase" && !isReg(X) && !overTruth && !k.done && (k.over || (k.gap != null && !k.ment && !k.special))) { bad++; total++; log.add(`  tick ${t} board ${tk.board}(${tk.kind}) ours=${X}: during a phase got ${JSON.stringify({ gap: k.gap, over: !!k.over, short: k.short })}`); }
         if (tk.kind === "idle" && k.over && !overTruth && !k.done) { bad++; total++; log.add(`  tick ${t} idle ours=${X}: 'over' while court not sitting`); }
+        // the court is on a matter taken OUT OF TURN: nothing still to come may be called over
+        if (tk.kind === "oot" && !isReg(X) && !overTruth && !k.done && k.over) { bad++; total++; log.add(`  tick ${t} board ${tk.board}(out of turn) ours=${X}: called 'over' while the court is on an out-of-turn matter`);
+          if (globalThis.STRESS_DEBUG && globalThis.__dumped !== globalThis.__fam) { globalThis.__dumped = globalThis.__fam; print("DEBUG OOT F=" + JSON.stringify(F) + " seq=" + day.seqText + " order=" + day.order.join(",") + " links=" + JSON.stringify(day.links) + " got=" + JSON.stringify(k));
+            const ef = ENG.effSeq(ctx, court, day.seqText); print("DEBUG remarks=" + JSON.stringify(ctx.remarksByCourt[court].items) + " poMarks=" + JSON.stringify(ctx.poMarks) + " boardPO=" + JSON.stringify(ctx.boardPO) + " itemHi=" + JSON.stringify(ctx.itemHi) + " doneMarks=" + JSON.stringify(ctx.doneMarks) + " seq=" + ef.seq.join(",") + " full=" + ef.full + " ri=" + JSON.stringify(ENG.reachInfo(ctx, court, ef.seq, day.T, bc.item, ef.vacated)) + " t=" + t + " evIdx=" + evIdx + " ticks=" + day.ticks.map(x => x.kind + (x.skip ? "skip" : "") + ":" + x.board).join(" ")); } }
         return;
       }
       total++;
       const r = truthFn(k);
       if (!r.ok) { bad++; log.add(`  [${label}] tick ${t} board ${tk.board}(${tk.kind}) ours=${X} truth=${r.truth} got=${JSON.stringify({ gap: k.gap, short: k.short, over: !!k.over, label: k.label })}`);
-        if (globalThis.STRESS_DEBUG && !globalThis.__dumped) { globalThis.__dumped = true; print("DEBUG ---- family: " + globalThis.__fam + " | tick " + t + " board " + tk.board + "(" + tk.kind + ") ours=" + X + " truth=" + r.truth + " got gap=" + k.gap + " " + (k.label || ""));
+        if (globalThis.STRESS_DEBUG && globalThis.__dumped !== globalThis.__fam) { globalThis.__dumped = globalThis.__fam; print("DEBUG ---- family: " + globalThis.__fam + " | tick " + t + " board " + tk.board + "(" + tk.kind + ") ours=" + X + " truth=" + r.truth + " got gap=" + k.gap + " " + (k.label || ""));
           const eff = ENG.effSeq(ctx, court, day.seqText || "");
           print("DEBUG F=" + JSON.stringify(F)); print("DEBUG seqText=" + day.seqText); print("DEBUG links=" + JSON.stringify(day.links) + " noteWith=" + JSON.stringify(day.noteWith) + " fixed=" + day.fixedItem + " outOfTurn=" + day.outOfTurn + " typedPO=" + JSON.stringify([...day.typedPO]));
           print("DEBUG truth order=" + day.order.join(",")); print("DEBUG engine seq=" + eff.seq.join(",") + " circular=" + eff.circular + " passIdx=" + eff.passIdx);
-          print("DEBUG withItem ctx=" + JSON.stringify(withItem) + " withMap=" + JSON.stringify(eff.withMap)); } }
+          print("DEBUG withItem ctx=" + JSON.stringify(withItem) + " withMap=" + JSON.stringify(eff.withMap));
+          print("DEBUG remarks=" + JSON.stringify(ctx.remarksByCourt[court].items) + " poMarks=" + JSON.stringify(ctx.poMarks) + " boardPO=" + JSON.stringify(ctx.boardPO) + " recalledPO=" + JSON.stringify(ctx.recalledPO) + " itemHi=" + JSON.stringify(ctx.itemHi));
+          print("DEBUG plan=" + JSON.stringify(ENG.passoverPlan(ctx, court, bc), (kk, v) => (kk === "seq" || kk === "vacated") ? undefined : v) + " reach=" + ENG.reachOf(ctx, court, eff.seq, day.T, bc.item, eff.vacated)); } }
     };
     const plainTruth = X => k => {
       // a user's own "over" mark — on the item, or on the item it is taken up with (linked
       // matters share fate: the mark on 43 covers "45 WITH 43")
       if (X === doneItem || day.links[X] === doneItem) return { ok: !!k.done && !!k.over, truth: "manual over" };
+      if (day.links[X] === fixedItem) return { ok: k.fixed === true, truth: "fixed (with the time-fixed item)" };   // "13 WITH 14", 13 fixed at 2:30: 14 goes with it
       if (X === day.second && secondPassed && evIdx >= day.firstB && outstanding.has(X)) return { ok: k.short === "2nd pass-over" && k.gap == null, truth: "2nd pass-over" };
-      const tgt = day.links[X]; const m = X >= 101 ? idxReg : idx; const i = tgt != null ? m[tgt] : m[X];
+      const tgt = day.links[X]; const m = isReg(X) ? idxReg : idx; const i = tgt != null ? m[tgt] : m[X];
       if (tgt != null && !(k.withItem === String(tgt))) return { ok: false, truth: `linked to ${tgt}` };
       if (i == null) return { ok: !!k.over || (k.gap != null && k.gap < 0), truth: "over" };
       return { ok: k.gap === i && !k.over, truth: i };
     };
-    for (const X of tracked) check(X, X >= 101 ? "Regular" : "Miscellaneous", plainTruth(X), X >= 101 ? "regular" : "misc");
+    const isReg = X => X >= 101 && !(X in day.part);
+    for (const X of tracked) check(X, isReg(X) ? "Regular" : "Miscellaneous", plainTruth(X), isReg(X) ? "regular" : "misc");
     if (fixedItem != null) check(fixedItem, "Miscellaneous", k => ({ ok: k.fixed === true && k.minsAway === 870 - 700, truth: "fixed 2:30 PM" }), "time-fixed");
     if (sbItem != null && tk.kind !== "phase" && tk.kind !== "idle") check(sbItem, "Miscellaneous", k => ({ ok: k.special === true && k.gap == null && !k.over, truth: "special bench, no distance" }), "special-bench");
     if (tk.board === "301" && sbItem != null) { const k = ENG.classify({ courtNo: court, itemNo: String(sbItem), listType: "Miscellaneous" }, bc, ctx); total++; const g = sbItem - 301; if (!(k.special && k.gap === g)) { bad++; log.add(`  tick ${t} board 301 ours=${sbItem}: expected series gap ${g}, got ${JSON.stringify({ gap: k.gap, short: k.short })}`); } }
     // progress-bar invariants: reach never beyond the list on a Misc item, never driven by a phase
     if (!isNaN(bn) && !ENG.isReservedItem(bn) && bn < 101 && tk.kind !== "idle") {
       const plan = ENG.passoverPlan(ctx, court, bc); const reach = ENG.reachOf(ctx, court, plan.seq || [], day.T, bc.item, plan.vacated);
-      total++; if (!(reach >= 1 && reach <= Math.max(day.T, (plan.seq || []).length))) { bad++; log.add(`  tick ${t} board ${tk.board}: reach ${reach} outside 1..${day.T}`); }
+      const regsIn = (plan.seq || []).filter(n => n >= 101).length;   // Regular items announced inside the order take positions too
+      total++; if (!(reach >= 1 && reach <= Math.max(day.T + regsIn, (plan.seq || []).length))) { bad++; log.add(`  tick ${t} board ${tk.board}: reach ${reach} outside 1..${day.T + regsIn}`); }
       if (F.parts && !F.strays) { const co = ENG.circularOrder(ctx, court); total++; if ((co != null) !== F.parts) { bad++; log.add(`  tick ${t}: circular order ${co ? "on" : "OFF"} unexpectedly`); } }
       if (F.parts && F.strays) { const co = ENG.circularOrder(ctx, court); total++; if (!co) { bad++; log.add(`  tick ${t}: strays switched the circular order off`); } }
     }
-    if (isEvent) { if (tk.kind === "call" || tk.kind === "recall" || tk.kind === "recall2") remarks[tk.item] = "OVER"; const tg = Object.keys(day.links).filter(l => day.links[l] === tk.item); if (tk.kind !== "po" && tk.kind !== "po2") tg.forEach(l => remarks[l] = "OVER"); evIdx++; }
+    if (tk.kind === "oot") { ootDone = true; if (!F.noRemarks) remarks[tk.item] = "OVER"; }
+    if (isEvent) { if ((tk.kind === "call" || tk.kind === "recall" || tk.kind === "recall2") && !F.noRemarks) remarks[tk.item] = "OVER"; const tg = Object.keys(day.links).filter(l => day.links[l] === tk.item); if (tk.kind !== "po" && tk.kind !== "po2" && !F.noRemarks) tg.forEach(l => remarks[l] = "OVER"); evIdx++; }
   }
   return { bad, total, unscored };
 }
@@ -194,18 +233,30 @@ const families = [
   { name: "second pass-over", mk: () => ({ parts: true, seqMode: "none", second: true, S: ri(0, 8), nPO: ri(2, 5) }) },
   { name: "EVERYTHING at once", mk: () => ({ parts: chance(.8), seqMode: ["none", "blocks", "full"][ri(0, 2)], passMarker: chance(.5), seqWith: chance(.6), noteWith: chance(.6), mentioning: chance(.5), specialBench: chance(.5), idle: chance(.5), sbMatter: chance(.5), R: chance(.6) ? ri(1, 5) : 0, timeFixed: chance(.6), manualOver: chance(.6), typedPO: chance(.5), outOfTurn: chance(.5), strays: chance(.5), second: chance(.4), S: ri(0, 10), nPO: ri(0, 6) }) },
 ];
+if (globalThis.STRESS_SWEEP2) families.push(
+  { name: "S2 big Misc list (100-130 items)", mk: () => ({ big: true, parts: true, seqMode: chance(.5) ? "none" : "blocks", passMarker: chance(.5), S: ri(0, 12), nPO: ri(0, 6) }) },
+  { name: "S2 out-of-turn item SHOWN on the board", mk: () => ({ parts: chance(.6), seqMode: chance(.5) ? "none" : "blocks", passMarker: true, outOfTurn: true, ootBoard: true, S: ri(0, 6), nPO: ri(0, 4), R: chance(.5) ? ri(1, 3) : 0 }) },
+  { name: "S2 no remark column (board PO flag only)", mk: () => ({ noRemarks: true, parts: chance(.6), seqMode: chance(.5) ? "none" : "blocks", passMarker: chance(.5), S: ri(0, 6), nPO: ri(2, 5), R: chance(.5) ? ri(1, 3) : 0 }) },
+  { name: "S2 supplementary-first announced order", mk: () => ({ parts: true, seqMode: "suppFirst", passMarker: chance(.6), S: ri(3, 10), nPO: ri(0, 4) }) },
+  { name: "S2 two matters linked to one target", mk: () => ({ noteWith: true, twoLinks: true, parts: chance(.6), seqMode: chance(.5) ? "none" : "blocks", passMarker: true, S: ri(0, 5), nPO: ri(0, 3) }) },
+  { name: "S2 Regular items inside the announced order", mk: () => ({ regInSeq: true, R: ri(2, 4), parts: chance(.5), seqMode: "blocks", passMarker: true, S: ri(0, 5), nPO: ri(1, 4) }) },
+  { name: "S2 full announced order + part data", mk: () => ({ fullWithParts: true, parts: true, seqMode: "full", S: ri(0, 6), nPO: ri(0, 4) }) },
+  { name: "S2 EVERYTHING (sweep-2 factors too)", mk: () => ({ parts: chance(.8), seqMode: ["none", "blocks", "full", "suppFirst"][ri(0, 3)], passMarker: chance(.5), seqWith: chance(.5), noteWith: chance(.6), twoLinks: chance(.5), mentioning: chance(.4), specialBench: chance(.5), idle: chance(.5), sbMatter: chance(.4), R: chance(.5) ? ri(1, 4) : 0, regInSeq: chance(.4), timeFixed: chance(.5), manualOver: chance(.5), typedPO: chance(.5), outOfTurn: chance(.6), ootBoard: chance(.6), noRemarks: chance(.3), strays: chance(.5), second: chance(.4), S: ri(0, 10), nPO: ri(0, 6), fullWithParts: true }) });
+if (globalThis.STRESS_ONLY) families.splice(0, families.length, ...families.filter(f => f.name.includes(globalThis.STRESS_ONLY)));
 let grand = 0, grandBad = 0, grandUn = 0; const allLogs = [];
 for (const fam of families) {
   const log = { n: 0, max: 6, lines: [], add(l) { if (this.n++ < this.max) this.lines.push(l); } }; allLogs.push([fam.name, log]);
   globalThis.__fam = fam.name; globalThis.__dumped = false;
   let b = 0, t = 0, u = 0;
-  for (let rep = 0; rep < 60; rep++) {
+  for (let rep = 0; rep < REPS; rep++) {
     const base = fam.mk();
-    const M = ri(25, 70);
+    const M = base.big ? ri(100, 130) : ri(25, 70);
     const F = Object.assign({ M, S: 0, R: 0, nPO: 0 }, base);
+    if (F.big) F.R = 0;                                   // 101+ would collide with the Misc numbers
+    if (F.noRemarks) { F.ootBoard = false; F.outOfTurn = false; }   // without a remark column the engine can never learn an out-of-turn disposal
     F.aM = F.parts ? ri(Math.floor(M * 0.35), Math.floor(M * 0.85)) : M; F.aS = F.parts && F.S ? ri(0, F.S) : F.S;
     if (!F.parts) { F.aM = M; F.aS = F.S; }
-    if (F.seqMode === "full" && F.parts) F.parts = false;   // a full announced order needs no parts
+    if (F.seqMode === "full" && F.parts && !F.fullWithParts) F.parts = false;   // (sweep 2 keeps them: the engine must ignore them)
     const day = buildDay(F);
     const r = runDay(day, log); b += r.bad; t += r.total; u += r.unscored;
   }
