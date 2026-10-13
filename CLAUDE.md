@@ -544,8 +544,8 @@ taken up immediately") have no items and correctly degrade to no sequence.
 - **Merged board** (owner, 13 Oct 2026: "A third tab of Merged Board should come only for those
   who have their own and chamber cases"): `boardViews()` adds `merged` only when `inOrg() &&
   hasPersonalMatters() && hasChamberMatters()`; `activeMatters()` = office + own private for
-  the date; a private item number carries a lock in its island band and court sheet
-  (`privMark`, merged view only — no names on islands, owner's rule). Built on this phone
+  the date; a private item number sits in a white pill in its island band and a dark pill in the
+  court sheet (`privMark`, merged view only; a lock icon was tried first — owner: not symmetrical — no names on islands, owner's rule). Built on this phone
   only. The tab strip wraps (`.viewstrip`) so a third tab is never off-screen.
 - `matterstatus/{scopeId}` (scopeId = orgId for chamber matters, uid for personal) — the
   SHARED daily bag any member may write. Three maps on it, all keyed

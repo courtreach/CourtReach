@@ -297,9 +297,11 @@ main#main{flex:1;min-height:0;overflow-y:auto;padding:8px 12px 12px;-webkit-over
 .oi-sep{opacity:.6;margin:0 3px 0 0}
 .oi-unit{white-space:nowrap}
 .oi-it{cursor:pointer;border-radius:3px;padding:0 1px}
-.oi-it.priv{background:rgba(255,255,255,.22);box-shadow:inset 0 0 0 1px rgba(255,255,255,.75);border-radius:4px;padding:0 3px}
-.oi-it.priv i{font-size:.8em;margin-right:2px;vertical-align:-1px}
-.cs-it .ti-lock{font-size:.8em;margin-right:2px;opacity:.75}
+/* a PRIVATE case on the Merged board: its number in a white pill — symmetrical around the
+   digits and clear on every band colour (owner, 13 Oct 2026: the lock "is not symmetrical to
+   the item number"); in the court sheet the same number sits in a dark pill */
+.oi-it.priv{background:#fff;color:var(--ink);border-radius:4px;padding:0 4px}
+.cs-it.priv{background:var(--navy);color:#fff;border-radius:4px;padding:0 5px}
 .oi-it.struck{text-decoration:line-through;text-decoration-thickness:1.6px;opacity:.72}
 .oi-it.overridden{box-shadow:0 0 0 1.5px rgba(255,255,255,.65) inset}
 /* ===== APPROACH FLASH — full-screen overlay when our matters are reaching (ported from the display board) ===== */
@@ -2820,7 +2822,7 @@ function boardCell(c, mini){
     const off=!!overrides[strikeKey(c.court,x.e.itemNo)];
     const struck=over&&!off, shown=over&&off;
     // the "·" travels with the item it precedes, so a wrap never leaves it dangling
-    return `<span class="oi-unit">${idx?`<span class="oi-sep">·</span>`:""}<span class="oi-it${struck?" struck":""}${shown?" overridden":""}${privMark(x.e)?" priv":""}" data-strike-court="${esc(c.court)}" data-strike-item="${esc(x.e.itemNo)}">${privMark(x.e)?'<i class="ti ti-lock"></i>':""}${esc(x.e.itemNo)}</span></span>`;
+    return `<span class="oi-unit">${idx?`<span class="oi-sep">·</span>`:""}<span class="oi-it${struck?" struck":""}${shown?" overridden":""}${privMark(x.e)?" priv":""}" data-strike-court="${esc(c.court)}" data-strike-item="${esc(x.e.itemNo)}"${privMark(x.e)?' title="Private — only you"':""}>${esc(x.e.itemNo)}</span></span>`;
   }).join("");
   // The island stays a pure court/item/proximity readout — no names. Who's appearing is
   // in My cases and in the court sheet (owner: "I don't want juniors' names coming on the
@@ -3137,7 +3139,7 @@ function openCourtModal(court,_refetched){
       // engine could not read (a relative causelist note) still hides the item-based figure
       const hideDist = done || (sbTime && !k.fixed);
       return `<div class="cs-mine ${hideDist?"":esc(band)}">
-        <span class="cs-it${done?" struck":""}">${privMark(e)?'<i class="ti ti-lock" title="Private — only you"></i>':""}${esc(e.itemNo)}</span>
+        <span class="cs-it${done?" struck":""}${privMark(e)?" priv":""}"${privMark(e)?' title="Private — only you"':""}>${esc(e.itemNo)}</span>
         <span class="cs-body"><span class="cs-title">${esc(e.caseTitle||("item "+e.itemNo))}${who?` <span class="cs-who">· ${esc(who)}</span>`:""}</span>${sbTime?`<span class="cs-note time"><i class="ti ti-clock"></i> ${esc(sbTime)}</span>`:""}${rmk?`<span class="cs-note rmk">${esc(rmk)}</span>`:""}</span>
         ${hideDist?"":`<span class="cs-dist ${esc(band)}">${esc(k.short||"—")}</span>`}</div>`; }).join("")}`:""}
     <div class="cs-reg">
