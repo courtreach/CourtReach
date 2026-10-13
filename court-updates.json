@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-13T20:11:09.789412Z",
+  "generated_at": "2026-10-13T23:11:12.137717Z",
   "parser_version": 19,
   "window": [
     "2026-10-14",
@@ -26,7 +26,6 @@
         "Chamber (supp)",
         "Single Judge (supp)",
         "Registrar (main)",
-        "Registrar (supp)",
         "Curative & Review (main)"
       ],
       "lists": {
@@ -45617,7 +45616,7 @@
         "Registrar": {
           "1": {
             "coram": "SH. APOORV SINGH, REGISTRAR",
-            "total": "36",
+            "total": "35",
             "fresh": "",
             "items": {
               "1": "Crl.A. No. 4464/2026 PANKAJ KUMAR VERSUS THE STATE OF WEST BENGAL AND ANR.",
@@ -45750,8 +45749,7 @@
               "32": "T.P.(C) No. 2634/2026 PRIYANKA YADAV VERSUS MUKESH YADAV",
               "33": "T.P.(Crl.) No. 960/2026 NUZHAT KHANAM VERSUS MD. IRSHAD KHAN",
               "34": "T.P.(Crl.) No. 1041/2026 KRISHNA KANT SINGH AND ANR. VERSUS STATE OF BIHAR",
-              "35": "SLP(Crl) No. 18333/2026 SIDH NATH PRASAD @ SIDHA NATH PRASAD YADAV AND ANR. VERSUS STATE OF BIHAR AND ANR.",
-              "36": "SLP(Crl) No. 10774/2023 ANITHA P NAIR VERSUS N HARIHARAN NAIR SOLICITING ORDERS FOR FDR RENEWAL"
+              "35": "SLP(Crl) No. 18333/2026 SIDH NATH PRASAD @ SIDHA NATH PRASAD YADAV AND ANR. VERSUS STATE OF BIHAR AND ANR."
             },
             "advocates": {
               "1": {
@@ -47199,22 +47197,6 @@
                     "p": "R-1"
                   }
                 ]
-              },
-              "36": {
-                "pet": "SRIRAM P.",
-                "resp": "ANAND DILIP LANDGE",
-                "petAll": [
-                  {
-                    "n": "SRIRAM P.",
-                    "p": ""
-                  }
-                ],
-                "respAll": [
-                  {
-                    "n": "ANAND DILIP LANDGE",
-                    "p": "R-1"
-                  }
-                ]
               }
             },
             "times": {},
@@ -47350,27 +47332,18 @@
               "32": "A",
               "33": "A",
               "34": "A",
-              "35": "A",
-              "36": "A"
+              "35": "A"
             },
-            "suppItems": [
-              "36"
-            ],
-            "dropped": {
-              "6": {
-                "to": "",
-                "reason": "DELETED."
-              }
-            },
+            "suppItems": [],
             "main": 35,
-            "supp": 1
+            "supp": 0
           },
           "2": {
             "coram": "MS. GRACY L. BAWITLUNG, REGISTRAR",
             "total": "35",
             "fresh": "",
             "items": {
-              "1": "ORGNL.SUIT No. 3/2021 THE STATE OF KARNATAKA VERSUS THE STATE OF TAMIL NADU AND ORS.",
+              "1": "C.A. No. 9954/2026 THE STATE OF HARYANA AND ANR. VERSUS RAVINDER KUMAR DOGRA (DEAD)",
               "2": "SLP(C) No. 9951/2022 THE DIRECTOR OF ELEMENTARY EDUCATION AND ORS. VERSUS THE CORRESPONDENT ST. ANTONYS GIRLS PRIMARY SCHOOL",
               "2.1": "Connected SLP(C) No. 5742/2023 THE CHIEF EDUCATIONAL OFFICER AND ANR. VERSUS S. B. M. HIGH SCHOOL NAMAKKAL",
               "2.2": "Connected Diary No. 17505-2023 THE DISTRICT EDUCATIONAL OFFICER TIRUNELVELI AND ANR. VERSUS TMT. M. TAMILSELVAM AND ANR.",
@@ -82306,7 +82279,6 @@
       "M_C_2": 505316,
       "M_S_2": 518715,
       "M_R_1": 542192,
-      "M_R_2": 507418,
       "M_CC_1": 539111
     },
     "2026-10-15": {
