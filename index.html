@@ -1558,7 +1558,9 @@ async function ensureUserDoc(uid, email, reg){
 }
 // Matters entered BEFORE joining were private work; joining an organisation must not
 // suddenly put them on the office board. Stamp them personal first, so there is never a
-// moment where they are shared. New matters added afterwards default to the organisation.
+// moment where they are shared. New matters are private too unless the user picks the
+// organisation board in the form (owner, 13 Oct 2026: "When i try to add cases to my own it
+// also shows up in the Chamber cases tab" — the form used to default to the organisation).
 async function keepExistingMattersPrivate(uid){
   const d=await db.get("usermatters/"+uid).catch(()=>null);
   const ms=(d&&d.matters)||[];
@@ -3565,8 +3567,8 @@ function addMatterForm(){
     <label class="am-fld">Appearing for<select id="am_party"><option>Petitioner</option><option>Respondent</option></select></label>
     <label class="am-fld">Time fixed <span style="font-weight:400">(only if the court has fixed one — it is then counted in minutes, not items)</span><input type="time" id="am_time"></label>
     ${inOrg()?`<label class="am-fld">Show on<select id="am_scope">
-      <option value="chamber">${esc(myOrg?.name||"Organisation")} board — the whole office sees it</option>
-      <option value="personal">My board only — private to me</option>
+      <option value="personal" selected>My cases only — private to me</option>
+      <option value="chamber">${esc(myOrg?.name||"Organisation")} board too — the whole office sees it</option>
     </select></label>`:""}
     <button class="sh-btn ghost2" id="am_fetch"><i class="ti ti-search"></i> Fetch details</button>
     <div id="am_preview" class="am-preview hidden"></div>
@@ -3596,7 +3598,7 @@ function addMatterForm(){
     const f=readForm(); if(!valid(f)) return;
     const sc=$("am_scope");
     const rec={ id:"m"+Date.now().toString(36), court:f.court, item:f.item, date:f.date, listType:f.type, appearingFor:f.party,
-      scope: sc ? sc.value : "chamber",
+      scope: sc ? sc.value : "personal",   // private unless shared on purpose (owner, 13 Oct 2026)
       title:(fetched&&fetched.title)||"", bench:(fetched&&fetched.bench)||"", aor:(fetched&&fetched.aor)||"" };
     // de-dupe on court+item+DATE — the same item number in the same court on a different
     // day is a different listing, and must not overwrite the other one.
