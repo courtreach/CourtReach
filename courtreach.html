@@ -297,6 +297,9 @@ main#main{flex:1;min-height:0;overflow-y:auto;padding:8px 12px 12px;-webkit-over
 .oi-sep{opacity:.6;margin:0 3px 0 0}
 .oi-unit{white-space:nowrap}
 .oi-it{cursor:pointer;border-radius:3px;padding:0 1px}
+.oi-it.priv{background:rgba(255,255,255,.22);box-shadow:inset 0 0 0 1px rgba(255,255,255,.75);border-radius:4px;padding:0 3px}
+.oi-it.priv i{font-size:.8em;margin-right:2px;vertical-align:-1px}
+.cs-it .ti-lock{font-size:.8em;margin-right:2px;opacity:.75}
 .oi-it.struck{text-decoration:line-through;text-decoration-thickness:1.6px;opacity:.72}
 .oi-it.overridden{box-shadow:0 0 0 1.5px rgba(255,255,255,.65) inset}
 /* ===== APPROACH FLASH — full-screen overlay when our matters are reaching (ported from the display board) ===== */
@@ -358,7 +361,7 @@ main#main{flex:1;min-height:0;overflow-y:auto;padding:8px 12px 12px;-webkit-over
 .cr-tag{flex:none;font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.3px;
   color:var(--mut);background:var(--panel2);border-radius:20px;padding:3px 8px}
 .case-acts{display:flex;gap:14px;flex-wrap:wrap;align-items:center}
-.viewstrip{padding-top:0}
+.viewstrip{padding-top:0;flex-wrap:wrap;overflow-x:visible}   /* every board tab stays in view — a third (Merged) tab used to sit off-screen at phone width */
 /* which day My cases is showing — it follows the header calendar, so say so plainly */
 .mine-day{display:flex;align-items:baseline;gap:9px;margin:2px 2px 10px}
 .mine-day .md-d{font-size:15px;font-weight:600;color:var(--ink)}
@@ -1713,7 +1716,7 @@ if(DEMO){
     // already have. The limit is what the users list rule requires, and it is also the honest
     // shape of the feature: this was never meant to be a way to page through the directory.
     async getUserBy(field,value){const q=query(collection(fs,"users"),where(field,"==",value),limit(5)); const s=await getDocs(q); return s.docs.map(d=>({id:d.id,...d.data()}));},
-    watchDoc(path,cb){return onSnapshot(doc(fs,...path.split("/")),s=>cb(s.exists()?{id:s.id,...s.data()}:null),e=>listenerDied(path,e));},
+    watchDoc(path,cb,onErr){return onSnapshot(doc(fs,...path.split("/")),s=>cb(s.exists()?{id:s.id,...s.data()}:null),e=>{ listenerDied(path,e); if(onErr) onErr(e); });},
     async get(path){const s=await getDoc(doc(fs,...path.split("/"))); return s.exists()?{id:s.id,...s.data()}:null;},
     async set(path,data,merge){await setDoc(doc(fs,...path.split("/")),data,{merge:!!merge});},
     async add(path,data){const r=await addDoc(collection(fs,...path.split("/")),data);return r.id;},
@@ -1766,6 +1769,35 @@ if(DEMO){
    STATE + BOARD FETCH
    ============================================================ */
 let me=null, myOwn=[], board=[], boardAt=0, boardErr=null, curTab="board";
+/* PRIVATE CASES LIVE IN THEIR OWN RECORD (owner, 13 Oct 2026: "my cases should not popup for
+   all in the chamber"). usermatters/{uid} holds the office (chamber) cases, which every member
+   of the organisation reads to build the shared board; usermatters_private/{uid} holds the
+   ones marked private, readable only by you and by a colleague you have approved to
+   collaborate (firestore.rules). Before this, private cases sat in the shared record and were
+   hidden only on screen — every colleague's phone still downloaded them.
+   myOwn stays the one combined list the rest of the app works with; saveMine() splits it on
+   the way out. privOK is false until the private record has been read successfully — i.e.
+   until the new rule is in place — and while it is false everything stays in the shared
+   record exactly as before, so nothing is ever moved somewhere it cannot be read back. */
+let myShared=[], myPriv=[], privOK=false, privMoving=false;
+function mergeMine(){
+  const seen=new Set();
+  myOwn=[...myPriv, ...myShared].filter(m=>{ if(!m) return false; const k=m.id||(m.court+"_"+m.item+"_"+(m.date||"")); if(seen.has(k)) return false; seen.add(k); return true; });
+}
+async function saveMine(matters){
+  if(!privOK) return db.set("usermatters/"+me.uid,{matters,updatedAt:db.now()},true);
+  const priv=matters.filter(m=>m&&m.scope==="personal"), shared=matters.filter(m=>!(m&&m.scope==="personal"));
+  // private first: a case being made private is never missing from both records at once
+  await db.set("usermatters_private/"+me.uid,{matters:priv,updatedAt:db.now()},true);
+  await db.set("usermatters/"+me.uid,{matters:shared,updatedAt:db.now()},true);
+}
+// Private cases still in the shared record (stored before this change, or stamped private on
+// joining an organisation): move them across, once the private record is readable.
+function movePrivateOut(){
+  if(!privOK || privMoving || !me || !myShared.some(m=>m&&m.scope==="personal")) return;
+  privMoving=true;
+  saveMine(myOwn).catch(e=>console.error("[CourtReach] moving private cases failed", e)).finally(()=>{ privMoving=false; });
+}
 // The calendar button's picked date. todayISO() → the normal LIVE board. Any other date →
 // a read-only static preview of that day's published cause list (no live "on now" status
 // exists outside today — see renderDateBoard).
@@ -1953,8 +1985,14 @@ const chamberMatters = (date) => {
   for(const uid in orgMatters) if(uid!==me?.uid) take(orgMatters[uid], uid);
   return out;
 };
+// On the Merged board a private case's item number carries a lock, so office and private
+// matters sharing an island can be told apart at a glance (no names on islands — owner).
+const privMark = e => boardView==="merged" && e && e.scope==="personal";
 // Do I keep any matters outside the chamber? (decides whether the board even needs tabs)
 const hasPersonalMatters = () => (myOwn||[]).some(m=>usable(m) && !isChamberMatter(m));
+// Does the organisation have any case at all — mine or a colleague's? (the Merged tab needs both)
+const hasChamberMatters = () => (myOwn||[]).some(m=>usable(m) && isChamberMatter(m))
+  || Object.keys(orgMatters||{}).some(uid=>uid!==me?.uid && (orgMatters[uid]||[]).some(m=>usable(m) && isChamberMatter(m)));
 // Misc totals per court (main + supp) from the fetched cause list — lets the engine
 // place a Regular-list matter behind the whole Misc list, and a passover at board's end.
 function miscTotalByCourt(){
@@ -2591,6 +2629,11 @@ function boardViews(){
   const views=[];
   if(inOrg()) views.push({id:"chamber", label:myOrg?.name||"Organisation", icon:"ti-building-bank"});
   if(!inOrg() || hasPersonalMatters()) views.push({id:"mine", label:inOrg()?"My own":"My board", icon:"ti-user"});
+  // Merged: the office's cases and your private ones on ONE board, private item numbers
+  // marked with a lock (owner, 13 Oct 2026: "A third tab of Merged Board should come only for
+  // those who have their own and chamber cases and not for all"). Built on this phone only —
+  // colleagues' boards are made from office cases alone.
+  if(inOrg() && hasPersonalMatters() && hasChamberMatters()) views.push({id:"merged", label:"Merged", icon:"ti-layers-union"});
   activeLinks().forEach(l=>{
     const uid=otherUid(l), nm=otherName(l)||"Colleague";
     views.push({id:"peer:"+uid, label:nm.split(" ")[0], icon:"ti-users", peer:uid, full:nm});
@@ -2616,6 +2659,7 @@ const activeMatters = () => {
         listType:m.listType||"", date:matterDate(m), by:uid, byName:peerBoardName, status:m.status||""}));
   }
   if(boardView==="chamber" && inOrg()) return chamberMatters();
+  if(boardView==="merged" && inOrg()) return [...chamberMatters(), ...myMatters(boardDate, true)];
   return myMatters(boardDate, inOrg());
 };
 // Keep boardView pointing at something that still exists, and make sure a peer view is
@@ -2631,8 +2675,14 @@ function syncBoardView(){
       const l=activeLinks().find(x=>otherUid(x)===wantPeer);
       peerBoardName=(l&&otherName(l))||"Colleague";
       peerLinkMatters=((l&&l.matters)||[]).filter(m=>m&&m.court&&m.item&&(!m.date||m.date===boardDate));
-      peerUnsub=db.watchDoc("usermatters/"+wantPeer, d=>{ peerMatters=(d&&d.matters)||[];
-        if(curTab==="board") renderBoard(); });
+      // their office cases AND their private ones — an approved collaborator sees the whole
+      // board (firestore.rules lets a linked colleague read both records)
+      let pShared=[], pPriv=[];
+      const pMerge=()=>{ const seen=new Set(); peerMatters=[...pPriv, ...pShared].filter(m=>{ if(!m||seen.has(m.id)) return false; seen.add(m.id); return true; });
+        if(curTab==="board") renderBoard(); };
+      const u1=db.watchDoc("usermatters/"+wantPeer, d=>{ pShared=(d&&d.matters)||[]; pMerge(); });
+      const u2=db.watchDoc("usermatters_private/"+wantPeer, d=>{ pPriv=(d&&d.matters)||[]; pMerge(); }, ()=>{});
+      peerUnsub=()=>{ u1(); u2(); };
     }
   }
   return views;
@@ -2770,7 +2820,7 @@ function boardCell(c, mini){
     const off=!!overrides[strikeKey(c.court,x.e.itemNo)];
     const struck=over&&!off, shown=over&&off;
     // the "·" travels with the item it precedes, so a wrap never leaves it dangling
-    return `<span class="oi-unit">${idx?`<span class="oi-sep">·</span>`:""}<span class="oi-it${struck?" struck":""}${shown?" overridden":""}" data-strike-court="${esc(c.court)}" data-strike-item="${esc(x.e.itemNo)}">${esc(x.e.itemNo)}</span></span>`;
+    return `<span class="oi-unit">${idx?`<span class="oi-sep">·</span>`:""}<span class="oi-it${struck?" struck":""}${shown?" overridden":""}${privMark(x.e)?" priv":""}" data-strike-court="${esc(c.court)}" data-strike-item="${esc(x.e.itemNo)}">${privMark(x.e)?'<i class="ti ti-lock"></i>':""}${esc(x.e.itemNo)}</span></span>`;
   }).join("");
   // The island stays a pure court/item/proximity readout — no names. Who's appearing is
   // in My cases and in the court sheet (owner: "I don't want juniors' names coming on the
@@ -3049,7 +3099,7 @@ function openCourtModal(court,_refetched){
       </div>
       ${VC_LINKS[court]?`<div class="cs-joinrow"><button class="cs-join" data-vc="${esc(court)}"><i class="ti ti-video"></i> Join hearing</button></div>`:""}
     </div>
-    ${mineHere.length?`<div class="cs-sec">${inOrg()?"Chamber case":"Your case"}${mineHere.length>1?"s":""} here</div>${mineHere.map(e=>{ const k=classify(e);
+    ${mineHere.length?`<div class="cs-sec">${boardView==="merged"?"Case":inOrg()?"Chamber case":"Your case"}${mineHere.length>1?"s":""} here</div>${mineHere.map(e=>{ const k=classify(e);
       const rmk=remarkFor(court, e.itemNo);
       const sbTime=fixedLabelFor(court, e.itemNo, todayISO());
       const done=!!k.over || remarkEndsToday(rmk);
@@ -3087,7 +3137,7 @@ function openCourtModal(court,_refetched){
       // engine could not read (a relative causelist note) still hides the item-based figure
       const hideDist = done || (sbTime && !k.fixed);
       return `<div class="cs-mine ${hideDist?"":esc(band)}">
-        <span class="cs-it${done?" struck":""}">${esc(e.itemNo)}</span>
+        <span class="cs-it${done?" struck":""}">${privMark(e)?'<i class="ti ti-lock" title="Private — only you"></i>':""}${esc(e.itemNo)}</span>
         <span class="cs-body"><span class="cs-title">${esc(e.caseTitle||("item "+e.itemNo))}${who?` <span class="cs-who">· ${esc(who)}</span>`:""}</span>${sbTime?`<span class="cs-note time"><i class="ti ti-clock"></i> ${esc(sbTime)}</span>`:""}${rmk?`<span class="cs-note rmk">${esc(rmk)}</span>`:""}</span>
         ${hideDist?"":`<span class="cs-dist ${esc(band)}">${esc(k.short||"—")}</span>`}</div>`; }).join("")}`:""}
     <div class="cs-reg">
@@ -3514,7 +3564,7 @@ function wireMine(){
   $("main").querySelectorAll("[data-del]").forEach(x=>x.onclick=async(ev)=>{
     ev.stopPropagation();
     const matters=(myOwn||[]).filter(m=>m.id!==x.dataset.del);
-    try{ await db.set("usermatters/"+me.uid,{matters,updatedAt:db.now()},true); }catch(e){}
+    try{ await saveMine(matters); }catch(e){}
   });
   // Mark/change/clear a case's status — tapping the already-active option clears it, so
   // there's no separate "clear" control to hunt for (owner: "Allow the status marked to be
@@ -3551,7 +3601,7 @@ function wireMine(){
   $("main").querySelectorAll("[data-scope]").forEach(x=>x.onclick=async(ev)=>{
     ev.stopPropagation();
     const matters=(myOwn||[]).map(m=>m.id!==x.dataset.scope?m:({...m, scope:isChamberMatter(m)?"personal":"chamber"}));
-    try{ await db.set("usermatters/"+me.uid,{matters,updatedAt:db.now()},true); }catch(e){}
+    try{ await saveMine(matters); }catch(e){}
   });
 }
 function addMatterForm(){
@@ -3613,7 +3663,7 @@ function addMatterForm(){
        reported after the fact instead of holding the sheet hostage. */
     $("am_save").disabled=true;
     closeModal(); mineView="mine"; setTab("mine");
-    db.set("usermatters/"+me.uid,{matters,updatedAt:db.now()},true)
+    saveMine(matters)
       .catch(e=>{ try{ alert("Could not save the case — "+(e.message||e)); }catch(_){ } });
     if(t) db.set("matterstatus/"+statusScope(rec), {times:{[statusKey(rec)]:{t, by:me.uid, byName:me.name||"", at:db.now()}}}, true).catch(()=>{});
   };
@@ -3942,6 +3992,7 @@ async function adminDeleteAccount(uid){
       if(org && org.leaderUid===uid) await db.set("orgs/"+u.orgId, {leaderUid:org.ownerUid||org.id}, true);
     }
     await db.remove("usermatters/"+uid).catch(()=>{});
+    await db.remove("usermatters_private/"+uid).catch(()=>{});
     await db.set("users/"+uid, {deleted:true, deletedAt:db.now(), deletedBy:me.email||me.uid, email:u?.email||""}, false);
   }catch(e){ alert("Couldn't delete that account."); }
 }
@@ -4777,6 +4828,7 @@ function deleteMyAccountFlow(){
     try{
       await auth.reauthenticate(pass);          // proves it's really them before anything is touched
       await db.remove("usermatters/"+me.uid).catch(()=>{});
+      await db.remove("usermatters_private/"+me.uid).catch(()=>{});
       // TOMBSTONE, not delete. Removing the profile document and writing a fresh one was a
       // free trial reset — createdAt is pinned on update, but a brand-new document starts a
       // brand-new clock, and the account behind it never changed. So the rules no longer
@@ -5014,7 +5066,9 @@ function applyGate(){
        It is cheap and idempotent — one KV write when nothing has changed — so the fix is
        simply to do it whenever the app starts. */
     syncPushSub();
-    unsub.push(db.watchDoc("usermatters/"+uid, d=>{ myOwn=(d&&d.matters)||[]; if(curTab!=="collab"&&!peerBoardUid) render(); }));
+    unsub.push(db.watchDoc("usermatters/"+uid, d=>{ myShared=(d&&d.matters)||[]; mergeMine(); movePrivateOut(); if(curTab!=="collab"&&!peerBoardUid) render(); }));
+    unsub.push(db.watchDoc("usermatters_private/"+uid, d=>{ privOK=true; myPriv=(d&&d.matters)||[]; mergeMine(); movePrivateOut(); if(curTab!=="collab"&&!peerBoardUid) render(); },
+      ()=>{ privOK=false; }));   // rule not in place yet: keep using the shared record alone
     // Status marks on your PERSONAL matters. The chamber's live in matterstatus/{orgId} and
     // are watched by watchOrg() instead, so leaving an organisation drops that half cleanly.
     unsub.push(db.watchDoc("matterstatus/"+uid, d=>{ statusOwn=(d&&d.marks)||{}; courtsOwn=(d&&d.courts)||{}; timesOwn=(d&&d.times)||{}; render(); }));

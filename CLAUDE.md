@@ -529,7 +529,24 @@ taken up immediately") have no items and correctly degrade to no sequence.
 - `users/{uid}` — profile, `orgId`, `orgRole`, trial/entitlement fields. Deleting an
   account TOMBSTONES the doc (`deleted:true`), never removes it (trial-reset hole).
 - `usermatters/{uid}` — `{matters:[{id,court,item,date,listType,appearingFor,scope,title,bench,aor}]}`.
-  Only the owner writes it; `scope:"personal"|"chamber"`.
+  Only the owner writes it. Since 13 Oct 2026 it holds only OFFICE (`scope:"chamber"`, or unset)
+  cases — every organisation member reads it to build the shared board.
+- `usermatters_private/{uid}` — same shape, `scope:"personal"` cases only; readable by the
+  owner and an approved collaborator (`linkApproved`), never the organisation. Before this,
+  private cases sat in usermatters and were hidden only on screen — colleagues' phones still
+  downloaded them. App: `myShared`/`myPriv` merged into `myOwn`; every write goes through
+  `saveMine()` (splits by scope, private record first); `movePrivateOut()` moves any private
+  case still in the shared record. `privOK` stays false until the private record is readable
+  (i.e. the rule is pasted) and until then everything is stored the old way, so nothing is
+  ever moved where it can't be read back. Peer (collaborator) board watches both records;
+  worker push reads both; account deletion removes both. New cases default to private
+  (form "Show on" → "My cases only"); sharing with the office is an explicit choice.
+- **Merged board** (owner, 13 Oct 2026: "A third tab of Merged Board should come only for those
+  who have their own and chamber cases"): `boardViews()` adds `merged` only when `inOrg() &&
+  hasPersonalMatters() && hasChamberMatters()`; `activeMatters()` = office + own private for
+  the date; a private item number carries a lock in its island band and court sheet
+  (`privMark`, merged view only — no names on islands, owner's rule). Built on this phone
+  only. The tab strip wraps (`.viewstrip`) so a third tab is never off-screen.
 - `matterstatus/{scopeId}` (scopeId = orgId for chamber matters, uid for personal) — the
   SHARED daily bag any member may write. Three maps on it, all keyed
   `date_court_item` (dots → dashes) or `date_court`:
