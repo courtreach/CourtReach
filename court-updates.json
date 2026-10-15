@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-15T13:40:33.782814Z",
+  "generated_at": "2026-10-15T18:05:39.085913Z",
   "parser_version": 20,
   "window": [
     "2026-10-15",
@@ -43687,16 +43687,19 @@
     "2026-10-16": {
       "lists_found": [
         "Miscellaneous (main)",
+        "Miscellaneous (supp)",
         "Chamber (main)",
+        "Chamber (supp)",
         "Single Judge (main)",
+        "Single Judge (supp)",
         "Registrar (main)",
         "Registrar (supp)"
       ],
       "lists": {
         "Miscellaneous": {
           "1": {
-            "coram": "HON'BLE THE CHIEF JUSTICE HON'BLE MR. JUSTICE JOYMALYA BAGCHI HON'BLE MRS. JUSTICE V. MOHANA",
-            "total": "57",
+            "coram": "HON'BLE THE CHIEF JUSTICE HON'BLE MR. JUSTICE JOYMALYA BAGCHI",
+            "total": "66",
             "fresh": "",
             "items": {
               "1": "C.A. No. 8402-8403/2024 COMMISSIONER M.P. HOUSING BOARD AND ORS. VERSUS MAYURVAN VIKAS SAMITI MORENA AND ORS.",
@@ -43764,7 +43767,18 @@
               "55": "ARBIT.PETITON No. 32/2026 JAGDALE INDUSTRIES PRIVATE LIMITED VERSUS JOHNSON AND JOHNSON PTE. LTD",
               "56": "ARBIT.PETITON No. 51/2026 NP INFRAPROJECTS INDIA PVT. LTD. VERSUS JOINT STOCK COMPANY INDUSTRIAL ASSOCIATION VOZROZHDENIE",
               "57": "W.P.(C) No. 114/2006 SRINATH TRAVELS AGENCY VERSUS UNION OF INDIA . AND ORS.",
-              "57.1": "Connected W.P.(C) No. 494/2007 M/S SHARMA TRANSPORTS VERSUS UNION OF INDIA MINISTRY OF ROAD TRANSPORT AND HIGHWAYS AND ORS."
+              "57.1": "Connected W.P.(C) No. 494/2007 M/S SHARMA TRANSPORTS VERSUS UNION OF INDIA MINISTRY OF ROAD TRANSPORT AND HIGHWAYS AND ORS.",
+              "58": "Diary No. 59521-2026 AARTI VASAL VERSUS STATE OF PUNJAB AND ORS.",
+              "59": "Diary No. 63206-2026 THE LOKMANYA PAN BAZAR ASSOCATION LTD VERSUS THE STATE OF MAHARASHTRA AND ORS.",
+              "60": "Diary No. 63693-2026 NAVDEEP KAUR AND ORS. VERSUS GURMIT SINGH AND ORS.",
+              "60.1": "Connected Diary No. 63779-2026 GOPAL SINGLA AND ANR. VERSUS THE STATE OF PUNJAB AND ORS.",
+              "61": "SLP(C) No. 36989/2026 RAVI KUMAR BHASKAR VERSUS HIGH COURT OF DELHI AND ANR.",
+              "62": "Diary No. 65046-2026 RAJENDRA NIVRUTTI RAJPURE VERSUS SANJAY HARISHCHANDRA MORE AND ORS.",
+              "62.1": "Connected Diary No. 65052-2026 ANIL SHIVAJIRAO DESAI VERSUS CHANDRAKANT MARUTI KOKATE AND ORS.",
+              "63": "Diary No. 65050-2026 RUPALI RAJENDRA RAJPURE VERSUS SANJAY HARISHCHANDRA MORE AND ORS.",
+              "64": "SLP(C) No. 37235/2026 GOPICHAND KUNDLIK PADALKAR VERSUS VIKRAMSINGH BALASAHEB SAWANT AND ORS.",
+              "65": "CONMT.PET.(Crl.) No. 2/2026 SUPREME COURT BAR ASSOCIATION VERSUS NIKHIL WAGLE AND ANR.",
+              "66": "W.P.(Crl.) No. 390/2026 MAHUA MOITRA VERSUS STATE OF WEST BENGAL AND ORS."
             },
             "advocates": {
               "1": {
@@ -43845,7 +43859,7 @@
               },
               "3": {
                 "pet": "NULI & NULI",
-                "resp": "HARISHA S.R",
+                "resp": "ANKUR S. KULKARNI",
                 "petAll": [
                   {
                     "n": "NULI & NULI",
@@ -43854,12 +43868,12 @@
                 ],
                 "respAll": [
                   {
-                    "n": "HARISHA S.R",
-                    "p": "R-1, R-2, R-3, R-4, R-5, R-8, R-10, R-11, R-12, R-13, R-16, R-17, R-18, R-19, R-20, R-21, R-22, R-23, R-24, R-25, R-26, R-27, R-28, R-29, R-30, R-31, R-32, R-33, R-34, R-35, R-36, R-37, R-38, R-39, R-40, R-41, R-42, R-43, R-44, R-45, R-46, R-47, R-48, R-49, R-50, R-51, R-52, R-53, R-54, R-55, R-56, R-57, R-58, R-59, R-60, R-61, R-62, R-63, R-65, R-66, R-67, R-68, R-69, R-70, R-71, R-72, R-73, R-74, R-75, R-76, R-77, R-78, R-79, R-80, R-81, R-82, R-83, R-84, R-85, R-86, R-87, R-88, R-89, R-90, R-91, R-92, R-93, R-94"
-                  },
-                  {
                     "n": "ANKUR S. KULKARNI",
                     "p": "R-27"
+                  },
+                  {
+                    "n": "HARISHA S.R",
+                    "p": "R-1, R-2, R-3, R-4, R-5, R-8, R-10, R-11, R-12, R-13, R-16, R-17, R-18, R-19, R-20, R-21, R-22, R-23, R-24, R-25, R-26, R-27, R-28, R-29, R-30, R-31, R-32, R-33, R-34, R-35, R-36, R-37, R-38, R-39, R-40, R-41, R-42, R-43, R-44, R-45, R-46, R-47, R-48, R-49, R-50, R-51, R-52, R-53, R-54, R-55, R-56, R-57, R-58, R-59, R-60, R-61, R-62, R-63, R-65, R-66, R-67, R-68, R-69, R-70, R-71, R-72, R-73, R-74, R-75, R-76, R-77, R-78, R-79, R-80, R-81, R-82, R-83, R-84, R-85, R-86, R-87, R-88, R-89, R-90, R-91, R-92, R-93, R-94"
                   }
                 ]
               },
@@ -43882,12 +43896,12 @@
                     "p": "R-14, R-15"
                   },
                   {
-                    "n": "DHAWESH PAHUJA",
-                    "p": "R-102"
-                  },
-                  {
                     "n": "VAIJAYANTHI GIRISH",
                     "p": "R-70, R-73, R-80, R-80, R-81, R-81, R-83, R-84, R-85, R-86, R-89, R-90, R-91, R-92, R-93, R-94, R-96, R-97, R-98, R-102, R-104, R-105, R-105, R-106, R-110, R-111, R-112, R-114, R-115, R-119, R-120, R-121, R-122, R-123, R-124, R-125, R-126, R-127, R-128, R-129, R-134, R-135, R-137, R-138, R-139, R-140, R-141, R-142, R-143, R-145, R-146, R-147, R-148, R-149, R-150, R-151, R-154, R-155, R-156, R-157, R-158, R-159, R-161, R-162, R-163, R-164, R-165, R-166, R-167, R-168, R-169, R-170, R-171, R-178, R-179, R-180, R-181, R-182, R-183, R-184, R-185, R-186, R-187, R-188, R-189, R-189, R-190, R-192, R-195, R-196, R-197, R-198, R-199, R-200, R-201, R-276, R-277"
+                  },
+                  {
+                    "n": "DHAWESH PAHUJA",
+                    "p": "R-102"
                   },
                   {
                     "n": "VEDANT SINGH",
@@ -43974,10 +43988,18 @@
               },
               "12": {
                 "pet": "MRIGANK PRABHAKAR",
+                "resp": "SAMEER ABHYANKAR",
                 "petAll": [
                   {
                     "n": "MRIGANK PRABHAKAR",
                     "p": ""
+                  }
+                ],
+                "respAll": [
+                  {
+                    "n": "SAMEER ABHYANKAR",
+                    "p": "CAVEAT",
+                    "tag": "caveat"
                   }
                 ]
               },
@@ -44374,16 +44396,23 @@
                   },
                   {
                     "n": "AYUSH ANAND",
-                    "p": "R-6.3, R-6.2, R-6.1"
+                    "p": "R-6.1, R-6.3, R-6.2"
                   }
                 ]
               },
               "40.1": {
                 "pet": "RAMESH KUMAR MISHRA",
+                "resp": "ANURADHA MUTATKAR",
                 "petAll": [
                   {
                     "n": "RAMESH KUMAR MISHRA",
                     "p": "P-1"
+                  }
+                ],
+                "respAll": [
+                  {
+                    "n": "ANURADHA MUTATKAR",
+                    "p": "R-4"
                   }
                 ]
               },
@@ -44454,7 +44483,7 @@
               },
               "45": {
                 "pet": "CHANDRA BHUSHAN PRASAD",
-                "resp": "RAHUL KHURANA",
+                "resp": "DHANANJAI JAIN",
                 "petAll": [
                   {
                     "n": "CHANDRA BHUSHAN PRASAD",
@@ -44463,14 +44492,18 @@
                 ],
                 "respAll": [
                   {
+                    "n": "DHANANJAI JAIN",
+                    "p": "R-2"
+                  },
+                  {
                     "n": "RAHUL KHURANA",
-                    "p": "R-5"
+                    "p": "R-5, R-5"
                   }
                 ]
               },
               "46": {
                 "pet": "CHANDRA BHUSHAN PRASAD",
-                "resp": "RAHUL KHURANA",
+                "resp": "DHANANJAI JAIN",
                 "petAll": [
                   {
                     "n": "CHANDRA BHUSHAN PRASAD",
@@ -44478,6 +44511,10 @@
                   }
                 ],
                 "respAll": [
+                  {
+                    "n": "DHANANJAI JAIN",
+                    "p": "R-2"
+                  },
                   {
                     "n": "RAHUL KHURANA",
                     "p": "R-5"
@@ -44486,7 +44523,7 @@
               },
               "47": {
                 "pet": "CHANDRA BHUSHAN PRASAD",
-                "resp": "RAHUL KHURANA",
+                "resp": "SAMAR VIJAY SINGH",
                 "petAll": [
                   {
                     "n": "CHANDRA BHUSHAN PRASAD",
@@ -44495,6 +44532,14 @@
                 ],
                 "respAll": [
                   {
+                    "n": "SAMAR VIJAY SINGH",
+                    "p": "R-1"
+                  },
+                  {
+                    "n": "DHANANJAI JAIN",
+                    "p": "R-2"
+                  },
+                  {
                     "n": "RAHUL KHURANA",
                     "p": "R-5"
                   }
@@ -44502,28 +44547,49 @@
               },
               "48": {
                 "pet": "UDITA SINGH",
+                "resp": "SAMAR VIJAY SINGH",
                 "petAll": [
                   {
                     "n": "UDITA SINGH",
                     "p": ""
+                  }
+                ],
+                "respAll": [
+                  {
+                    "n": "SAMAR VIJAY SINGH",
+                    "p": "R-1"
                   }
                 ]
               },
               "48.1": {
                 "pet": "UDITA SINGH",
+                "resp": "SAMAR VIJAY SINGH",
                 "petAll": [
                   {
                     "n": "UDITA SINGH",
                     "p": ""
                   }
+                ],
+                "respAll": [
+                  {
+                    "n": "SAMAR VIJAY SINGH",
+                    "p": "R-1"
+                  }
                 ]
               },
               "49": {
                 "pet": "CHANDRA BHUSHAN PRASAD",
+                "resp": "PRERANA CHATURVEDI",
                 "petAll": [
                   {
                     "n": "CHANDRA BHUSHAN PRASAD",
                     "p": ""
+                  }
+                ],
+                "respAll": [
+                  {
+                    "n": "PRERANA CHATURVEDI",
+                    "p": "INT"
                   }
                 ]
               },
@@ -44698,16 +44764,24 @@
                     "p": ""
                   },
                   {
+                    "n": "AKANSHA",
+                    "p": "R-3"
+                  },
+                  {
+                    "n": "DEEPANWITA PRIYANKA",
+                    "p": "R-7"
+                  },
+                  {
                     "n": "SANCHIT GARGA",
                     "p": "R-10"
                   },
                   {
-                    "n": "NISHE RAJEN SHONKER",
+                    "n": "ZULFIKER ALI P. S",
                     "p": "R-11"
                   },
                   {
-                    "n": "G. PRAKASH",
-                    "p": "R-11"
+                    "n": "AADITYA ANIRUDDHA PANDE",
+                    "p": "R-13, R-13"
                   },
                   {
                     "n": "AVIJIT MANI TRIPATHI",
@@ -44742,16 +44816,12 @@
                     "p": "R-32"
                   },
                   {
-                    "n": "ANIL KATIYAR",
+                    "n": "SUDARSHAN LAMBA",
                     "p": "R-1"
                   },
                   {
                     "n": "ARJUN GARG",
                     "p": "R-12"
-                  },
-                  {
-                    "n": "AADITYA ANIRUDDHA PANDE",
-                    "p": "R-13, R-13"
                   },
                   {
                     "n": "DEVINA SEHGAL",
@@ -44830,6 +44900,10 @@
                     "p": ""
                   },
                   {
+                    "n": "AKANSHA",
+                    "p": "R-3"
+                  },
+                  {
                     "n": "AADITYA ANIRUDDHA PANDE",
                     "p": "R-13, R-13"
                   },
@@ -44840,6 +44914,10 @@
                   {
                     "n": "NUPUR KUMAR",
                     "p": "R-17"
+                  },
+                  {
+                    "n": "KANIKA KALAIYARASAN",
+                    "p": "R-19"
                   },
                   {
                     "n": "G. INDIRA",
@@ -44880,6 +44958,149 @@
                   {
                     "n": "DEVINA SEHGAL",
                     "p": "INT"
+                  }
+                ]
+              },
+              "58": {
+                "pet": "VANDANA ANAND",
+                "resp": "AJAY PAL",
+                "petAll": [
+                  {
+                    "n": "VANDANA ANAND",
+                    "p": ""
+                  }
+                ],
+                "respAll": [
+                  {
+                    "n": "AJAY PAL",
+                    "p": "R-1, R-1, R-2, R-2, R-3, R-3, R-4, R-4"
+                  },
+                  {
+                    "n": "SANCHIT GARGA",
+                    "p": "R-5, R-5"
+                  },
+                  {
+                    "n": "MITHU JAIN",
+                    "p": "R-6"
+                  }
+                ]
+              },
+              "59": {
+                "pet": "AAKARSHAN ADITYA",
+                "petAll": [
+                  {
+                    "n": "AAKARSHAN ADITYA",
+                    "p": ""
+                  }
+                ]
+              },
+              "60": {
+                "pet": "SURENDER SINGH HOODA",
+                "petAll": [
+                  {
+                    "n": "SURENDER SINGH HOODA",
+                    "p": ""
+                  }
+                ]
+              },
+              "60.1": {
+                "pet": "VISHAKHA",
+                "petAll": [
+                  {
+                    "n": "VISHAKHA",
+                    "p": ""
+                  }
+                ]
+              },
+              "61": {
+                "pet": "MITHLESH KUMAR",
+                "petAll": [
+                  {
+                    "n": "MITHLESH KUMAR",
+                    "p": ""
+                  }
+                ]
+              },
+              "62": {
+                "pet": "ANAND DILIP LANDGE",
+                "resp": "PRASHANT SHRIKANT KENJALE",
+                "petAll": [
+                  {
+                    "n": "ANAND DILIP LANDGE",
+                    "p": ""
+                  }
+                ],
+                "respAll": [
+                  {
+                    "n": "PRASHANT SHRIKANT KENJALE",
+                    "p": "CAVEAT",
+                    "tag": "caveat"
+                  }
+                ]
+              },
+              "62.1": {
+                "pet": "ANAND DILIP LANDGE",
+                "resp": "SANDEEP SUDHAKAR DESHMUKH",
+                "petAll": [
+                  {
+                    "n": "ANAND DILIP LANDGE",
+                    "p": ""
+                  }
+                ],
+                "respAll": [
+                  {
+                    "n": "SANDEEP SUDHAKAR DESHMUKH",
+                    "p": "CAVEAT",
+                    "tag": "caveat"
+                  }
+                ]
+              },
+              "63": {
+                "pet": "ANAND DILIP LANDGE",
+                "petAll": [
+                  {
+                    "n": "ANAND DILIP LANDGE",
+                    "p": ""
+                  }
+                ]
+              },
+              "64": {
+                "pet": "ANAND DILIP LANDGE",
+                "resp": "YASH S. VIJAY",
+                "petAll": [
+                  {
+                    "n": "ANAND DILIP LANDGE",
+                    "p": ""
+                  }
+                ],
+                "respAll": [
+                  {
+                    "n": "YASH S. VIJAY",
+                    "p": "CAVEAT",
+                    "tag": "caveat"
+                  },
+                  {
+                    "n": "SANDEEP SUDHAKAR DESHMUKH",
+                    "p": "CAVEAT",
+                    "tag": "caveat"
+                  }
+                ]
+              },
+              "65": {
+                "pet": "PRAGYA BAGHEL",
+                "petAll": [
+                  {
+                    "n": "PRAGYA BAGHEL",
+                    "p": ""
+                  }
+                ]
+              },
+              "66": {
+                "pet": "YASHWANT SINGH",
+                "petAll": [
+                  {
+                    "n": "YASHWANT SINGH",
+                    "p": ""
                   }
                 ]
               }
@@ -44952,7 +45173,18 @@
               "55": "B",
               "56": "B",
               "57": "B",
-              "57.1": "B"
+              "57.1": "B",
+              "58": "A",
+              "59": "A",
+              "60": "A",
+              "60.1": "A",
+              "61": "A",
+              "62": "A",
+              "62.1": "A",
+              "63": "A",
+              "64": "A",
+              "65": "A",
+              "66": "A"
             },
             "sect": {
               "1": "Early hearing",
@@ -45020,15 +45252,38 @@
               "55": "After notice",
               "56": "After notice",
               "57": "Direction matters",
-              "57.1": "Direction matters"
+              "57.1": "Direction matters",
+              "58": "Fresh",
+              "59": "Fresh",
+              "60": "Fresh",
+              "60.1": "Fresh",
+              "61": "Fresh",
+              "62": "Fresh",
+              "62.1": "Fresh",
+              "63": "Fresh",
+              "64": "Fresh",
+              "65": "Fresh",
+              "66": "Freshly adjourned"
             },
-            "suppItems": [],
+            "suppItems": [
+              "58",
+              "59",
+              "60",
+              "60.1",
+              "61",
+              "62",
+              "62.1",
+              "63",
+              "64",
+              "65",
+              "66"
+            ],
             "main": 57,
-            "supp": 0
+            "supp": 9
           },
           "2": {
             "coram": "HON'BLE MR. JUSTICE VIKRAM NATH HON'BLE MR. JUSTICE R. MAHADEVAN HON'BLE MR. JUSTICE APARESH KUMAR SINGH",
-            "total": "52",
+            "total": "62",
             "fresh": "",
             "items": {
               "1": "SLP(Crl) No. 12729/2026 SULENDRA SINGH @ GUDDU SINGH @ SURENDRA SINGH VERSUS THE STATE OF JHARKHAND",
@@ -45089,7 +45344,18 @@
               "49": "SLP(Crl) No. 16725/2026 A.ARUN VERSUS VARSHA SHARMA AND ORS.",
               "50": "W.P.(Crl.) No. 422/2026 MOHAMMAD JAMAL MOHAMMAD YUNUS VERSUS THE STATE OF MAHARASHTRA",
               "51": "SLP(C) No. 31874/2025 THE STATE OF TAMIL NADU AND ANR. VERSUS V. MEGANATHAN",
-              "52": "C.A. No. 14426/2025 SOIBAM SUBHASCHANDRA SINGH VERSUS SAGOLSHEM KEBI DEVI AND ORS."
+              "52": "C.A. No. 14426/2025 SOIBAM SUBHASCHANDRA SINGH VERSUS SAGOLSHEM KEBI DEVI AND ORS.",
+              "53": "SLP(Crl) No. 14169/2026 GOPAL KUSHWAH VERSUS STATE OF MADHYA PRADESH AND ANR.",
+              "53.1": "Connected SLP(Crl) No. 14821/2026 RAMVEER SINGH KUSHWAH VERSUS STATE OF MADHYA PRADESH AND ANR.",
+              "54": "SLP(Crl) No. 14735/2026 PAWAN VERSUS STATE OF MAHARASHTRA AND ANR.",
+              "55": "SLP(Crl) No. 18559/2026 HARI NANDAN YADAV VERSUS THE STATE OF WEST BENGAL",
+              "56": "SLP(Crl) No. 19794/2026 BOLBAM KUMAR VERSUS THE STATE OF BIHAR",
+              "57": "SLP(Crl) No. 20124/2026 HIMANSHU SRIVASTAV VERSUS THE STATE OF ODISHA",
+              "58": "Diary No. 64393-2026 KATOL SALE PURCHASE SOCIETY VERSUS STATE OF MAHARASHTRA AND ORS.",
+              "59": "SLP(C) No. 37197/2026 TIRUNELVELI DIOCESAN TRUST ASSOCIATION VERSUS THE DISTRICT COLLECTOR AND ORS.",
+              "60": "Diary No. 55654-2026 SUMAN SAHU AND ORS. VERSUS STATE OF U.P AND ORS.",
+              "61": "W.P.(Crl.) No. 435/2026 DEEPAK SHARMA VERSUS STATE OF HARYANA AND ORS.",
+              "62": "SLP(C) No. 36782/2026 BOOPALAKUMAR VERSUS P P SUBRAMANIYAM AND ORS."
             },
             "advocates": {
               "1": {
@@ -45753,6 +46019,138 @@
                     "p": "R-3"
                   }
                 ]
+              },
+              "53": {
+                "pet": "NARAIN RASHIKA ASHOK",
+                "resp": "YASHRAJ SINGH BUNDELA",
+                "petAll": [
+                  {
+                    "n": "NARAIN RASHIKA ASHOK",
+                    "p": ""
+                  }
+                ],
+                "respAll": [
+                  {
+                    "n": "YASHRAJ SINGH BUNDELA",
+                    "p": "R-1"
+                  },
+                  {
+                    "n": "AMIT PAWAN",
+                    "p": "R-2"
+                  }
+                ]
+              },
+              "53.1": {
+                "pet": "AMIT PAWAN",
+                "resp": "NARAIN RASHIKA ASHOK",
+                "petAll": [
+                  {
+                    "n": "AMIT PAWAN",
+                    "p": ""
+                  }
+                ],
+                "respAll": [
+                  {
+                    "n": "NARAIN RASHIKA ASHOK",
+                    "p": "CAVEAT",
+                    "tag": "caveat"
+                  }
+                ]
+              },
+              "54": {
+                "pet": "AMARJEET SINGH",
+                "resp": "AADITYA ANIRUDDHA PANDE",
+                "petAll": [
+                  {
+                    "n": "AMARJEET SINGH",
+                    "p": ""
+                  }
+                ],
+                "respAll": [
+                  {
+                    "n": "AADITYA ANIRUDDHA PANDE",
+                    "p": "R-1"
+                  }
+                ]
+              },
+              "55": {
+                "pet": "CHAND QURESHI",
+                "resp": "NISHANT AWANA",
+                "petAll": [
+                  {
+                    "n": "CHAND QURESHI",
+                    "p": ""
+                  }
+                ],
+                "respAll": [
+                  {
+                    "n": "NISHANT AWANA",
+                    "p": "R-1"
+                  }
+                ]
+              },
+              "56": {
+                "pet": "VENKATESWARA RAO ANUMOLU",
+                "petAll": [
+                  {
+                    "n": "VENKATESWARA RAO ANUMOLU",
+                    "p": ""
+                  }
+                ]
+              },
+              "57": {
+                "pet": "ROHIT AMIT STHALEKAR",
+                "petAll": [
+                  {
+                    "n": "ROHIT AMIT STHALEKAR",
+                    "p": ""
+                  }
+                ]
+              },
+              "58": {
+                "pet": "ISHAAN GEORGE",
+                "petAll": [
+                  {
+                    "n": "ISHAAN GEORGE",
+                    "p": ""
+                  }
+                ]
+              },
+              "59": {
+                "pet": "K. PAARI VENDHAN",
+                "petAll": [
+                  {
+                    "n": "K. PAARI VENDHAN",
+                    "p": ""
+                  }
+                ]
+              },
+              "60": {
+                "pet": "MANORANJAN PAIKARAY",
+                "petAll": [
+                  {
+                    "n": "MANORANJAN PAIKARAY",
+                    "p": ""
+                  }
+                ]
+              },
+              "61": {
+                "pet": "MUKESH KUMAR SINGH AND CO.",
+                "petAll": [
+                  {
+                    "n": "MUKESH KUMAR SINGH AND CO.",
+                    "p": ""
+                  }
+                ]
+              },
+              "62": {
+                "pet": "T. HARISH KUMAR",
+                "petAll": [
+                  {
+                    "n": "T. HARISH KUMAR",
+                    "p": ""
+                  }
+                ]
               }
             },
             "times": {},
@@ -45816,7 +46214,18 @@
               "49": "B",
               "50": "B",
               "51": "B",
-              "52": "B"
+              "52": "B",
+              "53": "A",
+              "53.1": "A",
+              "54": "A",
+              "55": "A",
+              "56": "A",
+              "57": "A",
+              "58": "A",
+              "59": "A",
+              "60": "A",
+              "61": "A",
+              "62": "A"
             },
             "sect": {
               "1": "Bail",
@@ -45877,15 +46286,38 @@
               "49": "After notice",
               "50": "After notice",
               "51": "After notice",
-              "52": "After notice"
+              "52": "After notice",
+              "53": "Bail",
+              "53.1": "Bail",
+              "54": "Bail",
+              "55": "Bail",
+              "56": "Bail",
+              "57": "Bail",
+              "58": "Fresh",
+              "59": "Fresh",
+              "60": "Fresh",
+              "61": "Fresh",
+              "62": "Fresh"
             },
-            "suppItems": [],
+            "suppItems": [
+              "53",
+              "53.1",
+              "54",
+              "55",
+              "56",
+              "57",
+              "58",
+              "59",
+              "60",
+              "61",
+              "62"
+            ],
             "main": 52,
-            "supp": 0
+            "supp": 10
           },
           "3": {
             "coram": "HON'BLE MR. JUSTICE M.M. SUNDRESH HON'BLE MR. JUSTICE PRASANNA B. VARALE",
-            "total": "52",
+            "total": "58",
             "fresh": "",
             "items": {
               "1": "Diary No. 13226-2026 DIRECTORATE OF ENFORCEMENT VERSUS MANOJ KUMAR SONI",
@@ -45953,7 +46385,13 @@
               "50.1": "Connected T.P.(C) No. 3232/2025 GADDAM @ YAGNAMURTHI PRASHANTHI VERSUS GADDAM RAMACHANDRA KISHORE",
               "51": "SLP(C) No. 6857-6858/2026 SUNEEL KUMAR JAIN AND ORS. VERSUS UNION OF INDIA AND ORS.",
               "51.1": "Connected W.P.(C) No. 1118/2026 DHARAM PAL MALHOTRA AND ORS. VERSUS UNION OF INDIA AND ORS.",
-              "52": "SLP(Crl) No. 7274/2026 SUBHRA SINGH TOMAR AND ANR. VERSUS STATE OF CHHATTISGARH"
+              "52": "SLP(Crl) No. 7274/2026 SUBHRA SINGH TOMAR AND ANR. VERSUS STATE OF CHHATTISGARH",
+              "53": "SLP(Crl) No. 19910/2026 ANAND VERSUS THE STATE OF RAJASTHAN",
+              "54": "SLP(Crl) No. 19916/2026 SUNIL KUMAR VERSUS CENTRAL BUREAU OF INVESTIGATION",
+              "55": "SLP(Crl) No. 20090/2026 DINBANDHU SHUKLA VERSUS THE STATE OF BIHAR",
+              "56": "SLP(Crl) No. 19476/2026 RAWAT BHUMIKA GAJENDRA SINGH VERSUS STATE OF GUJARAT",
+              "57": "Diary No. 64320-2026 ARUNACHALAM PRAKASH VERSUS THE STATE OF CHHATTISGARH AND ORS.",
+              "58": "SLP(Crl) No. 15586/2026 ABUBACKER E VERSUS NATIONAL INVESTIGATION AGENCY AND ORS."
             },
             "advocates": {
               "1": {
@@ -46664,9 +47102,75 @@
                     "p": "R-1"
                   }
                 ]
+              },
+              "53": {
+                "pet": "M. Y. DESHMUKH",
+                "petAll": [
+                  {
+                    "n": "M. Y. DESHMUKH",
+                    "p": ""
+                  }
+                ]
+              },
+              "54": {
+                "pet": "KUMAR SHIVAM",
+                "petAll": [
+                  {
+                    "n": "KUMAR SHIVAM",
+                    "p": ""
+                  }
+                ]
+              },
+              "55": {
+                "pet": "KUMAR MIHIR",
+                "petAll": [
+                  {
+                    "n": "KUMAR MIHIR",
+                    "p": ""
+                  }
+                ]
+              },
+              "56": {
+                "pet": "JESAL WAHI",
+                "petAll": [
+                  {
+                    "n": "JESAL WAHI",
+                    "p": ""
+                  }
+                ]
+              },
+              "57": {
+                "pet": "K. SHIVA",
+                "petAll": [
+                  {
+                    "n": "K. SHIVA",
+                    "p": ""
+                  }
+                ]
+              },
+              "58": {
+                "pet": "RIZWAN AHMAD",
+                "resp": "ARVIND KUMAR SHARMA",
+                "petAll": [
+                  {
+                    "n": "RIZWAN AHMAD",
+                    "p": ""
+                  }
+                ],
+                "respAll": [
+                  {
+                    "n": "ARVIND KUMAR SHARMA",
+                    "p": "R-1"
+                  }
+                ]
               }
             },
-            "times": {},
+            "times": {
+              "53": "10:30 AM",
+              "54": "10:30 AM",
+              "55": "10:30 AM",
+              "56": "10:30 AM"
+            },
             "withItem": {},
             "part": {
               "1": "A",
@@ -46734,7 +47238,13 @@
               "50.1": "A",
               "51": "A",
               "51.1": "A",
-              "52": "B"
+              "52": "B",
+              "53": "A",
+              "54": "A",
+              "55": "A",
+              "56": "A",
+              "57": "A",
+              "58": "B"
             },
             "sect": {
               "1": "Bail",
@@ -46802,11 +47312,24 @@
               "50.1": "Transfer petitions",
               "51": "Transfer petitions",
               "51.1": "Transfer petitions",
-              "52": "After notice"
+              "52": "After notice",
+              "53": "Bail",
+              "54": "Bail",
+              "55": "Bail",
+              "56": "Fresh",
+              "57": "Fresh",
+              "58": "After notice"
             },
-            "suppItems": [],
+            "suppItems": [
+              "53",
+              "54",
+              "55",
+              "56",
+              "57",
+              "58"
+            ],
             "main": 52,
-            "supp": 0
+            "supp": 6
           },
           "4": {
             "coram": "HON'BLE MR. JUSTICE PAMIDIGHANTAM SRI NARASIMHA HON'BLE MR. JUSTICE ALOK ARADHE",
@@ -46905,7 +47428,18 @@
               "53.28": "Connected SLP(C) No. 9163/2025 PR. COMMISSIONER OF INCOME TAX 20 VERSUS VIPIN JAIN",
               "53.29": "Connected Diary No. 68704-2025 THE CHIEF COMMISSIONER OF INCOME TAX (OSD) VERSUS KUMARI AYUSHI NYATI",
               "53.30": "Connected SLP(C) No. 15585/2026 M/S BALAJEE MINERALS VERSUS COMMISSIONER OF COMMERCIAL TAX",
-              "53.31": "Connected Diary No. 41401-2026 PR COMMISSIONER OF INCOME TAX 17 VERSUS KISHORE HARGOVIND PATEL (HUF)"
+              "53.31": "Connected Diary No. 41401-2026 PR COMMISSIONER OF INCOME TAX 17 VERSUS KISHORE HARGOVIND PATEL (HUF)",
+              "1501": "SLP(C) No. 33791/2025 SATINDER PAL SINGH AND ORS. VERSUS BEDI HOSPITAL AND ORS.",
+              "1502": "SLP(C) No. 20051-20052/2019 K. RAMALINGAM AND ORS. VERSUS GOVERNMENT OF TAMIL NADU REP. BY ITS SECRETARY AND ORS.",
+              "54": "Diary No. 55759-2026 RAJARSHEE ENTERPRISE AND ORS. VERSUS SANJAY AMBALAL PATEL AND ORS.",
+              "55": "SLP(C) No. 36995/2026 CHAYAN JAIN VERSUS MUNICIPAL CORPORATION OF DELHI AND ORS.",
+              "56": "Diary No. 37505-2026 DELHI TRANSCO LIMITED VERSUS DELHI ELECTRICITY REGULATORY COMMISSION AND ORS.",
+              "57": "C.A. No. 2473-2476/2014 GUJARAT STATE PETROLEUM CORP. LTD. VERSUS GAIL (INDIA) LTD. AND ORS.",
+              "58": "Diary No. 12270-2026 PRALHAD TUKARAM GAWANDE AND ANR. VERSUS STATE OF MAHARASHTRA AND ORS.",
+              "59": "SLP(C) No. 24470/2024 DISH TV INDIA LIMITED VERSUS DIRECTORATE GENERAL OF INCOME TAX",
+              "60": "SLP(C) No. 34563/2026 THE PRINCIPAL KMCT MEDICAL COLLEGE VERSUS THE NATIONAL MEDICAL COMMISSION AND ANR.",
+              "61": "SLP(C) No. 37158/2026 ANIL ROY AND ANR. VERSUS SASTI GHOSH AND ORS.",
+              "62": "W.P.(C) No. 1362/2026 ABUDANISH AND ORS. VERSUS UNION OF INDIA AND ORS."
             },
             "advocates": {
               "1": {
@@ -48096,10 +48630,211 @@
                     "p": ""
                   }
                 ]
+              },
+              "1501": {
+                "pet": "SHREEKANT NEELAPPA TERDAL",
+                "resp": "BHARGAVA V. DESAI",
+                "petAll": [
+                  {
+                    "n": "SHREEKANT NEELAPPA TERDAL",
+                    "p": ""
+                  }
+                ],
+                "respAll": [
+                  {
+                    "n": "BHARGAVA V. DESAI",
+                    "p": "CAVEAT",
+                    "tag": "caveat"
+                  }
+                ]
+              },
+              "1502": {
+                "pet": "S. RAVI SHANKAR",
+                "resp": "KANIKA KALAIYARASAN",
+                "petAll": [
+                  {
+                    "n": "S. RAVI SHANKAR",
+                    "p": "P-1"
+                  }
+                ],
+                "respAll": [
+                  {
+                    "n": "KANIKA KALAIYARASAN",
+                    "p": "R-1, R-2, R-3, R-6"
+                  },
+                  {
+                    "n": "B. KARUNAKARAN",
+                    "p": "R-4, R-5"
+                  },
+                  {
+                    "n": "AMIT PAI",
+                    "p": "IMPL"
+                  }
+                ]
+              },
+              "54": {
+                "pet": "HARSHIT KHANDUJA",
+                "resp": "VIKASH SINGH",
+                "petAll": [
+                  {
+                    "n": "HARSHIT KHANDUJA",
+                    "p": ""
+                  }
+                ],
+                "respAll": [
+                  {
+                    "n": "VIKASH SINGH",
+                    "p": "CAVEAT",
+                    "tag": "caveat"
+                  }
+                ]
+              },
+              "55": {
+                "pet": "INDIRA GOSWAMI",
+                "petAll": [
+                  {
+                    "n": "INDIRA GOSWAMI",
+                    "p": ""
+                  }
+                ]
+              },
+              "56": {
+                "pet": "V M KANNAN",
+                "resp": "PUKHRAMBAM RAMESH KUMAR",
+                "petAll": [
+                  {
+                    "n": "V M KANNAN",
+                    "p": ""
+                  }
+                ],
+                "respAll": [
+                  {
+                    "n": "PUKHRAMBAM RAMESH KUMAR",
+                    "p": "CAVEAT, CAVEAT, CAVEAT",
+                    "tag": "caveat"
+                  }
+                ]
+              },
+              "57": {
+                "pet": "PAREKH & CO.",
+                "resp": "SAMEER ABHYANKAR",
+                "petAll": [
+                  {
+                    "n": "PAREKH & CO.",
+                    "p": ""
+                  }
+                ],
+                "respAll": [
+                  {
+                    "n": "SAMEER ABHYANKAR",
+                    "p": "R-1"
+                  },
+                  {
+                    "n": "ANANNYA GHOSH",
+                    "p": "INT"
+                  }
+                ]
+              },
+              "58": {
+                "pet": "SRISHTI AGNIHOTRI",
+                "resp": "PRAVARTAK SUHAS PATHAK",
+                "petAll": [
+                  {
+                    "n": "SRISHTI AGNIHOTRI",
+                    "p": ""
+                  }
+                ],
+                "respAll": [
+                  {
+                    "n": "PRAVARTAK SUHAS PATHAK",
+                    "p": "CAVEAT, R-4",
+                    "tag": "caveat"
+                  },
+                  {
+                    "n": "AADITYA ANIRUDDHA PANDE",
+                    "p": "R-1"
+                  },
+                  {
+                    "n": "GURMEET SINGH MAKKER",
+                    "p": "R-2"
+                  },
+                  {
+                    "n": "SHRADDHA DESHMUKH",
+                    "p": "R-5"
+                  }
+                ]
+              },
+              "59": {
+                "pet": "AAKARSHAN ADITYA",
+                "resp": "RAJ BAHADUR YADAV",
+                "petAll": [
+                  {
+                    "n": "AAKARSHAN ADITYA",
+                    "p": ""
+                  }
+                ],
+                "respAll": [
+                  {
+                    "n": "RAJ BAHADUR YADAV",
+                    "p": "R-1, R-5"
+                  },
+                  {
+                    "n": "N. VISAKAMURTHY",
+                    "p": "R-2, R-3"
+                  },
+                  {
+                    "n": "ASHISH BATRA",
+                    "p": "R-4"
+                  }
+                ]
+              },
+              "60": {
+                "pet": "ZULFIKER ALI P. S",
+                "resp": "MITHU JAIN",
+                "petAll": [
+                  {
+                    "n": "ZULFIKER ALI P. S",
+                    "p": ""
+                  }
+                ],
+                "respAll": [
+                  {
+                    "n": "MITHU JAIN",
+                    "p": "R-1"
+                  }
+                ]
+              },
+              "61": {
+                "pet": "BANSAL CHARU SUBHASH",
+                "resp": "ANISH ROY",
+                "petAll": [
+                  {
+                    "n": "BANSAL CHARU SUBHASH",
+                    "p": ""
+                  }
+                ],
+                "respAll": [
+                  {
+                    "n": "ANISH ROY",
+                    "p": "CAVEAT",
+                    "tag": "caveat"
+                  }
+                ]
+              },
+              "62": {
+                "pet": "PURNIMA KRISHNA",
+                "petAll": [
+                  {
+                    "n": "PURNIMA KRISHNA",
+                    "p": ""
+                  }
+                ]
               }
             },
             "times": {},
-            "withItem": {},
+            "withItem": {
+              "56": "49"
+            },
             "part": {
               "1": "A",
               "2": "A",
@@ -48193,7 +48928,18 @@
               "53.28": "B",
               "53.29": "B",
               "53.30": "B",
-              "53.31": "B"
+              "53.31": "B",
+              "1501": "A",
+              "1502": "A",
+              "54": "A",
+              "55": "A",
+              "56": "A",
+              "57": "A",
+              "58": "A",
+              "59": "B",
+              "60": "B",
+              "61": "B",
+              "62": "B"
             },
             "sect": {
               "1": "Fresh",
@@ -48288,9 +49034,30 @@
               "53.28": "Direction matters",
               "53.29": "Direction matters",
               "53.30": "Direction matters",
-              "53.31": "Direction matters"
+              "53.31": "Direction matters",
+              "54": "Fresh",
+              "55": "Fresh",
+              "56": "Freshly adjourned",
+              "57": "Freshly adjourned",
+              "58": "Freshly adjourned",
+              "59": "After notice",
+              "60": "After notice",
+              "61": "Fresh",
+              "62": "Fresh"
             },
-            "suppItems": [],
+            "suppItems": [
+              "1501",
+              "1502",
+              "54",
+              "55",
+              "56",
+              "57",
+              "58",
+              "59",
+              "60",
+              "61",
+              "62"
+            ],
             "main": 40,
             "supp": 0
           },
@@ -48362,7 +49129,27 @@
               "49": "SLP(C) No. 31391-31392/2025 GHISALAL VERSUS MOHANLAL AND ORS.",
               "50": "SLP(C) No. 17050/2026 GEETADEVI P JADHAV AND ANR. VERSUS M/S KUMAR AGRO PRODUCTS PVT. LTD. AND ORS.",
               "51": "Crl.A. No. 4014/2025 KEHARI SINGH AND ANR. VERSUS THE STATE OF UTTAR PRADESH",
-              "52": "Crl.A. No. 4135/2024 KULDIP SINGH VERSUS STATE OF PUNJAB"
+              "52": "Crl.A. No. 4135/2024 KULDIP SINGH VERSUS STATE OF PUNJAB",
+              "53": "SLP(Crl) No. 19424/2026 PRASHANT @ BHURI CHOURASIYA VERSUS STATE OF MADHYA PRADESH",
+              "54": "SLP(Crl) No. 19613/2026 SAURAV KUMAR @ SAURAV AND ANR. VERSUS THE STATE OF BIHAR",
+              "55": "Diary No. 62618-2026 MANJIT SINGH @ MANJEET SINGH VERSUS STATE OF PUNJAB",
+              "56": "SLP(Crl) No. 20103/2026 PARMA KANT SUMAN @ PARMAKANT SUMAN @ PRAMAKANT SUMAN @ PRABHAKANT SUMAN VERSUS THE STATE OF BIHAR",
+              "57": "SLP(C) No. 36670/2026 KALYAN TOLL INFRASTRUCTURE LTD VERSUS MADHYA PRADESH INDUSTRIAL DEVELOPMENT CORPORATION LIMITED AND ORS.",
+              "58": "W.P.(C) No. 1355/2026 PRIYANKA GURUPRASAD VERSUS COLLEGE OF PHYSICIANS AND SURGEONS OF MUMBAI AND ORS.",
+              "59": "Diary No. 64069-2026 RAHUL SHANTARAM SONAWANE VERSUS THE STATE OF MAHARASHTRA AND ORS.",
+              "60": "SLP(C) No. 12480/2026 JANE KAUSHIK VERSUS LIEUTENANT GOVERNOR, NCT OF DELHI AND ORS.",
+              "60.1": "Connected Diary No. 53380-2026 PRAVEEN SINGH VERSUS HIGH COURT OF DELHI AND ORS.",
+              "61": "SLP(C) No. 33658/2026 CHITRASEN NAGNATH GULAVE VERSUS APNA SAHAKARI BANK LTD. AND ORS.",
+              "61.1": "Connected SLP(C) No. 33889/2026 CHITRASEN NAGNATH GULAVE VERSUS APNA SAHAKARI BANK LTD AND ORS.",
+              "61.2": "Connected SLP(C) No. 33921/2026 CHITRASEN NAGNATH GULAVE VERSUS APNA SAHAKARI BANK LTD. AND ORS.",
+              "61.3": "Connected SLP(C) No. 36254/2026 ASHOK RAJKUMAR GUPTA AND ORS. VERSUS GODREJ FINANCE LIMITED",
+              "62": "Diary No. 55000-2026 NATIONAL HIGHWAY AUTHORITY OF INDIA VERSUS JANAK DAYALBHAI MANGUKIYA AND ORS.",
+              "63": "SLP(C) No. 37141/2026 XYZ VERSUS THE STATE OF MAHARASHTRA AND ANR.",
+              "64": "SLP(Crl) No. 19857/2026 LOTUS REFINERIES PVT. LTD. AND ANR. VERSUS STATE OF MAHARASHTRA AND ANR.",
+              "301": "W.P.(C) No. 295/2012 S.RAJASEEKARAN VERSUS UNION OF INDIA AND ORS. AND ORS.",
+              "301.1": "Connected Diary No. 39789-2026 KISHAN CHAND JAIN VERSUS V. UMASHANKAR",
+              "301.2": "Connected Diary No. 40407-2026 S. RAJASEKARAN VERSUS UNION OF INDIA AND ORS.",
+              "302": "C.A. No. 583/2026 MS CORE HOTELS VENTURES PVT LTD VERSUS BANK OF BARODA AND ORS."
             },
             "advocates": {
               "1": {
@@ -49340,10 +50127,496 @@
                     "p": "R-1"
                   }
                 ]
+              },
+              "53": {
+                "pet": "RONAK KARANPURIA",
+                "resp": "MRINAL GOPAL ELKER",
+                "petAll": [
+                  {
+                    "n": "RONAK KARANPURIA",
+                    "p": ""
+                  }
+                ],
+                "respAll": [
+                  {
+                    "n": "MRINAL GOPAL ELKER",
+                    "p": "R-1"
+                  }
+                ]
+              },
+              "54": {
+                "pet": "KUMAR MIHIR",
+                "petAll": [
+                  {
+                    "n": "KUMAR MIHIR",
+                    "p": ""
+                  }
+                ]
+              },
+              "55": {
+                "pet": "SHAKTI KANTA PATTANAIK",
+                "resp": "NUPUR KUMAR",
+                "petAll": [
+                  {
+                    "n": "SHAKTI KANTA PATTANAIK",
+                    "p": ""
+                  }
+                ],
+                "respAll": [
+                  {
+                    "n": "NUPUR KUMAR",
+                    "p": "R-1"
+                  }
+                ]
+              },
+              "56": {
+                "pet": "VINOD SHARMA",
+                "petAll": [
+                  {
+                    "n": "VINOD SHARMA",
+                    "p": ""
+                  }
+                ]
+              },
+              "57": {
+                "pet": "KANU AGRAWAL",
+                "resp": "ABHIJEET SHRIVASTAVA",
+                "petAll": [
+                  {
+                    "n": "KANU AGRAWAL",
+                    "p": ""
+                  }
+                ],
+                "respAll": [
+                  {
+                    "n": "ABHIJEET SHRIVASTAVA",
+                    "p": "CAVEAT",
+                    "tag": "caveat"
+                  }
+                ]
+              },
+              "58": {
+                "pet": "SANTOSH KRISHNAN",
+                "petAll": [
+                  {
+                    "n": "SANTOSH KRISHNAN",
+                    "p": ""
+                  }
+                ]
+              },
+              "59": {
+                "pet": "PULKIT AGARWAL",
+                "petAll": [
+                  {
+                    "n": "PULKIT AGARWAL",
+                    "p": ""
+                  }
+                ]
+              },
+              "60": {
+                "pet": "SHREYA MUNOTH",
+                "resp": "SWATI GHILDIYAL",
+                "petAll": [
+                  {
+                    "n": "SHREYA MUNOTH",
+                    "p": ""
+                  }
+                ],
+                "respAll": [
+                  {
+                    "n": "SWATI GHILDIYAL",
+                    "p": "R-2"
+                  }
+                ]
+              },
+              "60.1": {
+                "pet": "WAJEEH SHAFIQ",
+                "resp": "SWATI GHILDIYAL",
+                "petAll": [
+                  {
+                    "n": "WAJEEH SHAFIQ",
+                    "p": ""
+                  }
+                ],
+                "respAll": [
+                  {
+                    "n": "SWATI GHILDIYAL",
+                    "p": "R-2, R-3"
+                  }
+                ]
+              },
+              "61": {
+                "pet": "SAJAL JAIN",
+                "resp": "AADITYA ANIRUDDHA PANDE",
+                "petAll": [
+                  {
+                    "n": "SAJAL JAIN",
+                    "p": ""
+                  }
+                ],
+                "respAll": [
+                  {
+                    "n": "AADITYA ANIRUDDHA PANDE",
+                    "p": "CAVEAT",
+                    "tag": "caveat"
+                  }
+                ]
+              },
+              "61.1": {
+                "pet": "SAJAL JAIN",
+                "resp": "AADITYA ANIRUDDHA PANDE",
+                "petAll": [
+                  {
+                    "n": "SAJAL JAIN",
+                    "p": ""
+                  }
+                ],
+                "respAll": [
+                  {
+                    "n": "AADITYA ANIRUDDHA PANDE",
+                    "p": "CAVEAT",
+                    "tag": "caveat"
+                  }
+                ]
+              },
+              "61.2": {
+                "pet": "SAJAL JAIN",
+                "resp": "AADITYA ANIRUDDHA PANDE",
+                "petAll": [
+                  {
+                    "n": "SAJAL JAIN",
+                    "p": ""
+                  }
+                ],
+                "respAll": [
+                  {
+                    "n": "AADITYA ANIRUDDHA PANDE",
+                    "p": "CAVEAT",
+                    "tag": "caveat"
+                  }
+                ]
+              },
+              "61.3": {
+                "pet": "ANAND DILIP LANDGE",
+                "resp": "ABHINAV HANSARIA",
+                "petAll": [
+                  {
+                    "n": "ANAND DILIP LANDGE",
+                    "p": ""
+                  }
+                ],
+                "respAll": [
+                  {
+                    "n": "ABHINAV HANSARIA",
+                    "p": "CAVEAT",
+                    "tag": "caveat"
+                  }
+                ]
+              },
+              "62": {
+                "pet": "JAIKRITI S. JADEJA",
+                "petAll": [
+                  {
+                    "n": "JAIKRITI S. JADEJA",
+                    "p": ""
+                  }
+                ]
+              },
+              "63": {
+                "pet": "SHANTANU KRISHNA",
+                "petAll": [
+                  {
+                    "n": "SHANTANU KRISHNA",
+                    "p": ""
+                  }
+                ]
+              },
+              "64": {
+                "pet": "T. HARI HARA SUDHAN",
+                "petAll": [
+                  {
+                    "n": "T. HARI HARA SUDHAN",
+                    "p": ""
+                  }
+                ]
+              },
+              "301": {
+                "pet": "KRISHNA KUMAR",
+                "resp": "SUDARSHAN LAMBA",
+                "petAll": [
+                  {
+                    "n": "KRISHNA KUMAR",
+                    "p": "P-1"
+                  }
+                ],
+                "respAll": [
+                  {
+                    "n": "SUDARSHAN LAMBA",
+                    "p": "R-1"
+                  },
+                  {
+                    "n": "MADHULIKA UPADHYAY",
+                    "p": "R-3, R-4"
+                  },
+                  {
+                    "n": "GURMEET SINGH MAKKER",
+                    "p": "R-6"
+                  },
+                  {
+                    "n": "VIRESH B. SAHARYA",
+                    "p": "R-7"
+                  },
+                  {
+                    "n": "MERUSAGAR SAMANTARAY",
+                    "p": "R-9"
+                  },
+                  {
+                    "n": "ANKITA CHAUDHARY",
+                    "p": "R-8"
+                  },
+                  {
+                    "n": "VIVEK KISHORE",
+                    "p": "IMPL"
+                  },
+                  {
+                    "n": "UDDYAM MUKHERJEE",
+                    "p": "IMPL"
+                  },
+                  {
+                    "n": "TULIKA MUKHERJEE",
+                    "p": "IMPL"
+                  },
+                  {
+                    "n": "SWATI GHILDIYAL",
+                    "p": "IMPL"
+                  },
+                  {
+                    "n": "SHUVODEEP ROY",
+                    "p": "IMPL"
+                  },
+                  {
+                    "n": "SHREEKANT NEELAPPA TERDAL",
+                    "p": "IMPL"
+                  },
+                  {
+                    "n": "SHISHIR DESHPANDE",
+                    "p": "IMPL"
+                  },
+                  {
+                    "n": "SHANTANU SAGAR",
+                    "p": "IMPL"
+                  },
+                  {
+                    "n": "SAVITA SINGH",
+                    "p": "IMPL"
+                  },
+                  {
+                    "n": "SATYAJEET KUMAR",
+                    "p": "IMPL"
+                  },
+                  {
+                    "n": "SANCHIT GARGA",
+                    "p": "IMPL"
+                  },
+                  {
+                    "n": "SAMEER ABHYANKAR",
+                    "p": "IMPL"
+                  },
+                  {
+                    "n": "SAMAR VIJAY SINGH",
+                    "p": "IMPL"
+                  },
+                  {
+                    "n": "RUSHEET SALUJA",
+                    "p": "IMPL"
+                  },
+                  {
+                    "n": "RUPALI FRANCESCA SAMUEL",
+                    "p": "IMPL"
+                  },
+                  {
+                    "n": "RUCHIRA GOEL",
+                    "p": "IMPL"
+                  },
+                  {
+                    "n": "RAVINDER KUMAR YADAV",
+                    "p": "IMPL"
+                  },
+                  {
+                    "n": "RAVI RAGHUNATH",
+                    "p": "IMPL"
+                  },
+                  {
+                    "n": "RASHMI NANDAKUMAR",
+                    "p": "IMPL"
+                  },
+                  {
+                    "n": "RAJAN NARAIN",
+                    "p": "IMPL"
+                  },
+                  {
+                    "n": "RAGHVENDRA KUMAR",
+                    "p": "IMPL"
+                  },
+                  {
+                    "n": "PUKHRAMBAM RAMESH KUMAR",
+                    "p": "IMPL"
+                  },
+                  {
+                    "n": "PRADEEP MISRA",
+                    "p": "IMPL"
+                  },
+                  {
+                    "n": "NISHE RAJEN SHONKER",
+                    "p": "IMPL"
+                  },
+                  {
+                    "n": "NEERAJ SHEKHAR",
+                    "p": "IMPL"
+                  },
+                  {
+                    "n": "MUKESH KUMAR MARORIA",
+                    "p": "IMPL"
+                  },
+                  {
+                    "n": "M. P. VINOD",
+                    "p": "IMPL"
+                  },
+                  {
+                    "n": "K. ENATOLI SEMA",
+                    "p": "IMPL"
+                  },
+                  {
+                    "n": "JAIKRITI S. JADEJA",
+                    "p": "IMPL"
+                  },
+                  {
+                    "n": "HARMEET SINGH RUPRAH",
+                    "p": "IMPL"
+                  },
+                  {
+                    "n": "GUNTUR PRAMOD KUMAR",
+                    "p": "IMPL"
+                  },
+                  {
+                    "n": "E. C. AGRAWALA",
+                    "p": "IMPL"
+                  },
+                  {
+                    "n": "DIVYANSHU KUMAR SRIVASTAVA",
+                    "p": "IMPL"
+                  },
+                  {
+                    "n": "DEVINA SEHGAL",
+                    "p": "IMPL"
+                  },
+                  {
+                    "n": "DEEPANWITA PRIYANKA",
+                    "p": "IMPL"
+                  },
+                  {
+                    "n": "D. K. DEVESH",
+                    "p": "IMPL"
+                  },
+                  {
+                    "n": "BAANI KHANNA",
+                    "p": "IMPL"
+                  },
+                  {
+                    "n": "AZMAT HAYAT AMANULLAH",
+                    "p": "IMPL"
+                  },
+                  {
+                    "n": "ARPUTHAM ARUNA AND CO",
+                    "p": "IMPL"
+                  },
+                  {
+                    "n": "ARAVINDH S.",
+                    "p": "IMPL"
+                  },
+                  {
+                    "n": "ANANDO MUKHERJEE",
+                    "p": "IMPL"
+                  },
+                  {
+                    "n": "AKANSHA",
+                    "p": "IMPL"
+                  },
+                  {
+                    "n": "AADITYA ANIRUDDHA PANDE",
+                    "p": "IMPL"
+                  },
+                  {
+                    "n": "SAURABH RAJPAL",
+                    "p": "IMPL"
+                  },
+                  {
+                    "n": "V. SHYAMOHAN",
+                    "p": "INT"
+                  },
+                  {
+                    "n": "SANJAY JAIN",
+                    "p": "INT"
+                  },
+                  {
+                    "n": "PRANAYA KUMAR MOHAPATRA",
+                    "p": "INT"
+                  },
+                  {
+                    "n": "ANIL KUMAR",
+                    "p": "INT"
+                  }
+                ]
+              },
+              "301.1": {
+                "pet": "PRANAYA KUMAR MOHAPATRA",
+                "petAll": [
+                  {
+                    "n": "PRANAYA KUMAR MOHAPATRA",
+                    "p": ""
+                  }
+                ]
+              },
+              "301.2": {
+                "pet": "PRANAYA KUMAR MOHAPATRA",
+                "petAll": [
+                  {
+                    "n": "PRANAYA KUMAR MOHAPATRA",
+                    "p": ""
+                  }
+                ]
+              },
+              "302": {
+                "pet": "GOPAL JHA",
+                "resp": "CYRIL AMARCHAND MANGALDAS AOR",
+                "petAll": [
+                  {
+                    "n": "GOPAL JHA",
+                    "p": ""
+                  }
+                ],
+                "respAll": [
+                  {
+                    "n": "CYRIL AMARCHAND MANGALDAS AOR",
+                    "p": "CAVEAT",
+                    "tag": "caveat"
+                  },
+                  {
+                    "n": "KRISHAN KUMAR",
+                    "p": "R-1"
+                  }
+                ]
               }
             },
-            "times": {},
-            "withItem": {},
+            "times": {
+              "53": "10:30 AM",
+              "301": "2:00 PM"
+            },
+            "withItem": {
+              "53": "3",
+              "62": "10",
+              "64": "30"
+            },
             "part": {
               "1": "A",
               "2": "A",
@@ -49408,7 +50681,27 @@
               "49": "B",
               "50": "B",
               "51": "B",
-              "52": "B"
+              "52": "B",
+              "53": "A",
+              "54": "A",
+              "55": "A",
+              "56": "A",
+              "57": "A",
+              "58": "A",
+              "59": "A",
+              "60": "B",
+              "60.1": "B",
+              "61": "B",
+              "61.1": "B",
+              "61.2": "B",
+              "61.3": "B",
+              "62": "B",
+              "63": "B",
+              "64": "B",
+              "301": "B",
+              "301.1": "B",
+              "301.2": "B",
+              "302": "B"
             },
             "sect": {
               "1": "Bail",
@@ -49474,15 +50767,58 @@
               "49": "After notice",
               "50": "After notice",
               "51": "After notice",
-              "52": "After notice"
+              "52": "After notice",
+              "57": "Fresh",
+              "58": "Fresh",
+              "59": "Freshly adjourned",
+              "60": "After notice",
+              "60.1": "After notice",
+              "61": "After notice",
+              "61.1": "After notice",
+              "61.2": "After notice",
+              "61.3": "After notice",
+              "62": "Fresh",
+              "63": "Fresh",
+              "64": "Fresh",
+              "301": "Public interest litigation",
+              "301.1": "Public interest litigation",
+              "301.2": "Public interest litigation",
+              "302": "Part heard"
             },
-            "suppItems": [],
+            "suppItems": [
+              "53",
+              "54",
+              "55",
+              "56",
+              "57",
+              "58",
+              "59",
+              "60",
+              "60.1",
+              "61",
+              "61.1",
+              "61.2",
+              "61.3",
+              "62",
+              "63",
+              "64",
+              "301",
+              "301.1",
+              "301.2",
+              "302"
+            ],
+            "dropped": {
+              "45": {
+                "to": "301",
+                "reason": "DELETED."
+              }
+            },
             "main": 43,
             "supp": 0
           },
           "6": {
             "coram": "HON'BLE MR. JUSTICE DIPANKAR DATTA HON'BLE MR. JUSTICE SHEEL NAGU",
-            "total": "53",
+            "total": "62",
             "fresh": "",
             "items": {
               "1": "SLP(Crl) No. 19518/2026 NISHAD AHAMMED KANNUR VERSUS THE UNION TERRITORY OF PUDUCHERRY AND ANR.",
@@ -49539,7 +50875,23 @@
               "50": "T.P.(C) No. 1826/2026 TRIPTI SHARMA VERSUS RAHUL RAVINDER BUDHIRAJA",
               "51": "SLP(Crl) No. 2790/2023 SELVAKUMAR AND ANR. VERSUS STATE OF TAMIL NADU AND ORS.",
               "52": "SLP(Crl) No. 15093/2026 BHUPENDRA KUMAR @ BHOLU VERSUS STATE OF CHHATTISGARH",
-              "53": "SLP(C) No. 485/2023 D. R. MANJUNATHA AND ANR. VERSUS ORIENTAL INSURANCE CO. LTD AND ANR."
+              "53": "SLP(C) No. 485/2023 D. R. MANJUNATHA AND ANR. VERSUS ORIENTAL INSURANCE CO. LTD AND ANR.",
+              "1501": "Crl.A. No. 3387/2026 RAJKUMAR MADKI VERSUS SHAILENDRA BELDALE",
+              "1502": "SLP(Crl) No. 2171/2025 NAGENDRA RAY VERSUS THE STATE OF BIHAR AND ANR.",
+              "1503": "SLP(Crl) No. 7504/2026 SENIOR INTELLIGENCE OFFICER VERSUS MOHAMMED KAMRAN",
+              "1504": "SLP(Crl) No. 15822/2026 MAHESH CHANDRA JOSHI VERSUS STATE OF RAJASTHAN",
+              "1505": "SLP(Crl) No. 15862/2026 MUKESH PATHAK VERSUS STATE OF RAJASTHAN",
+              "54": "Diary No. 60006-2026 AJAHAR @ AJHARUDDIN ANSARI VERSUS THE STATE OF WEST BENGAL",
+              "55": "SLP(Crl) No. 19503/2026 KUNJALATA OJHA VERSUS STATE OF ODISHA",
+              "55.1": "Connected SLP(Crl) No. 19636/2026 NALINI @NALINIPRABHA OJHA VERSUS STATE OF ODISHA",
+              "56": "SLP(Crl) No. 19716/2026 RAUNIK ANAND @BITTU VERSUS STATE OF HARYANA",
+              "57": "SLP(Crl) No. 19777/2026 NITIN SINGH KAMBOJ VERSUS THE STATE OF MADHYA PRADESH AND ANR.",
+              "58": "SLP(Crl) No. 19880/2026 NAVDEEP @ FAUJI VERSUS THE STATE OF HARYANA",
+              "59": "C.A. No. 13466/2026 ADITYA RAHEJA VERSUS JAYESH SANGHRAJKA AND ORS.",
+              "59.1": "Connected C.A. No. 13492/2026 ADITYA RAHEJA VERSUS JAYESH SANGHRAJKA AND ORS.",
+              "60": "Diary No. 54873-2026 MUTHUPANDIYAN VERSUS THE STATE THROUGH, THE INSPECTOR OF POLICE",
+              "61": "SLP(Crl) No. 19819-19821/2026 VINOD KUMAR KAD VERSUS STATE (N.C.T.) OF DELHI AND ANR.",
+              "62": "Diary No. 39440-2026 PROJECT DIRECTOR, NATIONAL HIGHWAYS AUTHORITY OF INDIA VERSUS VAISHALI RAHUL MOTE AND ORS."
             },
             "advocates": {
               "1": {
@@ -50191,10 +51543,227 @@
                     "p": "R-1"
                   }
                 ]
+              },
+              "1501": {
+                "resp": "NULI & NULI",
+                "respAll": [
+                  {
+                    "n": "NULI & NULI",
+                    "p": "R-1"
+                  }
+                ]
+              },
+              "1502": {
+                "pet": "SUBHASISH BHOWMICK",
+                "resp": "AZMAT HAYAT AMANULLAH",
+                "petAll": [
+                  {
+                    "n": "SUBHASISH BHOWMICK",
+                    "p": ""
+                  }
+                ],
+                "respAll": [
+                  {
+                    "n": "AZMAT HAYAT AMANULLAH",
+                    "p": "R-1"
+                  },
+                  {
+                    "n": "SHASHWAT PARIHAR",
+                    "p": "R-2"
+                  }
+                ]
+              },
+              "1503": {
+                "pet": "GURMEET SINGH MAKKER",
+                "resp": "M.P. PARTHIBAN",
+                "petAll": [
+                  {
+                    "n": "GURMEET SINGH MAKKER",
+                    "p": ""
+                  }
+                ],
+                "respAll": [
+                  {
+                    "n": "M.P. PARTHIBAN",
+                    "p": "R-1"
+                  }
+                ]
+              },
+              "1504": {
+                "pet": "VIVEK JAIN",
+                "resp": "S.. UDAYA KUMAR SAGAR",
+                "petAll": [
+                  {
+                    "n": "VIVEK JAIN",
+                    "p": ""
+                  }
+                ],
+                "respAll": [
+                  {
+                    "n": "S.. UDAYA KUMAR SAGAR",
+                    "p": "R-1"
+                  }
+                ]
+              },
+              "1505": {
+                "pet": "KAUSHAL SHARMA",
+                "resp": "S.. UDAYA KUMAR SAGAR",
+                "petAll": [
+                  {
+                    "n": "KAUSHAL SHARMA",
+                    "p": ""
+                  }
+                ],
+                "respAll": [
+                  {
+                    "n": "S.. UDAYA KUMAR SAGAR",
+                    "p": "R-1"
+                  }
+                ]
+              },
+              "54": {
+                "pet": "SOUMYA DUTTA",
+                "petAll": [
+                  {
+                    "n": "SOUMYA DUTTA",
+                    "p": ""
+                  }
+                ]
+              },
+              "55": {
+                "pet": "SHAKTI KANTA PATTANAIK",
+                "petAll": [
+                  {
+                    "n": "SHAKTI KANTA PATTANAIK",
+                    "p": ""
+                  }
+                ]
+              },
+              "55.1": {
+                "pet": "SHAKTI KANTA PATTANAIK",
+                "petAll": [
+                  {
+                    "n": "SHAKTI KANTA PATTANAIK",
+                    "p": ""
+                  }
+                ]
+              },
+              "56": {
+                "pet": "VIKAS KUMAR",
+                "petAll": [
+                  {
+                    "n": "VIKAS KUMAR",
+                    "p": ""
+                  }
+                ]
+              },
+              "57": {
+                "pet": "T. R. B. SIVAKUMAR",
+                "petAll": [
+                  {
+                    "n": "T. R. B. SIVAKUMAR",
+                    "p": ""
+                  }
+                ]
+              },
+              "58": {
+                "pet": "RISHI KAPOOR",
+                "petAll": [
+                  {
+                    "n": "RISHI KAPOOR",
+                    "p": ""
+                  }
+                ]
+              },
+              "59": {
+                "pet": "FARRUKH RASHEED",
+                "resp": "PARIJAT",
+                "petAll": [
+                  {
+                    "n": "FARRUKH RASHEED",
+                    "p": ""
+                  }
+                ],
+                "respAll": [
+                  {
+                    "n": "PARIJAT",
+                    "p": "CAVEAT",
+                    "tag": "caveat"
+                  },
+                  {
+                    "n": "KANIKA SINGHAL",
+                    "p": "CAVEAT",
+                    "tag": "caveat"
+                  },
+                  {
+                    "n": "KHAITAN & CO.",
+                    "p": "CAVEAT",
+                    "tag": "caveat"
+                  }
+                ]
+              },
+              "59.1": {
+                "pet": "FARRUKH RASHEED",
+                "resp": "PARIJAT",
+                "petAll": [
+                  {
+                    "n": "FARRUKH RASHEED",
+                    "p": ""
+                  }
+                ],
+                "respAll": [
+                  {
+                    "n": "PARIJAT",
+                    "p": "CAVEAT",
+                    "tag": "caveat"
+                  },
+                  {
+                    "n": "KANIKA SINGHAL",
+                    "p": "CAVEAT",
+                    "tag": "caveat"
+                  }
+                ]
+              },
+              "60": {
+                "pet": "A VELAN",
+                "petAll": [
+                  {
+                    "n": "A VELAN",
+                    "p": ""
+                  }
+                ]
+              },
+              "61": {
+                "pet": "RAMESHWAR PRASAD GOYAL",
+                "petAll": [
+                  {
+                    "n": "RAMESHWAR PRASAD GOYAL",
+                    "p": ""
+                  }
+                ]
+              },
+              "62": {
+                "pet": "PRABHLEEN APOORV SHUKLA",
+                "resp": "ASHOK MATHUR",
+                "petAll": [
+                  {
+                    "n": "PRABHLEEN APOORV SHUKLA",
+                    "p": ""
+                  }
+                ],
+                "respAll": [
+                  {
+                    "n": "ASHOK MATHUR",
+                    "p": "CAVEAT",
+                    "tag": "caveat"
+                  }
+                ]
               }
             },
             "times": {},
-            "withItem": {},
+            "withItem": {
+              "62": "5"
+            },
             "part": {
               "1": "A",
               "2": "A",
@@ -50250,7 +51819,23 @@
               "50": "A",
               "51": "B",
               "52": "B",
-              "53": "B"
+              "53": "B",
+              "1501": "A",
+              "1502": "A",
+              "1503": "A",
+              "1504": "A",
+              "1505": "A",
+              "54": "A",
+              "55": "A",
+              "55.1": "A",
+              "56": "A",
+              "57": "A",
+              "58": "A",
+              "59": "A",
+              "59.1": "A",
+              "60": "A",
+              "61": "A",
+              "62": "A"
             },
             "sect": {
               "1": "Bail",
@@ -50307,15 +51892,43 @@
               "50": "Transfer petitions",
               "51": "After notice",
               "52": "After notice",
-              "53": "After notice"
+              "53": "After notice",
+              "54": "Bail",
+              "55": "Bail",
+              "55.1": "Bail",
+              "56": "Bail",
+              "57": "Bail",
+              "58": "Bail",
+              "59": "Fresh",
+              "59.1": "Fresh",
+              "60": "Fresh",
+              "61": "Fresh",
+              "62": "Fresh"
             },
-            "suppItems": [],
+            "suppItems": [
+              "1501",
+              "1502",
+              "1503",
+              "1504",
+              "1505",
+              "54",
+              "55",
+              "55.1",
+              "56",
+              "57",
+              "58",
+              "59",
+              "59.1",
+              "60",
+              "61",
+              "62"
+            ],
             "main": 53,
-            "supp": 0
+            "supp": 9
           },
           "7": {
             "coram": "HON'BLE MR. JUSTICE SANJAY KUMAR HON'BLE MR. JUSTICE SANJEEV SACHDEVA",
-            "total": "53",
+            "total": "56",
             "fresh": "",
             "items": {
               "1": "SLP(Crl) No. 11738/2026 JITENDRA ROY @JITENDRA RAY @ JITENDRA KUMAR SINGH@ JITENDRA KUMAR VERSUS THE STATE OF BIHAR",
@@ -50385,7 +51998,14 @@
               "50": "SLP(C) No. 13233/2026 BUCKBOX INFOTECH PRIVATE LIMITED VERSUS DIRECTOR GENERAL OF GST INTELLIGENCE AND ORS.",
               "51": "CONMT.PET.(C) No. 468/2026 in C.A. No. 566/2026 NIRAJ JAIN VERSUS TARUN PRAKASH AND ORS.",
               "52": "SLP(C) No. 27865/2026 PRANAY RAJ VERSUS UNION OF INDIA AND ORS.",
-              "53": "SLP(C) No. 30134/2026 PARMJEET SINGH SURJEWALA AND ORS. VERSUS STATE OF HARYANA AND ORS."
+              "53": "SLP(C) No. 30134/2026 PARMJEET SINGH SURJEWALA AND ORS. VERSUS STATE OF HARYANA AND ORS.",
+              "54": "SLP(Crl) No. 20186-20187/2026 GUDIYA DEVI @ GURIYA DEVI AND ORS. VERSUS THE STATE OF BIHAR",
+              "55": "SLP(C) No. 37013/2026 MA GAFFAR AND ORS. VERSUS D. KUMAR AND ORS.",
+              "56": "SLP(C) No. 35680/2026 E. USHA RANI VERSUS THE UNION OF INDIA AND ORS.",
+              "56.1": "Connected SLP(C) No. 36167/2026 CHAVA RAMA LINGA VARA PRASAD VERSUS UNION OF INDIA AND ORS.",
+              "56.2": "Connected SLP(C) No. 36657/2026 KUTHUMBAKA NARESH AND ORS. VERSUS UNION OF INDIA AND ORS.",
+              "56.3": "Connected SLP(C) No. 36936/2026 PAPINENI VENKATESWARLU AND ORS. VERSUS UNION OF INDIA AND ORS.",
+              "56.4": "Connected SLP(C) No. 37113/2026 VEGINATI KISHORE AND ORS. VERSUS UNION OF INDIA AND ORS."
             },
             "advocates": {
               "1": {
@@ -51449,10 +53069,76 @@
                     "p": ""
                   }
                 ]
+              },
+              "54": {
+                "pet": "KUMAR MIHIR",
+                "petAll": [
+                  {
+                    "n": "KUMAR MIHIR",
+                    "p": ""
+                  }
+                ]
+              },
+              "55": {
+                "pet": "MD. SADATH HUSSAIN",
+                "petAll": [
+                  {
+                    "n": "MD. SADATH HUSSAIN",
+                    "p": ""
+                  }
+                ]
+              },
+              "56": {
+                "pet": "SHWETANK SAILAKWAL",
+                "petAll": [
+                  {
+                    "n": "SHWETANK SAILAKWAL",
+                    "p": ""
+                  }
+                ]
+              },
+              "56.1": {
+                "pet": "SHWETANK SAILAKWAL",
+                "petAll": [
+                  {
+                    "n": "SHWETANK SAILAKWAL",
+                    "p": ""
+                  }
+                ]
+              },
+              "56.2": {
+                "pet": "SHWETANK SAILAKWAL",
+                "petAll": [
+                  {
+                    "n": "SHWETANK SAILAKWAL",
+                    "p": ""
+                  }
+                ]
+              },
+              "56.3": {
+                "pet": "SHWETANK SAILAKWAL",
+                "petAll": [
+                  {
+                    "n": "SHWETANK SAILAKWAL",
+                    "p": ""
+                  }
+                ]
+              },
+              "56.4": {
+                "pet": "SHWETANK SAILAKWAL",
+                "petAll": [
+                  {
+                    "n": "SHWETANK SAILAKWAL",
+                    "p": ""
+                  }
+                ]
               }
             },
             "times": {},
-            "withItem": {},
+            "withItem": {
+              "55": "11",
+              "56": "12"
+            },
             "part": {
               "1": "A",
               "2": "A",
@@ -51521,7 +53207,14 @@
               "50": "B",
               "51": "B",
               "52": "B",
-              "53": "B"
+              "53": "B",
+              "54": "A",
+              "55": "A",
+              "56": "A",
+              "56.1": "A",
+              "56.2": "A",
+              "56.3": "A",
+              "56.4": "A"
             },
             "sect": {
               "1": "Bail",
@@ -51591,15 +53284,30 @@
               "50": "After notice",
               "51": "After notice",
               "52": "After notice",
-              "53": "After notice"
+              "53": "After notice",
+              "54": "Bail",
+              "55": "Fresh",
+              "56": "Fresh",
+              "56.1": "Fresh",
+              "56.2": "Fresh",
+              "56.3": "Fresh",
+              "56.4": "Fresh"
             },
-            "suppItems": [],
+            "suppItems": [
+              "54",
+              "55",
+              "56",
+              "56.1",
+              "56.2",
+              "56.3",
+              "56.4"
+            ],
             "main": 53,
-            "supp": 0
+            "supp": 3
           },
           "8": {
             "coram": "HON'BLE MR. JUSTICE AHSANUDDIN AMANULLAH HON'BLE MR. JUSTICE MANMOHAN",
-            "total": "55",
+            "total": "58",
             "fresh": "",
             "items": {
               "1": "SLP(Crl) No. 2421/2026 GITA DEVI VERSUS STATE OF JHARKHAND AND ANR.",
@@ -51659,7 +53367,13 @@
               "53": "Diary No. 27360-2026 THE SUPERINTENDING ENGINEER VERSUS A SENTHIL KUMAR AND ANR.",
               "53.1": "Connected Diary No. 27600-2026 THE SUPERINTENDING ENGINEERING VERSUS P. VEERANAN AND ANR.",
               "54": "SLP(C) No. 21168/2026 LALITA VERSUS ASHWANI KUMAR",
-              "55": "Diary No. 47065-2026 ISHAQ MOHMMADBHAI MAFAT VERSUS ORIENTAL INSURANCE COMPANY LTD. AND ORS."
+              "55": "Diary No. 47065-2026 ISHAQ MOHMMADBHAI MAFAT VERSUS ORIENTAL INSURANCE COMPANY LTD. AND ORS.",
+              "56": "Diary No. 58425-2026 JAHER KHANDAKAR AND ORS. VERSUS THE STATE OF ASSAM AND ORS.",
+              "57.1": "Connected SLP(C) No. 32671/2026 SHASHI GURUNG VERSUS SHWETA GUPTA",
+              "58": "SLP(Crl) No. 4153/2026 RAHIMBHAI NOORMOHAMED SINDHI BLOCH VERSUS THE STATE OF GUJARAT",
+              "59": "SLP(C) No. 17992/2025 SAURABH SINGH VERSUS STATE OF UTTAR PRADESH AND ORS.",
+              "301": "SLP(C) No. 5582/2023 THE ORIENTAL INSURANCE CO. LTD. VERSUS TUNI PATI AND ORS.",
+              "301.1": "Connected C.A. No. 6865/2026 NATIONAL INSURANCE COMPANY LIMITED VERSUS K. SARAVANAN AND ORS."
             },
             "advocates": {
               "1": {
@@ -52522,10 +54236,338 @@
                     "p": ""
                   }
                 ]
+              },
+              "56": {
+                "pet": "CHARU AMBWANI",
+                "petAll": [
+                  {
+                    "n": "CHARU AMBWANI",
+                    "p": "P-1, P-2, P-3, P-4, P-5, P-6, P-7, P-8, P-9, P-10, P-11, P-12, P-13"
+                  }
+                ]
+              },
+              "57.1": {
+                "pet": "PARTH SHEKHAR",
+                "petAll": [
+                  {
+                    "n": "PARTH SHEKHAR",
+                    "p": ""
+                  }
+                ]
+              },
+              "58": {
+                "pet": "KAILAS BAJIRAO AUTADE",
+                "resp": "SWATI GHILDIYAL",
+                "petAll": [
+                  {
+                    "n": "KAILAS BAJIRAO AUTADE",
+                    "p": ""
+                  }
+                ],
+                "respAll": [
+                  {
+                    "n": "SWATI GHILDIYAL",
+                    "p": "R-1"
+                  }
+                ]
+              },
+              "59": {
+                "pet": "PRAKASH KUMAR SINGH",
+                "resp": "SAKSHI KAKKAR",
+                "petAll": [
+                  {
+                    "n": "PRAKASH KUMAR SINGH",
+                    "p": ""
+                  }
+                ],
+                "respAll": [
+                  {
+                    "n": "SAKSHI KAKKAR",
+                    "p": "R-1, R-2, R-3, R-4"
+                  },
+                  {
+                    "n": "TALHA ABDUL RAHMAN",
+                    "p": "R-5"
+                  }
+                ]
+              },
+              "301": {
+                "resp": "RENUKA SAHU",
+                "respAll": [
+                  {
+                    "n": "RENUKA SAHU",
+                    "p": "R-1, R-2, R-3"
+                  },
+                  {
+                    "n": "GUNTUR PRAMOD KUMAR",
+                    "p": "R-5"
+                  },
+                  {
+                    "n": "AKANSHA",
+                    "p": "R-6"
+                  },
+                  {
+                    "n": "DIKSHA RAI",
+                    "p": "R-7"
+                  },
+                  {
+                    "n": "SRISHTI MISHRA",
+                    "p": "R-8"
+                  },
+                  {
+                    "n": "RAVINDER KUMAR YADAV",
+                    "p": "R-9"
+                  },
+                  {
+                    "n": "SWATI GHILDIYAL",
+                    "p": "R-11"
+                  },
+                  {
+                    "n": "SAMAR VIJAY SINGH",
+                    "p": "R-12"
+                  },
+                  {
+                    "n": "PALLAVI LANGAR",
+                    "p": "R-14"
+                  },
+                  {
+                    "n": "SANCHIT GARGA",
+                    "p": "R-15"
+                  },
+                  {
+                    "n": "JAMES P. THOMAS",
+                    "p": "R-16"
+                  },
+                  {
+                    "n": "HARMEET SINGH RUPRAH",
+                    "p": "R-17"
+                  },
+                  {
+                    "n": "AADITYA ANIRUDDHA PANDE",
+                    "p": "R-18"
+                  },
+                  {
+                    "n": "PUKHRAMBAM RAMESH KUMAR",
+                    "p": "R-19"
+                  },
+                  {
+                    "n": "AVIJIT MANI TRIPATHI",
+                    "p": "R-20"
+                  },
+                  {
+                    "n": "ANANDO MUKHERJEE",
+                    "p": "R-21"
+                  },
+                  {
+                    "n": "K. ENATOLI SEMA",
+                    "p": "R-22"
+                  },
+                  {
+                    "n": "DEVINA SEHGAL",
+                    "p": "R-24"
+                  },
+                  {
+                    "n": "ABHA SHARMA",
+                    "p": "R-25"
+                  },
+                  {
+                    "n": "SAMEER ABHYANKAR",
+                    "p": "R-27"
+                  },
+                  {
+                    "n": "RUPALI FRANCESCA SAMUEL",
+                    "p": "R-28"
+                  },
+                  {
+                    "n": "RUCHIRA GOEL",
+                    "p": "R-30"
+                  },
+                  {
+                    "n": "ADARSH CHAMOLI",
+                    "p": "R-31"
+                  },
+                  {
+                    "n": "SHREEKANT NEELAPPA TERDAL",
+                    "p": "R-34, R-35, R-36, R-38"
+                  },
+                  {
+                    "n": "PASHUPATHI NATH RAZDAN",
+                    "p": "R-37, R-37A"
+                  },
+                  {
+                    "n": "ARAVINDH S.",
+                    "p": "R-40, R-40"
+                  },
+                  {
+                    "n": "BRIJESH KUMAR TAMBER",
+                    "p": "R-41"
+                  },
+                  {
+                    "n": "UDITA SINGH",
+                    "p": "R-42, R-100"
+                  },
+                  {
+                    "n": "RAJESH KUMAR CHAURASIA",
+                    "p": "R-43, R-46, R-58, R-60, R-61, R-63"
+                  },
+                  {
+                    "n": "SARATH S JANARDANAN",
+                    "p": "R-47"
+                  },
+                  {
+                    "n": "SRISHTI PRABHAKAR",
+                    "p": "R-49"
+                  },
+                  {
+                    "n": "SHWETA SINGH PARIHAR",
+                    "p": "R-50"
+                  },
+                  {
+                    "n": "ANUJ BHANDARI",
+                    "p": "R-52"
+                  },
+                  {
+                    "n": "ZAKIR HUSSAIN",
+                    "p": "R-54"
+                  },
+                  {
+                    "n": "AMAN MALIK",
+                    "p": "R-56"
+                  },
+                  {
+                    "n": "HARDIKAA KALIA",
+                    "p": "R-57"
+                  },
+                  {
+                    "n": "DAGA SACHIN SUBHASH",
+                    "p": "R-51, R-55, R-59, R-62, R-62"
+                  },
+                  {
+                    "n": "KAILAS BAJIRAO AUTADE",
+                    "p": "R-64"
+                  },
+                  {
+                    "n": "MANIK AHLUWALIA",
+                    "p": "R-65, R-67"
+                  },
+                  {
+                    "n": "ANUJA PETHIA",
+                    "p": "R-68"
+                  },
+                  {
+                    "n": "PUJA DEWAN",
+                    "p": "R-71"
+                  },
+                  {
+                    "n": "GOPAL SINGH",
+                    "p": "R-76"
+                  },
+                  {
+                    "n": "VISHNU KANT",
+                    "p": "R-82"
+                  },
+                  {
+                    "n": "RAJEEV MAHESHWARANAND ROY",
+                    "p": "R-66, R-73, R-74, R-75, R-77, R-80, R-83, R-84, R-103, R-107"
+                  },
+                  {
+                    "n": "VISHAL MEGHWAL",
+                    "p": "R-69, R-78, R-79, R-85"
+                  },
+                  {
+                    "n": "ABHAY KUMAR",
+                    "p": "R-48, R-70, R-72, R-86"
+                  },
+                  {
+                    "n": "SUDHIR NAAGAR",
+                    "p": "R-87"
+                  },
+                  {
+                    "n": "AWANTIKA MANOHAR",
+                    "p": "R-89"
+                  },
+                  {
+                    "n": "AMIT KUMAR SINGH",
+                    "p": "R-81, R-88, R-91, R-94"
+                  },
+                  {
+                    "n": "SIDDHARTHA IYER",
+                    "p": "R-92"
+                  },
+                  {
+                    "n": "KARUN SHARMA",
+                    "p": "R-93"
+                  },
+                  {
+                    "n": "DHARMENDRA KUMAR SINHA",
+                    "p": "R-44, R-45, R-95"
+                  },
+                  {
+                    "n": "MANJEET CHAWLA",
+                    "p": "R-96"
+                  },
+                  {
+                    "n": "ARINDAM GHOSH",
+                    "p": "R-97"
+                  },
+                  {
+                    "n": "SHIVENDRA SINGH",
+                    "p": "R-98"
+                  },
+                  {
+                    "n": "DHEERAJ NAIR",
+                    "p": "R-99"
+                  },
+                  {
+                    "n": "PREETI GUPTA",
+                    "p": "R-101"
+                  },
+                  {
+                    "n": "H. CHANDRA SEKHAR",
+                    "p": ""
+                  },
+                  {
+                    "n": "MAYANK SAPRA",
+                    "p": "R-104"
+                  },
+                  {
+                    "n": "SRISATYA MOHANTY",
+                    "p": "R-23, IMPL"
+                  }
+                ]
+              },
+              "301.1": {
+                "pet": "MANJEET CHAWLA",
+                "resp": "GOUTHAM SHIVSHANKAR",
+                "petAll": [
+                  {
+                    "n": "MANJEET CHAWLA",
+                    "p": ""
+                  }
+                ],
+                "respAll": [
+                  {
+                    "n": "GOUTHAM SHIVSHANKAR",
+                    "p": "R-1"
+                  },
+                  {
+                    "n": "G. BALAJI",
+                    "p": "R-2"
+                  },
+                  {
+                    "n": "RUPALI FRANCESCA SAMUEL",
+                    "p": "R-3"
+                  }
+                ]
               }
             },
-            "times": {},
-            "withItem": {},
+            "times": {
+              "56": "10:30 AM",
+              "301": "1:00 PM"
+            },
+            "withItem": {
+              "56": "11"
+            },
             "part": {
               "1": "A",
               "2": "A",
@@ -52584,7 +54626,13 @@
               "53": "B",
               "53.1": "B",
               "54": "B",
-              "55": "B"
+              "55": "B",
+              "56": "A",
+              "57.1": "A",
+              "58": "B",
+              "59": "B",
+              "301": "B",
+              "301.1": "B"
             },
             "sect": {
               "1": "Bail",
@@ -52644,11 +54692,24 @@
               "53": "After notice",
               "53.1": "After notice",
               "54": "After notice",
-              "55": "After notice"
+              "55": "After notice",
+              "56": "Fresh",
+              "57.1": "Fresh",
+              "58": "After notice",
+              "59": "After notice",
+              "301": "Part heard",
+              "301.1": "Part heard"
             },
-            "suppItems": [],
+            "suppItems": [
+              "56",
+              "57.1",
+              "58",
+              "59",
+              "301",
+              "301.1"
+            ],
             "main": 55,
-            "supp": 0
+            "supp": 3
           },
           "9": {
             "coram": "HON'BLE MR. JUSTICE MANOJ MISRA HON'BLE MR. JUSTICE NONGMEIKAPAM KOTISWAR SINGH",
@@ -52707,7 +54768,17 @@
               "50": "SLP(Crl) No. 10425/2026 MUTHU VERSUS STATE REPRESENTED BY THE INSPECTOR OF POLICE",
               "51": "SLP(C) No. 25573/2025 STATE OF SIKKIM AND ORS. VERSUS MANI KUMAR SUBBA",
               "52": "SLP(C) No. 25782/2025 ATHIRA KRISHNAN VERSUS THE CHIEF ENGINEER (HUMAN RESOURCE) KERALA STATE ELECTRICITY BOARD LTD. AND ANR.",
-              "53": "SLP(C) No. 7367/2026 LAXMAN SUKHDEV KALE VERSUS JAYRAM PIRAJI DHOBALE AND ORS."
+              "53": "SLP(C) No. 7367/2026 LAXMAN SUKHDEV KALE VERSUS JAYRAM PIRAJI DHOBALE AND ORS.",
+              "54": "Diary No. 56501-2026 SURESH KUMAR VERSUS STATE OF U.P. AND ANR.",
+              "55": "SLP(Crl) No. 20152/2026 DINESH KUMAR VERSUS STATE OF CHHATTISGARH",
+              "56": "SLP(Crl) No. 19623/2026 HEMA SHAH VERSUS STATE OF MADHYA PRADESH",
+              "57": "SLP(Crl) No. 20175-20176/2026 DEEPAKKAUR VERSUS STATE OF RAJASTHAN",
+              "58": "SLP(Crl) No. 20063/2026 PRITEE FULJEE KOKANI VERSUS THE STATE OF MAHARASHTRA AND ANR.",
+              "59": "SLP(Crl) No. 20224/2026 RAHUL DEV SHARMA VERSUS STATE OF PUNJAB AND ANR.",
+              "60": "SLP(C) No. 37011/2026 MISHRI LAL MEHTO VERSUS TRIVENI DEVI",
+              "61": "SLP(C) No. 30204/2026 MAYNA BALA DEBNATH AND ORS. VERSUS PRANATI DEBNATH AND ORS.",
+              "62": "SLP(Crl) No. 19734-19736/2026 PURAN CHAND VERSUS STATE OF HARYANA",
+              "63": "Diary No. 56638-2026 M/S BHARAT HEAVY ELECTRICALS LIMITED VERSUS B. SAROJA DEVI (DEAD)"
             },
             "advocates": {
               "1": {
@@ -53302,10 +55373,102 @@
                     "p": "R-1, R-2, R-3, R-4, R-5"
                   }
                 ]
+              },
+              "54": {
+                "pet": "ABHIJIT SENGUPTA",
+                "petAll": [
+                  {
+                    "n": "ABHIJIT SENGUPTA",
+                    "p": ""
+                  }
+                ]
+              },
+              "55": {
+                "pet": "ASWATHI M.K",
+                "petAll": [
+                  {
+                    "n": "ASWATHI M.K",
+                    "p": ""
+                  }
+                ]
+              },
+              "56": {
+                "pet": "UTKARSH JOSHI DAYAKRISHAN",
+                "petAll": [
+                  {
+                    "n": "UTKARSH JOSHI DAYAKRISHAN",
+                    "p": ""
+                  }
+                ]
+              },
+              "57": {
+                "pet": "SHREY KAPOOR",
+                "petAll": [
+                  {
+                    "n": "SHREY KAPOOR",
+                    "p": ""
+                  }
+                ]
+              },
+              "58": {
+                "pet": "ASHOK KUMAR GUPTA II",
+                "petAll": [
+                  {
+                    "n": "ASHOK KUMAR GUPTA II",
+                    "p": ""
+                  }
+                ]
+              },
+              "59": {
+                "pet": "SAHIL SHARMA",
+                "petAll": [
+                  {
+                    "n": "SAHIL SHARMA",
+                    "p": ""
+                  }
+                ]
+              },
+              "60": {
+                "pet": "VISHAL ARUN MISHRA",
+                "petAll": [
+                  {
+                    "n": "VISHAL ARUN MISHRA",
+                    "p": ""
+                  }
+                ]
+              },
+              "61": {
+                "pet": "V. MAHESHWARI & CO.",
+                "petAll": [
+                  {
+                    "n": "V. MAHESHWARI & CO.",
+                    "p": ""
+                  }
+                ]
+              },
+              "62": {
+                "pet": "ANAS TANWIR",
+                "petAll": [
+                  {
+                    "n": "ANAS TANWIR",
+                    "p": ""
+                  }
+                ]
+              },
+              "63": {
+                "pet": "SOURAV ROY",
+                "petAll": [
+                  {
+                    "n": "SOURAV ROY",
+                    "p": ""
+                  }
+                ]
               }
             },
             "times": {},
-            "withItem": {},
+            "withItem": {
+              "54": "4"
+            },
             "part": {
               "1": "A",
               "2": "A",
@@ -53359,7 +55522,17 @@
               "50": "B",
               "51": "B",
               "52": "B",
-              "53": "B"
+              "53": "B",
+              "54": "A",
+              "55": "A",
+              "56": "A",
+              "57": "A",
+              "58": "A",
+              "59": "A",
+              "60": "A",
+              "61": "A",
+              "62": "A",
+              "63": "A"
             },
             "sect": {
               "1": "Bail",
@@ -53414,15 +55587,36 @@
               "50": "After notice",
               "51": "After notice",
               "52": "After notice",
-              "53": "After notice"
+              "53": "After notice",
+              "54": "Bail",
+              "55": "Bail",
+              "56": "Bail",
+              "57": "Bail",
+              "58": "Bail",
+              "59": "Bail",
+              "60": "Fresh",
+              "61": "Fresh",
+              "62": "Bail",
+              "63": "Fresh"
             },
-            "suppItems": [],
+            "suppItems": [
+              "54",
+              "55",
+              "56",
+              "57",
+              "58",
+              "59",
+              "60",
+              "61",
+              "62",
+              "63"
+            ],
             "main": 36,
             "supp": 0
           },
           "10": {
             "coram": "HON'BLE MR. JUSTICE ARAVIND KUMAR HON'BLE MR. JUSTICE VIPUL M. PANCHOLI",
-            "total": "53",
+            "total": "65",
             "fresh": "",
             "items": {
               "1": "Diary No. 26076-2023 AKHIL KISHORE PRASAD SINGH VERSUS THE STATE OF BIHAR AND ANR.",
@@ -53480,7 +55674,21 @@
               "50": "SLP(Crl) No. 17399/2026 DINESH SAXENA VERSUS STATE OF MADHYA PRADESH",
               "51": "SLP(C) No. 24561-24562/2025 M/S. VASU COCO RESORTS PVT. LTD. AND ANR. VERSUS M/S. EVERSPACE REALTY LLP AND ORS.",
               "52": "SLP(C) No. 18016/2026 SUDIP SAMANTA VERSUS THE STATE OF WEST BENGAL AND ORS.",
-              "53": "SLP(C) No. 32973/2026 M.S. YOGAMURTH VERSUS THE STATE OF KARNATAKA AND ORS."
+              "53": "SLP(C) No. 32973/2026 M.S. YOGAMURTH VERSUS THE STATE OF KARNATAKA AND ORS.",
+              "1501": "C.A. No. 7025/2012 SMT. RANO SINGH . AND ORS. VERSUS SH. GURBAX SINGH (D) TH LRS AND ORS.",
+              "1502": "SLP(C) No. 8874/2020 MANDEEP JINDAL VERSUS ORIENTAL INSURANCE COMPANY LTD.",
+              "54": "SLP(Crl) No. 16873/2026 DEEPSHIKHA KANWAR @ SONU VERSUS STATE OF RAJASTHAN",
+              "55": "SLP(Crl) No. 16721/2026 MAAZ KHAN VERSUS STATE OF MADHYA PRADESH AND ANR.",
+              "56": "SLP(Crl) No. 19984/2026 GOVIND PAL VERSUS STATE OF MADHYA PRADESH,",
+              "57": "SLP(Crl) No. 20112/2026 MANOJ PATIL VERSUS STATE OF MADHYA PRADESH",
+              "58": "SLP(Crl) No. 20011/2026 MOHAMMAD SHAHRUKH VERSUS THE STATE GOVT OF NCT OF DELHI",
+              "59": "SLP(Crl) No. 20057/2026 RAJENDRA SADASHIV CHANDRACHUD, VERSUS ISHWAR ALIMCHANDANI AND ANR.",
+              "60": "SLP(Crl) No. 20276/2026 ANIL SONAJI PADGHAN VERSUS THE STATE OF MAHARASHTRA",
+              "61": "SLP(Crl) No. 20183/2026 JAIPRAKASH PANDEY VERSUS STATE OF CHHATTISGARH",
+              "62": "Diary No. 49628-2026 STATE OF HIMACHAL PRADESH AND ORS. VERSUS AMAR NATH AND ORS.",
+              "63": "T.P.(C) No. 241/2026 VRINDA V. AND ANR. VERSUS SWAROOP GL",
+              "64": "SLP(C) No. 13024/2026 PADMA JAISWAL VERSUS UNION OF INDIA AND ORS.",
+              "65": "SLP(C) No. 37140/2026 DR. CHARU K VERSUS UNION OF INDIA AND ORS."
             },
             "advocates": {
               "1": {
@@ -54147,10 +56355,187 @@
                     "p": ""
                   }
                 ]
+              },
+              "1501": {
+                "pet": "JYOTI MENDIRATTA",
+                "resp": "SUMEET LALL",
+                "petAll": [
+                  {
+                    "n": "JYOTI MENDIRATTA",
+                    "p": ""
+                  }
+                ],
+                "respAll": [
+                  {
+                    "n": "SUMEET LALL",
+                    "p": "CAVEAT, R-1.1, R-1.3, R-1.2",
+                    "tag": "caveat"
+                  },
+                  {
+                    "n": "AASHNA GILL",
+                    "p": "R-2, R-4, R-5.1, R-5.2, R-6, R-8, R-9, R-10"
+                  }
+                ]
+              },
+              "1502": {
+                "pet": "KHEYALI SINGH",
+                "resp": "RAMESHWAR PRASAD GOYAL",
+                "petAll": [
+                  {
+                    "n": "KHEYALI SINGH",
+                    "p": "P-1"
+                  }
+                ],
+                "respAll": [
+                  {
+                    "n": "RAMESHWAR PRASAD GOYAL",
+                    "p": "R-1"
+                  }
+                ]
+              },
+              "54": {
+                "pet": "SANTOSH MISHRA",
+                "resp": "SAURABH RAJPAL",
+                "petAll": [
+                  {
+                    "n": "SANTOSH MISHRA",
+                    "p": ""
+                  }
+                ],
+                "respAll": [
+                  {
+                    "n": "SAURABH RAJPAL",
+                    "p": "R-1"
+                  }
+                ]
+              },
+              "55": {
+                "pet": "MRIGANK PRABHAKAR",
+                "resp": "MRINAL GOPAL ELKER",
+                "petAll": [
+                  {
+                    "n": "MRIGANK PRABHAKAR",
+                    "p": ""
+                  }
+                ],
+                "respAll": [
+                  {
+                    "n": "MRINAL GOPAL ELKER",
+                    "p": "R-1, R-1"
+                  }
+                ]
+              },
+              "56": {
+                "pet": "AKSHAT SHRIVASTAVA",
+                "petAll": [
+                  {
+                    "n": "AKSHAT SHRIVASTAVA",
+                    "p": ""
+                  }
+                ]
+              },
+              "57": {
+                "pet": "SANJEEV MALHOTRA",
+                "petAll": [
+                  {
+                    "n": "SANJEEV MALHOTRA",
+                    "p": ""
+                  }
+                ]
+              },
+              "58": {
+                "pet": "SADHANA SANDHU",
+                "petAll": [
+                  {
+                    "n": "SADHANA SANDHU",
+                    "p": ""
+                  }
+                ]
+              },
+              "59": {
+                "pet": "CHANDRA BHUSHAN PRASAD",
+                "petAll": [
+                  {
+                    "n": "CHANDRA BHUSHAN PRASAD",
+                    "p": ""
+                  }
+                ]
+              },
+              "60": {
+                "pet": "ISHAAN GEORGE",
+                "petAll": [
+                  {
+                    "n": "ISHAAN GEORGE",
+                    "p": ""
+                  }
+                ]
+              },
+              "61": {
+                "pet": "ASWATHI M.K",
+                "petAll": [
+                  {
+                    "n": "ASWATHI M.K",
+                    "p": ""
+                  }
+                ]
+              },
+              "62": {
+                "pet": "VINOD KUMAR TEWARI",
+                "petAll": [
+                  {
+                    "n": "VINOD KUMAR TEWARI",
+                    "p": ""
+                  }
+                ]
+              },
+              "63": {
+                "pet": "PARUL SHUKLA",
+                "petAll": [
+                  {
+                    "n": "PARUL SHUKLA",
+                    "p": ""
+                  }
+                ]
+              },
+              "64": {
+                "pet": "TARUN GUPTA",
+                "resp": "ARVIND KUMAR SHARMA",
+                "petAll": [
+                  {
+                    "n": "TARUN GUPTA",
+                    "p": ""
+                  }
+                ],
+                "respAll": [
+                  {
+                    "n": "ARVIND KUMAR SHARMA",
+                    "p": "CAVEAT",
+                    "tag": "caveat"
+                  },
+                  {
+                    "n": "N. VISAKAMURTHY",
+                    "p": "R-1"
+                  },
+                  {
+                    "n": "SHILPI CHOWDHARY",
+                    "p": "R-3"
+                  }
+                ]
+              },
+              "65": {
+                "pet": "ANKUR S. KULKARNI",
+                "petAll": [
+                  {
+                    "n": "ANKUR S. KULKARNI",
+                    "p": ""
+                  }
+                ]
               }
             },
             "times": {},
-            "withItem": {},
+            "withItem": {
+              "62": "19"
+            },
             "part": {
               "1": "A",
               "2": "A",
@@ -54207,7 +56592,21 @@
               "50": "B",
               "51": "B",
               "52": "B",
-              "53": "B"
+              "53": "B",
+              "1501": "A",
+              "1502": "A",
+              "54": "A",
+              "55": "A",
+              "56": "A",
+              "57": "A",
+              "58": "A",
+              "59": "A",
+              "60": "A",
+              "61": "A",
+              "62": "A",
+              "63": "A",
+              "64": "B",
+              "65": "B"
             },
             "sect": {
               "1": "Bail",
@@ -54265,15 +56664,42 @@
               "50": "After notice",
               "51": "After notice",
               "52": "After notice",
-              "53": "After notice"
+              "53": "After notice",
+              "54": "Bail",
+              "55": "Bail",
+              "56": "Bail",
+              "57": "Bail",
+              "58": "Bail",
+              "59": "Bail",
+              "60": "Bail",
+              "61": "Bail",
+              "62": "Fresh",
+              "63": "Transfer petitions",
+              "64": "After notice",
+              "65": "Fresh"
             },
-            "suppItems": [],
+            "suppItems": [
+              "1501",
+              "1502",
+              "54",
+              "55",
+              "56",
+              "57",
+              "58",
+              "59",
+              "60",
+              "61",
+              "62",
+              "63",
+              "64",
+              "65"
+            ],
             "main": 53,
-            "supp": 0
+            "supp": 12
           },
           "11": {
             "coram": "HON'BLE MR. JUSTICE PRASHANT KUMAR MISHRA HON'BLE MR. JUSTICE SHREE CHANDRASHEKHAR",
-            "total": "53",
+            "total": "60",
             "fresh": "",
             "items": {
               "1": "SLP(Crl) No. 14158/2026 KOUTUKA SUNA VERSUS STATE OF CHHATTISGARH",
@@ -54330,7 +56756,16 @@
               "50": "Diary No. 52951-2026 MANPREET SINGH SIDHU AND ANR. VERSUS M/S INFLOW TECHNOLOGIES PVT. LTD. AND ANR.",
               "51": "SLP(C) No. 33524/2026 NOBY KUNJAPPAN VERSUS SHELNA. K.A AND ORS.",
               "52": "SLP(Crl) No. 16744/2026 HOMESTEAD INFRASTRUCTURE DEVELOPMENT PVT. LTD. VERSUS THE STATE OF HARYANA AND ORS.",
-              "53": "MA 1287-1289/2026 in C.A. No. 792-794/2026 THE STATE OF WEST BENGAL VERSUS CONFEDERATION OF STATE GOVERNMENT EMPLOYEES, WEST BENGAL"
+              "53": "MA 1287-1289/2026 in C.A. No. 792-794/2026 THE STATE OF WEST BENGAL VERSUS CONFEDERATION OF STATE GOVERNMENT EMPLOYEES, WEST BENGAL",
+              "1501": "SLP(C) No. 4216/2020 R. SARAVANAN VERSUS PERIYAR UNIVERSITY REP BY ITS REGISTRAR AND ORS.",
+              "54": "SLP(Crl) No. 16703/2026 RAVI RAJ KUMAR VERSUS STATE OF HARYANA",
+              "55": "Diary No. 54093-2026 AYUSH KUMAR VERSUS THE STATE OF BIHAR",
+              "56": "SLP(Crl) No. 19759/2026 MUHAMMAD SHADIL VERSUS STATE OF KERALA AND ANR.",
+              "57": "SLP(Crl) No. 20107/2026 DEEPAK LAKHOTIYA VERSUS STATE OF RAJASTHAN",
+              "58": "Diary No. 58839-2026 THE COMMISSIONER OF POLICE AND ORS. VERSUS AMIT GULIA",
+              "59": "Diary No. 60308-2026 THE STATE OF KARNATAKA AND ORS. VERSUS RUDRAPPA BHIMAPPA KONNURI",
+              "59.1": "Connected Diary No. 60805-2026 STATE OF KARNATAKA AND ORS. VERSUS BALAPPA RAMAPPA KONNURI",
+              "60": "SLP(Crl) No. 20188/2026 DILBAGH SINGH VERSUS STATE OF PUNJAB"
             },
             "advocates": {
               "1": {
@@ -54986,10 +57421,127 @@
                     "p": "R-6, IMPL, INT"
                   }
                 ]
+              },
+              "1501": {
+                "pet": "M.P. PARTHIBAN",
+                "resp": "ANUP KUMAR",
+                "petAll": [
+                  {
+                    "n": "M.P. PARTHIBAN",
+                    "p": ""
+                  }
+                ],
+                "respAll": [
+                  {
+                    "n": "ANUP KUMAR",
+                    "p": "R-1, R-3"
+                  },
+                  {
+                    "n": "KANIKA KALAIYARASAN",
+                    "p": "R-2"
+                  }
+                ]
+              },
+              "54": {
+                "pet": "ANIL KUMAR",
+                "resp": "SAMAR VIJAY SINGH",
+                "petAll": [
+                  {
+                    "n": "ANIL KUMAR",
+                    "p": ""
+                  }
+                ],
+                "respAll": [
+                  {
+                    "n": "SAMAR VIJAY SINGH",
+                    "p": "R-1"
+                  }
+                ]
+              },
+              "55": {
+                "pet": "SHIVENDRA SINGH",
+                "petAll": [
+                  {
+                    "n": "SHIVENDRA SINGH",
+                    "p": ""
+                  }
+                ]
+              },
+              "56": {
+                "pet": "EDUPUGANTI SHREYAS",
+                "petAll": [
+                  {
+                    "n": "EDUPUGANTI SHREYAS",
+                    "p": ""
+                  }
+                ]
+              },
+              "57": {
+                "pet": "KUMAR MIHIR",
+                "resp": "SANGRAMSINGH R. BHONSLE",
+                "petAll": [
+                  {
+                    "n": "KUMAR MIHIR",
+                    "p": ""
+                  }
+                ],
+                "respAll": [
+                  {
+                    "n": "SANGRAMSINGH R. BHONSLE",
+                    "p": "CAVEAT",
+                    "tag": "caveat"
+                  }
+                ]
+              },
+              "58": {
+                "pet": "N. VISAKAMURTHY",
+                "resp": "SHEKHAR KUMAR",
+                "petAll": [
+                  {
+                    "n": "N. VISAKAMURTHY",
+                    "p": ""
+                  }
+                ],
+                "respAll": [
+                  {
+                    "n": "SHEKHAR KUMAR",
+                    "p": "CAVEAT",
+                    "tag": "caveat"
+                  }
+                ]
+              },
+              "59": {
+                "pet": "HINA DUA",
+                "petAll": [
+                  {
+                    "n": "HINA DUA",
+                    "p": ""
+                  }
+                ]
+              },
+              "59.1": {
+                "pet": "HINA DUA",
+                "petAll": [
+                  {
+                    "n": "HINA DUA",
+                    "p": ""
+                  }
+                ]
+              },
+              "60": {
+                "pet": "SUGANDH RATHOR",
+                "petAll": [
+                  {
+                    "n": "SUGANDH RATHOR",
+                    "p": ""
+                  }
+                ]
               }
             },
             "times": {},
-            "withItem": {},
+            "withItem": {
+              "58": "22"
+            },
             "part": {
               "1": "A",
               "2": "A",
@@ -55045,7 +57597,16 @@
               "50": "A",
               "51": "A",
               "52": "A",
-              "53": "A"
+              "53": "A",
+              "1501": "A",
+              "54": "A",
+              "55": "A",
+              "56": "A",
+              "57": "A",
+              "58": "A",
+              "59": "A",
+              "59.1": "A",
+              "60": "A"
             },
             "sect": {
               "1": "Bail",
@@ -55102,15 +57663,33 @@
               "50": "Freshly adjourned",
               "51": "Freshly adjourned",
               "52": "Post-notice ad-interim stay",
-              "53": "Post-notice ad-interim stay"
+              "53": "Post-notice ad-interim stay",
+              "54": "Bail",
+              "55": "Bail",
+              "56": "Bail",
+              "57": "Bail",
+              "58": "Fresh",
+              "59": "Freshly adjourned",
+              "59.1": "Freshly adjourned",
+              "60": "Bail"
             },
-            "suppItems": [],
+            "suppItems": [
+              "1501",
+              "54",
+              "55",
+              "56",
+              "57",
+              "58",
+              "59",
+              "59.1",
+              "60"
+            ],
             "main": 53,
-            "supp": 0
+            "supp": 7
           },
           "12": {
             "coram": "HON'BLE MR. JUSTICE K.V. VISWANATHAN HON'BLE MR. JUSTICE ARUN PALLI",
-            "total": "72",
+            "total": "75",
             "fresh": "",
             "items": {
               "1": "SLP(Crl) No. 6519/2026 VASEEM NADAF @ WASIM NADAF VERSUS THE STATE OF BIHAR AND ANR.",
@@ -55190,7 +57769,10 @@
               "69": "SLP(C) No. 29101/2026 PURSHOTTAM KUMAR AND ORS. VERSUS BINOD KUMAR SINHA AND ORS.",
               "70": "SLP(C) No. 30154/2026 RAVINDRA GOPAL KADU VERSUS THE STATE OF MAHARASHTRA AND ORS.",
               "71": "C.A. No. 10730-10731/2026 VALUE WISE CONSULTANCY PRIVATE LIMITED VERSUS THE DEPUTY DIRECTOR AND ORS.",
-              "72": "SLP(C) No. 32242-32243/2026 RAMEL SINGH VERSUS NATIONAL HIGHWAYS AUTHORITY OF INDIA AND ORS."
+              "72": "SLP(C) No. 32242-32243/2026 RAMEL SINGH VERSUS NATIONAL HIGHWAYS AUTHORITY OF INDIA AND ORS.",
+              "73": "SLP(C) No. 36162/2026 VINAY SOMANI AND ANR. VERSUS RAMESH VENKATESHWAR SOMANI AND ORS.",
+              "74": "SLP(C) No. 30669/2026 REENU ALIYAMMA CHERIAN VERSUS ABRAHAM KURIAN PLAMTHOTTAM",
+              "75": "Diary No. 64193-2026 GLENCREST INFRASTRUCTURE PVT LTD VERSUS SANTOSH KUMAR AND ORS."
             },
             "advocates": {
               "1": {
@@ -56244,10 +58826,65 @@
                     "p": ""
                   }
                 ]
+              },
+              "73": {
+                "pet": "D.S.K. LEGAL",
+                "resp": "KHUSHNUMA DULARE KHAN",
+                "petAll": [
+                  {
+                    "n": "D.S.K. LEGAL",
+                    "p": ""
+                  }
+                ],
+                "respAll": [
+                  {
+                    "n": "KHUSHNUMA DULARE KHAN",
+                    "p": "CAVEAT",
+                    "tag": "caveat"
+                  }
+                ]
+              },
+              "74": {
+                "pet": "K. RAJEEV",
+                "resp": "AANCHAL TIKMANI",
+                "petAll": [
+                  {
+                    "n": "K. RAJEEV",
+                    "p": ""
+                  }
+                ],
+                "respAll": [
+                  {
+                    "n": "AANCHAL TIKMANI",
+                    "p": "R-1"
+                  }
+                ]
+              },
+              "75": {
+                "pet": "ABHINAV AGRAWAL",
+                "resp": "MAHFOOZ AHSAN NAZKI",
+                "petAll": [
+                  {
+                    "n": "ABHINAV AGRAWAL",
+                    "p": ""
+                  }
+                ],
+                "respAll": [
+                  {
+                    "n": "MAHFOOZ AHSAN NAZKI",
+                    "p": "CAVEAT",
+                    "tag": "caveat"
+                  }
+                ]
               }
             },
-            "times": {},
-            "withItem": {},
+            "times": {
+              "73": "10:30 AM",
+              "74": "10:30 AM"
+            },
+            "withItem": {
+              "75": "36"
+            },
             "part": {
               "1": "A",
               "2": "A",
@@ -56326,7 +58963,10 @@
               "69": "B",
               "70": "B",
               "71": "B",
-              "72": "B"
+              "72": "B",
+              "73": "A",
+              "74": "A",
+              "75": "A"
             },
             "sect": {
               "1": "Bail",
@@ -56406,15 +59046,22 @@
               "69": "After notice",
               "70": "After notice",
               "71": "After notice",
-              "72": "After notice"
+              "72": "After notice",
+              "73": "Fresh",
+              "74": "Post-notice ad-interim stay",
+              "75": "Fresh"
             },
-            "suppItems": [],
+            "suppItems": [
+              "73",
+              "74",
+              "75"
+            ],
             "main": 72,
-            "supp": 0
+            "supp": 3
           },
           "13": {
             "coram": "HON'BLE MR. JUSTICE UJJAL BHUYAN HON'BLE MR. JUSTICE ATUL S. CHANDURKAR",
-            "total": "36",
+            "total": "37",
             "fresh": "",
             "items": {
               "1": "SLP(Crl) No. 14824/2026 JAGDISH SAHU VERSUS CENTRAL NARCOTICS BUREAU",
@@ -56453,7 +59100,8 @@
               "33.1": "Connected Diary No. 39781-2026 SAHAJ RAM AND ORS. VERSUS STATE OF UTTAR PRADESH",
               "34": "Diary No. 56282-2026 DAYA RAM AND ANR. VERSUS STATE OF UTTAR PRADESH",
               "35": "SLP(C) No. 4876/2019 M/S STAR FERRO ALLOYS PVT LTD. VERSUS RAJNISH AGRAWAL",
-              "36": "SLP(C) No. 29138/2025 RAJMUDRA CO-OPERATIVE HOUSING SOCIETY LIMITED VERSUS ANUDAN PROPERTIES PRIVATE LIMITED AND ORS."
+              "36": "SLP(C) No. 29138/2025 RAJMUDRA CO-OPERATIVE HOUSING SOCIETY LIMITED VERSUS ANUDAN PROPERTIES PRIVATE LIMITED AND ORS.",
+              "37": "Diary No. 44435-2026 NARAYANAN @ RAVINDRA KUMAR VERSUS RELIANCE GENERAL INSURANCE COMPANY LIMITED AND ANR."
             },
             "advocates": {
               "1": {
@@ -56857,10 +59505,21 @@
                     "p": "R-6"
                   }
                 ]
+              },
+              "37": {
+                "pet": "T. HARISH KUMAR",
+                "petAll": [
+                  {
+                    "n": "T. HARISH KUMAR",
+                    "p": ""
+                  }
+                ]
               }
             },
             "times": {},
-            "withItem": {},
+            "withItem": {
+              "37": "8"
+            },
             "part": {
               "1": "A",
               "2": "A",
@@ -56898,7 +59557,8 @@
               "33.1": "A",
               "34": "A",
               "35": "B",
-              "36": "B"
+              "36": "B",
+              "37": "A"
             },
             "sect": {
               "1": "Bail",
@@ -56937,15 +59597,18 @@
               "33.1": "Freshly adjourned",
               "34": "Freshly adjourned",
               "35": "After notice",
-              "36": "After notice"
+              "36": "After notice",
+              "37": "Fresh"
             },
-            "suppItems": [],
+            "suppItems": [
+              "37"
+            ],
             "main": 36,
-            "supp": 0
+            "supp": 1
           },
           "14": {
             "coram": "HON'BLE MR. JUSTICE S.V.N. BHATTI HON'BLE MR. JUSTICE N.V. ANJARIA",
-            "total": "53",
+            "total": "55",
             "fresh": "",
             "items": {
               "1": "Diary No. 36185-2022 RANJIT SINGH (DIED) THROUGH LR. VERSUS THE PRESIDENT IMPROVEMENT TRUST TRIBUNAL AND ORS.",
@@ -57005,7 +59668,11 @@
               "50": "SLP(C) No. 23715/2026 KAPIL DEV VERSUS SUMAN DEVI AND ORS.",
               "51": "SLP(C) No. 24333/2026 SATBIR VERSUS MUKESH",
               "52": "SLP(C) No. 24930/2026 PRAHLAD SHARMA AND ANR. VERSUS PANA DEVI AND ORS.",
-              "53": "SLP(C) No. 25590/2026 JAI PAL SINGH TYAGI AND ORS. VERSUS GAJRAJ SINGH AND ORS."
+              "53": "SLP(C) No. 25590/2026 JAI PAL SINGH TYAGI AND ORS. VERSUS GAJRAJ SINGH AND ORS.",
+              "1501": "C.A. No. 13629/2026 S. GURURAJ VERSUS THE ADDITIONAL CHIEF SECRETARY/ COMMISSIONER OF LAND ADMINISTRATION AND ORS.",
+              "1502": "SLP(Crl) No. 11709/2025 TEJARAM VERSUS STATE OF RAJASTHAN",
+              "54": "SLP(C) No. 36736/2026 SOMIL KARADE VERSUS STATE OF MADHYA PRADESH AND ORS.",
+              "55": "SLP(C) No. 37015/2026 PRINCE V. ELIAS VERSUS BIBIN MARY ABRAHAM"
             },
             "advocates": {
               "1": {
@@ -57641,6 +60308,47 @@
                     "p": "R-1, R-2, R-3, R-4, R-5, R-6, R-7, R-8, R-9, R-10, R-11, R-12, R-13, R-14, R-15, R-16, R-17, R-18, R-19, R-20, R-21, R-22, R-23, R-24, R-25"
                   }
                 ]
+              },
+              "1501": {
+                "pet": "RAJESH KUMAR",
+                "resp": "JAYASREE NARASIMHAN",
+                "petAll": [
+                  {
+                    "n": "RAJESH KUMAR",
+                    "p": ""
+                  }
+                ],
+                "respAll": [
+                  {
+                    "n": "JAYASREE NARASIMHAN",
+                    "p": "R-1, R-4"
+                  }
+                ]
+              },
+              "1502": {
+                "pet": "UDIAN SHARMA",
+                "resp": "NIDHI JASWAL",
+                "petAll": [
+                  {
+                    "n": "UDIAN SHARMA",
+                    "p": ""
+                  }
+                ],
+                "respAll": [
+                  {
+                    "n": "NIDHI JASWAL",
+                    "p": "R-1"
+                  }
+                ]
+              },
+              "55": {
+                "pet": "MANU KRISHNAN G",
+                "petAll": [
+                  {
+                    "n": "MANU KRISHNAN G",
+                    "p": ""
+                  }
+                ]
               }
             },
             "times": {},
@@ -57703,7 +60411,11 @@
               "50": "B",
               "51": "B",
               "52": "B",
-              "53": "B"
+              "53": "B",
+              "1501": "A",
+              "1502": "A",
+              "54": "A",
+              "55": "A"
             },
             "sect": {
               "1": "Fresh",
@@ -57763,15 +60475,22 @@
               "50": "After notice",
               "51": "After notice",
               "52": "After notice",
-              "53": "After notice"
+              "53": "After notice",
+              "54": "Fresh",
+              "55": "Fresh"
             },
-            "suppItems": [],
+            "suppItems": [
+              "1501",
+              "1502",
+              "54",
+              "55"
+            ],
             "main": 53,
-            "supp": 0
+            "supp": 2
           },
           "15": {
             "coram": "HON'BLE MR. JUSTICE AUGUSTINE GEORGE MASIH HON'BLE MRS. JUSTICE SUNITA AGARWAL",
-            "total": "53",
+            "total": "64",
             "fresh": "",
             "items": {
               "1": "SLP(Crl) No. 14762/2026 DHARMENDAR YADAV VERSUS THE STATE OF BIHAR",
@@ -57827,7 +60546,18 @@
               "50": "SLP(C) No. 13755-13757/2026 UNION OF INDIA AND ORS. VERSUS S ASOKRAJ",
               "51": "SLP(C) No. 13631/2026 LAKSHYA ARYA VERSUS COUNCIL OF SCIENTIFIC AND INDUSTRIAL RESEARCH AND ORS.",
               "52": "SLP(C) No. 28460/2026 INSTITUTE OF HUMAN BEHAVIOR RESOURCE AND ALLIED SCIENCES VERSUS SARVESH SECURITY SERVICES PVT. LTD",
-              "53": "SLP(C) No. 30085-30086/2026 ANGELINA SANDEEP GUPTA VERSUS SANDEEP GUPTA"
+              "53": "SLP(C) No. 30085-30086/2026 ANGELINA SANDEEP GUPTA VERSUS SANDEEP GUPTA",
+              "54": "Diary No. 49464-2026 VASAMSETTI NARESH VERSUS THE SENIOR INTELLIGENCE OFFICER DIRECTORATE OF REVENUE INTELLIGENCE AND ANR.",
+              "55": "SLP(Crl) No. 19530-19532/2026 BRIJESH UPPAL AND ORS. VERSUS STATE OF NCT OF DELHI AND ANR.",
+              "56": "SLP(Crl) No. 20004/2026 SUMAN KUMAR @MONU KUMAR VERSUS THE STATE OF BIHAR AND ANR.",
+              "57": "SLP(Crl) No. 19891/2026 GURPEET SINGH VERSUS STATE OF PUNJAB",
+              "58": "Diary No. 62873-2026 HASAN RAZA VERSUS STATE OF BIHAR AND ANR.",
+              "59": "SLP(Crl) No. 20121/2026 MD. MANOUWAR HUSSAIN VERSUS THE STATE OF JHARKHAND AND ANR.",
+              "60": "SLP(Crl) No. 20241/2026 SUNEHPAL SINGH @ SUNNY VERSUS STATE OF PUNJAB",
+              "61": "SLP(Crl) No. 20278/2026 ASHWANI KUMAR SINGH VERSUS THE STATE OF BIHAR AND ANR.",
+              "62": "SLP(C) No. 37205/2026 SARABJIT KAUR AND ANR. VERSUS JHUJHAR SINGH",
+              "63": "SLP(C) No. 18590/2023 SHABIR AHMAD ZAHRI VERSUS THE STATE OF JAMMU AND KASHMIR AND ANR.",
+              "64": "SLP(Crl) No. 20252/2026 HARDO BAI VERSUS STATE OF MADHYA PRADESH"
             },
             "advocates": {
               "1": {
@@ -58448,6 +61178,127 @@
                     "tag": "caveat"
                   }
                 ]
+              },
+              "54": {
+                "pet": "SANDEEP SINGH",
+                "petAll": [
+                  {
+                    "n": "SANDEEP SINGH",
+                    "p": ""
+                  }
+                ]
+              },
+              "55": {
+                "pet": "KUMAR MURLIDHAR",
+                "resp": "ABHINAV GARG",
+                "petAll": [
+                  {
+                    "n": "KUMAR MURLIDHAR",
+                    "p": ""
+                  }
+                ],
+                "respAll": [
+                  {
+                    "n": "ABHINAV GARG",
+                    "p": "CAVEAT",
+                    "tag": "caveat"
+                  }
+                ]
+              },
+              "56": {
+                "pet": "VENKATESWARA RAO ANUMOLU",
+                "petAll": [
+                  {
+                    "n": "VENKATESWARA RAO ANUMOLU",
+                    "p": ""
+                  }
+                ]
+              },
+              "57": {
+                "pet": "RAJ KISHOR CHOUDHARY",
+                "resp": "NUPUR KUMAR",
+                "petAll": [
+                  {
+                    "n": "RAJ KISHOR CHOUDHARY",
+                    "p": ""
+                  }
+                ],
+                "respAll": [
+                  {
+                    "n": "NUPUR KUMAR",
+                    "p": "R-1"
+                  }
+                ]
+              },
+              "58": {
+                "pet": "SMARHAR SINGH",
+                "petAll": [
+                  {
+                    "n": "SMARHAR SINGH",
+                    "p": ""
+                  }
+                ]
+              },
+              "59": {
+                "pet": "SHIVAM KUMAR",
+                "petAll": [
+                  {
+                    "n": "SHIVAM KUMAR",
+                    "p": ""
+                  }
+                ]
+              },
+              "60": {
+                "pet": "MRINAL KANWAR",
+                "petAll": [
+                  {
+                    "n": "MRINAL KANWAR",
+                    "p": ""
+                  }
+                ]
+              },
+              "61": {
+                "pet": "SWASTIK DALAI",
+                "petAll": [
+                  {
+                    "n": "SWASTIK DALAI",
+                    "p": ""
+                  }
+                ]
+              },
+              "62": {
+                "pet": "RAHUL GUPTA",
+                "petAll": [
+                  {
+                    "n": "RAHUL GUPTA",
+                    "p": ""
+                  }
+                ]
+              },
+              "63": {
+                "pet": "MAHFOOZ AHSAN NAZKI",
+                "resp": "PASHUPATHI NATH RAZDAN",
+                "petAll": [
+                  {
+                    "n": "MAHFOOZ AHSAN NAZKI",
+                    "p": ""
+                  }
+                ],
+                "respAll": [
+                  {
+                    "n": "PASHUPATHI NATH RAZDAN",
+                    "p": "R-1"
+                  }
+                ]
+              },
+              "64": {
+                "pet": "YADAV NARENDER SINGH",
+                "petAll": [
+                  {
+                    "n": "YADAV NARENDER SINGH",
+                    "p": ""
+                  }
+                ]
               }
             },
             "times": {},
@@ -58506,7 +61357,18 @@
               "50": "B",
               "51": "B",
               "52": "B",
-              "53": "B"
+              "53": "B",
+              "54": "A",
+              "55": "A",
+              "56": "A",
+              "57": "A",
+              "58": "A",
+              "59": "A",
+              "60": "A",
+              "61": "A",
+              "62": "A",
+              "63": "B",
+              "64": "B"
             },
             "sect": {
               "1": "Bail",
@@ -58562,15 +61424,38 @@
               "50": "After notice",
               "51": "After notice",
               "52": "After notice",
-              "53": "After notice"
+              "53": "After notice",
+              "54": "Bail",
+              "55": "Bail",
+              "56": "Bail",
+              "57": "Bail",
+              "58": "Bail",
+              "59": "Bail",
+              "60": "Bail",
+              "61": "Bail",
+              "62": "Fresh",
+              "63": "After notice",
+              "64": "Bail"
             },
-            "suppItems": [],
+            "suppItems": [
+              "54",
+              "55",
+              "56",
+              "57",
+              "58",
+              "59",
+              "60",
+              "61",
+              "62",
+              "63",
+              "64"
+            ],
             "main": 53,
-            "supp": 0
+            "supp": 11
           },
           "16": {
             "coram": "HON'BLE MR. JUSTICE SANDEEP MEHTA HON'BLE MR. JUSTICE DEVENDRA KUMAR UPADHYAYA",
-            "total": "53",
+            "total": "63",
             "fresh": "",
             "items": {
               "1": "Diary No. 45364-2026 GANESH MARUTI GAIKWAD VERSUS THE STATE OF MAHARASHTRA",
@@ -58625,7 +61510,17 @@
               "50": "SLP(Crl) No. 13062/2025 B. VENKATESAN VERSUS T. SARAVANA",
               "51": "SLP(Crl) No. 12865/2025 VIRENDRA YADAW VERSUS STATE OF CHHATTISGARH",
               "52": "SLP(Crl) No. 17730/2025 KHUSHHAAL VERSUS STATE OF UTTARAKHAND AND ORS.",
-              "53": "SLP(Crl) No. 14190/2025 RUKHSANA AND ORS. VERSUS THE STATE OF U.P. AND ANR."
+              "53": "SLP(Crl) No. 14190/2025 RUKHSANA AND ORS. VERSUS THE STATE OF U.P. AND ANR.",
+              "54": "SLP(Crl) No. 20087/2026 RISHU DEEP MAURYA VERSUS STATE OF HARYANA",
+              "55": "SLP(Crl) No. 19807/2026 NAZIM VERSUS STATE OF UTTAR PRADESH",
+              "56": "SLP(Crl) No. 19986/2026 HARI PRASAD VERSUS STATE REP. BY INSPECTOR OF POLICE",
+              "57": "SLP(Crl) No. 20062/2026 SUKHRAJ SINGH AND ANR. VERSUS STATE OF PUNJAB",
+              "58": "SLP(Crl) No. 20075/2026 M.V. DHARMESH VERSUS THE STATE OF TAMIL NADU AND ANR.",
+              "59": "SLP(Crl) No. 20243/2026 ASHOK NARAYAN SINGH@ ASHOK SINGH VERSUS THE STATE OF BIHAR",
+              "60": "Diary No. 54304-2026 KANTA DEVI VERSUS BHUPINDER PAL AND ORS.",
+              "61": "SLP(Crl) No. 19711/2026 RUDRA NARAYAN PRADHAN VERSUS DILLIP KUMAR PATEL",
+              "62": "Diary No. 44993-2026 B S MANJUNATH VERSUS M/S. SRIMATHA MAHILA SAHAKARI BANK NIYAMITHA",
+              "63": "SLP(Crl) No. 20260/2026 PRADEEP KUMAR PANDEY VERSUS THE STATE OF BIHAR"
             },
             "advocates": {
               "1": {
@@ -59190,10 +62085,110 @@
                     "p": "R-2"
                   }
                 ]
+              },
+              "54": {
+                "pet": "ANIL KUMAR",
+                "petAll": [
+                  {
+                    "n": "ANIL KUMAR",
+                    "p": ""
+                  }
+                ]
+              },
+              "55": {
+                "pet": "SWATI VAIBHAV",
+                "petAll": [
+                  {
+                    "n": "SWATI VAIBHAV",
+                    "p": ""
+                  }
+                ]
+              },
+              "56": {
+                "pet": "VAIRAWAN A.S",
+                "petAll": [
+                  {
+                    "n": "VAIRAWAN A.S",
+                    "p": ""
+                  }
+                ]
+              },
+              "57": {
+                "pet": "SHREY KAPOOR",
+                "petAll": [
+                  {
+                    "n": "SHREY KAPOOR",
+                    "p": ""
+                  }
+                ]
+              },
+              "58": {
+                "pet": "E. C. AGRAWALA",
+                "resp": "SHYAM GOPAL",
+                "petAll": [
+                  {
+                    "n": "E. C. AGRAWALA",
+                    "p": ""
+                  }
+                ],
+                "respAll": [
+                  {
+                    "n": "SHYAM GOPAL",
+                    "p": "CAVEAT",
+                    "tag": "caveat"
+                  }
+                ]
+              },
+              "59": {
+                "pet": "ISHAAN GEORGE",
+                "petAll": [
+                  {
+                    "n": "ISHAAN GEORGE",
+                    "p": ""
+                  }
+                ]
+              },
+              "60": {
+                "pet": "AMOL CHITRAVANSHI",
+                "petAll": [
+                  {
+                    "n": "AMOL CHITRAVANSHI",
+                    "p": ""
+                  }
+                ]
+              },
+              "61": {
+                "pet": "SOMANATHA PADHAN",
+                "petAll": [
+                  {
+                    "n": "SOMANATHA PADHAN",
+                    "p": ""
+                  }
+                ]
+              },
+              "62": {
+                "pet": "DEVASA & CO.",
+                "petAll": [
+                  {
+                    "n": "DEVASA & CO.",
+                    "p": ""
+                  }
+                ]
+              },
+              "63": {
+                "pet": "KUMAR MIHIR",
+                "petAll": [
+                  {
+                    "n": "KUMAR MIHIR",
+                    "p": ""
+                  }
+                ]
               }
             },
             "times": {},
-            "withItem": {},
+            "withItem": {
+              "61": "35"
+            },
             "part": {
               "1": "A",
               "2": "A",
@@ -59247,7 +62242,17 @@
               "50": "B",
               "51": "B",
               "52": "B",
-              "53": "B"
+              "53": "B",
+              "54": "A",
+              "55": "A",
+              "56": "A",
+              "57": "A",
+              "58": "A",
+              "59": "A",
+              "60": "A",
+              "61": "A",
+              "62": "A",
+              "63": "A"
             },
             "sect": {
               "1": "Bail",
@@ -59302,11 +62307,32 @@
               "50": "After notice",
               "51": "After notice",
               "52": "After notice",
-              "53": "After notice"
+              "53": "After notice",
+              "54": "Bail",
+              "55": "Bail",
+              "56": "Bail",
+              "57": "Bail",
+              "58": "Bail",
+              "59": "Bail",
+              "60": "Fresh",
+              "61": "Fresh",
+              "62": "Bail",
+              "63": "Bail"
             },
-            "suppItems": [],
+            "suppItems": [
+              "54",
+              "55",
+              "56",
+              "57",
+              "58",
+              "59",
+              "60",
+              "61",
+              "62",
+              "63"
+            ],
             "main": 53,
-            "supp": 0
+            "supp": 10
           }
         },
         "Chamber": {
@@ -59856,7 +62882,10 @@
               "1727": "SLP(C) No. 249/2022 THE STATE OF KARNATAKA VERSUS SURESH K NAIK AND ORS.",
               "1728": "SLP(C) No. 9178-9179/2025 CHANNAPPA VERSUS LAXMIBAI AND ORS.",
               "1729": "Diary No. 19021-2025 THE STATE OF KARNATAKA AND ORS. VERSUS POOJARI ERAPPA (DEAD) AND ANR.",
-              "1730": "T.P.(Crl.) No. 349/2026 SISHU SINGH AND ORS. VERSUS STATE OF ODISHA AND ANR."
+              "1730": "T.P.(Crl.) No. 349/2026 SISHU SINGH AND ORS. VERSUS STATE OF ODISHA AND ANR.",
+              "1732": "Diary No. 64360-2026 K.N. SURESH VERSUS CENTRAL BUREAU OF INVESTIGATION",
+              "1733": "Diary No. 64375-2026 RAJINDER SINGH @ BABLOO VERSUS THROUGH SHO",
+              "1734": "Diary No. 64395-2026 MAHESH CHANDRA AND ORS. VERSUS STATE OF UTTAR PRADESH"
             },
             "advocates": {
               "1701": {
@@ -60256,6 +63285,33 @@
                     "p": "R-1"
                   }
                 ]
+              },
+              "1732": {
+                "pet": "MANJEET KIRPAL",
+                "petAll": [
+                  {
+                    "n": "MANJEET KIRPAL",
+                    "p": ""
+                  }
+                ]
+              },
+              "1733": {
+                "pet": "UDDYAM MUKHERJEE",
+                "petAll": [
+                  {
+                    "n": "UDDYAM MUKHERJEE",
+                    "p": ""
+                  }
+                ]
+              },
+              "1734": {
+                "pet": "SANJEEV MALHOTRA",
+                "petAll": [
+                  {
+                    "n": "SANJEEV MALHOTRA",
+                    "p": ""
+                  }
+                ]
               }
             },
             "times": {},
@@ -60290,7 +63346,10 @@
               "1727": "B",
               "1728": "B",
               "1729": "B",
-              "1730": "B"
+              "1730": "B",
+              "1732": "A",
+              "1733": "A",
+              "1734": "A"
             },
             "sect": {
               "1701": "Fresh",
@@ -60322,9 +63381,16 @@
               "1727": "Direction matters",
               "1728": "Direction matters",
               "1729": "Direction matters",
-              "1730": "Direction matters"
+              "1730": "Direction matters",
+              "1732": "Fresh",
+              "1733": "Fresh",
+              "1734": "Fresh"
             },
-            "suppItems": [],
+            "suppItems": [
+              "1732",
+              "1733",
+              "1734"
+            ],
             "main": 0,
             "supp": 0
           },
@@ -60362,7 +63428,9 @@
               "1728": "Diary No. 40792-2024 THE STATE OF MANIPUR AND ANR. VERSUS N. APABI SINGH AND ANR.",
               "1729": "SLP(C) No. 1012/2025 BAJAJ ALLIANZ GENERAL INSURANCE CO. LTD. VERSUS SURGU JYOTHI AND ORS.",
               "1730": "SLP(C) No. 9316-9317/2025 RAJAGOPAL VERSUS G. RAGURAMAN AND ORS.",
-              "1731": "Diary No. 60323-2024 SACHI ARYA AND ORS. VERSUS DEEPMALA GUPTA AND ANR."
+              "1731": "Diary No. 60323-2024 SACHI ARYA AND ORS. VERSUS DEEPMALA GUPTA AND ANR.",
+              "1732": "Diary No. 45471-2026 MINNOO @ MINHAJ AND ANR. VERSUS STATE OF U.P.",
+              "1733": "SLP(C) No. 6871/2023 MANIK BHATTACHARYA VERSUS TINA MONDAL AND ORS."
             },
             "advocates": {
               "1701": {
@@ -60794,6 +63862,39 @@
                     "p": ""
                   }
                 ]
+              },
+              "1732": {
+                "pet": "FUZAIL AHMAD AYYUBI",
+                "resp": "JEEWESH PRAKASH",
+                "petAll": [
+                  {
+                    "n": "FUZAIL AHMAD AYYUBI",
+                    "p": ""
+                  }
+                ],
+                "respAll": [
+                  {
+                    "n": "JEEWESH PRAKASH",
+                    "p": "CAVEAT",
+                    "tag": "caveat"
+                  }
+                ]
+              },
+              "1733": {
+                "pet": "KUNAL MIMANI",
+                "resp": "KUNAL CHATTERJI",
+                "petAll": [
+                  {
+                    "n": "KUNAL MIMANI",
+                    "p": "P-1"
+                  }
+                ],
+                "respAll": [
+                  {
+                    "n": "KUNAL CHATTERJI",
+                    "p": "R-178, R-179, R-180"
+                  }
+                ]
               }
             },
             "times": {},
@@ -60828,7 +63929,9 @@
               "1728": "A",
               "1729": "A",
               "1730": "A",
-              "1731": "A"
+              "1731": "A",
+              "1732": "A",
+              "1733": "A"
             },
             "sect": {
               "1701": "Fresh",
@@ -60860,9 +63963,14 @@
               "1728": "Direction matters",
               "1729": "Direction matters",
               "1730": "Direction matters",
-              "1731": "Direction matters"
+              "1731": "Direction matters",
+              "1732": "Fresh",
+              "1733": "Direction matters"
             },
-            "suppItems": [],
+            "suppItems": [
+              "1732",
+              "1733"
+            ],
             "main": 0,
             "supp": 0
           },
@@ -61756,7 +64864,8 @@
               "1620": "T.P.(Crl.) No. 1130/2026 KANCHAN RANI AND ANR. VERSUS ROHIT KUMAR AND ORS.",
               "1621": "T.P.(Crl.) No. 1117/2026 PRIYADARSHINI TIRPUDE SINGH AND ORS. VERSUS AZAD SINGH",
               "1622": "Diary No. 42863-2026 NUZHAT KHANAM AND ANR. VERSUS MD. IRSHAD KHAN",
-              "1623": "T.P.(C) No. 2916/2026 MAMTA RANI AND ANR. VERSUS DHEERAJ VERMA"
+              "1623": "T.P.(C) No. 2916/2026 MAMTA RANI AND ANR. VERSUS DHEERAJ VERMA",
+              "1624": "T.P.(C) No. 3214/2026 YOGITA GOSWAMI VERSUS VARUN CHATURVEDI"
             },
             "advocates": {
               "1601": {
@@ -61965,6 +65074,15 @@
                     "p": ""
                   }
                 ]
+              },
+              "1624": {
+                "pet": "PALLAVI PRATAP",
+                "petAll": [
+                  {
+                    "n": "PALLAVI PRATAP",
+                    "p": ""
+                  }
+                ]
               }
             },
             "times": {},
@@ -61992,7 +65110,8 @@
               "1620": "A",
               "1621": "A",
               "1622": "A",
-              "1623": "A"
+              "1623": "A",
+              "1624": "A"
             },
             "sect": {
               "1601": "Fresh",
@@ -62017,9 +65136,12 @@
               "1620": "Fresh",
               "1621": "Fresh",
               "1622": "Transfer petitions",
-              "1623": "Transfer petitions"
+              "1623": "Transfer petitions",
+              "1624": "Fresh"
             },
-            "suppItems": [],
+            "suppItems": [
+              "1624"
+            ],
             "main": 0,
             "supp": 0
           },
@@ -62049,7 +65171,12 @@
               "1619": "T.P.(Crl.) No. 1126/2026 PIYUSH KUMAR AND ORS. VERSUS PAYOSHNI SINGH",
               "1620": "T.P.(Crl.) No. 1128/2026 MUSKAN TANVEER VERSUS MOHAMMAD ULFATHUNNISA BEGUM",
               "1621": "T.P.(Crl.) No. 1137/2026 KARTIK KAPOOR AND ORS. VERSUS STATE OF TELANGANA AND ANR.",
-              "1622": "T.P.(Crl.) No. 539/2026 MUNNI DEVI UPADHYAY VERSUS SEEMA UPADHYAY AND ORS."
+              "1622": "T.P.(Crl.) No. 539/2026 MUNNI DEVI UPADHYAY VERSUS SEEMA UPADHYAY AND ORS.",
+              "1623": "T.P.(C) No. 3189/2026 ASHISH KAMAL SARAF VERSUS AANCHAL ASHISH SARAF",
+              "1624": "T.P.(C) No. 3111/2026 SHARON ALOYSIUS CHOUDHARY VERSUS ISHAN CHOUDHARY",
+              "1625": "T.P.(C) No. 3179/2026 REKHA IMNATLAL RAI VERSUS AMIT KUMAR ASHOK KUMAR RAI",
+              "1626": "T.P.(Crl.) No. 1148/2026 SUKRIT DAS @ SUKREET DASS AND ORS. VERSUS SHEENAM",
+              "1627": "Diary No. 64120-2026 IQBAL SINGH VERSUS ARUN SHARMA AND ANR."
             },
             "advocates": {
               "1601": {
@@ -62256,6 +65383,59 @@
                     "p": "R-1"
                   }
                 ]
+              },
+              "1623": {
+                "pet": "RISHI MATOLIYA",
+                "resp": "ADITYA SINGH",
+                "petAll": [
+                  {
+                    "n": "RISHI MATOLIYA",
+                    "p": ""
+                  }
+                ],
+                "respAll": [
+                  {
+                    "n": "ADITYA SINGH",
+                    "p": "CAVEAT",
+                    "tag": "caveat"
+                  }
+                ]
+              },
+              "1624": {
+                "pet": "VIKAS UPADHYAY",
+                "petAll": [
+                  {
+                    "n": "VIKAS UPADHYAY",
+                    "p": ""
+                  }
+                ]
+              },
+              "1625": {
+                "pet": "NIDHI MOHAN PARASHAR",
+                "petAll": [
+                  {
+                    "n": "NIDHI MOHAN PARASHAR",
+                    "p": ""
+                  }
+                ]
+              },
+              "1626": {
+                "pet": "SHIVENDRA SINGH",
+                "petAll": [
+                  {
+                    "n": "SHIVENDRA SINGH",
+                    "p": ""
+                  }
+                ]
+              },
+              "1627": {
+                "pet": "KARTIKEYA SINGH",
+                "petAll": [
+                  {
+                    "n": "KARTIKEYA SINGH",
+                    "p": ""
+                  }
+                ]
               }
             },
             "times": {},
@@ -62282,7 +65462,12 @@
               "1619": "A",
               "1620": "A",
               "1621": "A",
-              "1622": "A"
+              "1622": "A",
+              "1623": "A",
+              "1624": "A",
+              "1625": "A",
+              "1626": "A",
+              "1627": "A"
             },
             "sect": {
               "1601": "Fresh",
@@ -62306,9 +65491,20 @@
               "1619": "Fresh",
               "1620": "Fresh",
               "1621": "Fresh",
-              "1622": "Transfer petitions"
+              "1622": "Transfer petitions",
+              "1623": "Fresh",
+              "1624": "Fresh",
+              "1625": "Fresh",
+              "1626": "Fresh",
+              "1627": "Fresh"
             },
-            "suppItems": [],
+            "suppItems": [
+              "1623",
+              "1624",
+              "1625",
+              "1626",
+              "1627"
+            ],
             "main": 0,
             "supp": 0
           },
@@ -64326,8 +67522,222 @@
           }
         }
       },
-      "notes": [],
-      "specialBenches": []
+      "notes": [
+        {
+          "courts": [
+            "3",
+            "8"
+          ],
+          "text": "This bench will re-assemble after hearing in special bench matters listed in Court No.8 at 1:00 PM Is over, to take up left over matters of this court, if any",
+          "keys": [
+            "raw|THISBENCHWILLREASSEMBLEAFTERHEARINGINSPECIALBENCHMATTERSLISTEDINCOURTNO8AT100PMI"
+          ]
+        },
+        {
+          "courts": [
+            "3",
+            "8"
+          ],
+          "text": "Hon. Prasanna b. Varale, j. Will sit in special bench in Court No. 8 at 1:00 PM",
+          "keys": [
+            "raw|HONPRASANNABVARALEJWILLSITINSPECIALBENCHINCOURTNO8AT100PM"
+          ]
+        },
+        {
+          "courts": [
+            "5"
+          ],
+          "text": "This bench will re-assemble after hearing in special bench matters listed in this court at 2:00 PM Is over, to take up left over matters of this court, if any",
+          "keys": [
+            "raw|THISBENCHWILLREASSEMBLEAFTERHEARINGINSPECIALBENCHMATTERSLISTEDINTHISCOURTAT200PM"
+          ]
+        },
+        {
+          "courts": [
+            "8"
+          ],
+          "text": "This bench will re-assemble after hearing in special bench matters listed in this court at 1:00 PM Is over, to take up left over matters of this court, if any",
+          "keys": [
+            "raw|THISBENCHWILLREASSEMBLEAFTERHEARINGINSPECIALBENCHMATTERSLISTEDINTHISCOURTAT100PM"
+          ]
+        },
+        {
+          "courts": [
+            "5",
+            "12"
+          ],
+          "text": "This bench will re-assemble after hearing in special bench matter listed in Court No. 5 at 2:00 PM Is over to take up left over matters of this court, if any",
+          "keys": [
+            "raw|THISBENCHWILLREASSEMBLEAFTERHEARINGINSPECIALBENCHMATTERLISTEDINCOURTNO5AT200PMIS"
+          ]
+        },
+        {
+          "courts": [
+            "5",
+            "12"
+          ],
+          "text": "Hon. K.v. Viswanathan, j. Will sit in special bench in Court No. 5 at 2:00 PM",
+          "keys": [
+            "raw|HONKVVISWANATHANJWILLSITINSPECIALBENCHINCOURTNO5AT200PM"
+          ]
+        },
+        {
+          "courts": [
+            "1"
+          ],
+          "text": "Bench of 4 judges is cancelled",
+          "keys": [
+            "cancel|1|None"
+          ],
+          "url": "https://cdnbbsr.s3waas.gov.in/s3ec0490f1f4972d133619a60c30f3559e/uploads/2026/10/2026101547.pdf"
+        },
+        {
+          "courts": [
+            "1",
+            "2",
+            "5",
+            "8",
+            "17"
+          ],
+          "text": "Hon'ble Mrs. Justice V. Mohana will not be holding the Court on 16.10.2026 (Friday).",
+          "keys": [
+            "raw|HONBLEMRSJUSTICEVMOHANAWILLNOTBEHOLDINGTHECOURTON16102026FRIDAY"
+          ],
+          "url": "https://cdnbbsr.s3waas.gov.in/s3ec0490f1f4972d133619a60c30f3559e/uploads/2026/10/2026101547.pdf"
+        },
+        {
+          "courts": [
+            "5"
+          ],
+          "text": "Special Bench to sit at 2:00 PM — Justices J.B. Pardiwala, K.V. Viswanathan, K. Vinod Chandran and Arun Palli",
+          "keys": [
+            "bench|5"
+          ],
+          "url": "https://cdnbbsr.s3waas.gov.in/s3ec0490f1f4972d133619a60c30f3559e/uploads/2026/10/2026101547.pdf"
+        },
+        {
+          "courts": [
+            "8"
+          ],
+          "text": "Special Bench to sit at 1:00 PM — Justices Ahsanuddin Amanullah, Prasanna B. Varale, M.M. Sundresh and Manmohan",
+          "keys": [
+            "bench|8"
+          ],
+          "url": "https://cdnbbsr.s3waas.gov.in/s3ec0490f1f4972d133619a60c30f3559e/uploads/2026/10/2026101547.pdf"
+        },
+        {
+          "courts": [
+            "1",
+            "2",
+            "5",
+            "8",
+            "17"
+          ],
+          "text": "Future dates in these matters will be notified shortly.",
+          "keys": [
+            "raw|FUTUREDATESINTHESEMATTERSWILLBENOTIFIEDSHORTLY"
+          ],
+          "url": "https://cdnbbsr.s3waas.gov.in/s3ec0490f1f4972d133619a60c30f3559e/uploads/2026/10/2026101547.pdf"
+        },
+        {
+          "courts": [
+            "1",
+            "2",
+            "5",
+            "8",
+            "17"
+          ],
+          "text": "Dated this the 15th day of October, 2026.",
+          "keys": [
+            "raw|DATEDTHISTHE15THDAYOFOCTOBER2026"
+          ],
+          "url": "https://cdnbbsr.s3waas.gov.in/s3ec0490f1f4972d133619a60c30f3559e/uploads/2026/10/2026101547.pdf"
+        }
+      ],
+      "specialBenches": [
+        {
+          "venue": "5",
+          "judges": [
+            "Justice J.B. Pardiwala",
+            "Justice K.V. Viswanathan",
+            "Justice K. Vinod Chandran",
+            "Justice Arun Palli"
+          ],
+          "at": "2:00 PM",
+          "after": [],
+          "extra": [],
+          "noticeUrl": "https://cdnbbsr.s3waas.gov.in/s3ec0490f1f4972d133619a60c30f3559e/uploads/2026/10/2026101547.pdf"
+        },
+        {
+          "venue": "8",
+          "judges": [
+            "Justice Ahsanuddin Amanullah",
+            "Justice Prasanna B. Varale",
+            "Justice M.M. Sundresh",
+            "Justice Manmohan"
+          ],
+          "at": "1:00 PM",
+          "after": [],
+          "extra": [],
+          "noticeUrl": "https://cdnbbsr.s3waas.gov.in/s3ec0490f1f4972d133619a60c30f3559e/uploads/2026/10/2026101547.pdf"
+        }
+      ],
+      "mentioning": {
+        "2": {
+          "801": "Choudary",
+          "802": "M/s. Khaitan & Co.",
+          "803": "67360/25 (Atul Panwar vs. State of 1511TTF Mr. Aviral Saxena"
+        },
+        "3": {
+          "801": "2501 Singhai",
+          "802": "1504RB Mr. P.C. Patnaik"
+        },
+        "4": {
+          "801": "Commission for indian System of Medicine Educational Mr. Mukul Kumar",
+          "802": "(Richard Alexander Geary vs. State of Mr. Mukul Kumar",
+          "803": "(K Somasekhar Vs. State of AP) – Main 4301-Service Mr. Y Rajagopala Rao",
+          "804": "48001/23 (Oil And Natural Gas Land Acquisition Mr. Karan Verma"
+        },
+        "6": {
+          "801": "4302 Service Mr.Hiren Dasan",
+          "802": "(M/s. Poineer Pragati Petro Projects P. Mr. P.D. Sharma",
+          "803": "(Vidhya Vishwakarma vs. M/s. Kaveri Mr. D. Mahesh Babu",
+          "804": "05/26 @ D. No. 9512/26 (Subhash Vs. Mr. Subodh S Patil",
+          "805": "Sundara Pandian Vs. The State) along 1503FIVE M/s. KSN & Co.",
+          "806": "Contempt of",
+          "807": "49291/26 (Pyare Mian vs. The State of 1502RB"
+        },
+        "7": {
+          "801": "(Hitesh Kumar Goyal vs. Life Insurance 4301 Mr. Shubham Bhalla"
+        },
+        "8": {
+          "801": "",
+          "802": "18613/25 (Bela Prasad vs. State of 1511MISC Ms. Nidhi Mittal",
+          "803": "Mr. Yash S. Vijay"
+        },
+        "9": {
+          "801": "1511RB Mr. Nishesh Sharma",
+          "802": "51094/26 (Sukhveer Singh vs Narcotics Ms. Alpana Sharma",
+          "803": "239/24 in WP (Crl) No. 242/19 – for Mr. Mandeep Kalra"
+        },
+        "10": {
+          "801": "",
+          "802": "42172/26 (Uma Shankar Yadav vs. State 1511TTF Mr. A. Karthik"
+        },
+        "11": {
+          "801": "Mr. Pradeep Misra",
+          "802": "Mr. Shrirang B. Varma",
+          "803": "68767/25 (State of Punjab vs. Manpreet Mr. Karan Sharma",
+          "804": "(Kerala Public Service Commission vs. Mr. Jogy Scaria"
+        },
+        "13": {
+          "801": "Mr. Abhinay",
+          "802": "48304/26 (Jitendra Singh vs. State of 1504RB Mr. Kaustubh Shukla"
+        },
+        "14": {
+          "801": "22816/25 (The Government of Tamil Nadu Mr. Nikhil Swami"
+        }
+      }
     }
   },
   "sources": {
@@ -64342,9 +67752,12 @@
       "M_CC_1": 518575
     },
     "2026-10-16": {
-      "M_J_1": 853396,
+      "M_J_1": 853596,
+      "M_J_2": 623059,
       "M_C_1": 567240,
+      "M_C_2": 508703,
       "M_S_1": 532037,
+      "M_S_2": 508318,
       "M_R_1": 530587,
       "M_R_2": 505956
     }
