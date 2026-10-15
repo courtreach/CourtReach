@@ -2249,21 +2249,34 @@ function fixedLabelFor(court,item,date){
   const b=benchFor(court,item,date);
   return (b && ENG.clockMins(b.at)!=null) ? ENG.fmtClock(ENG.clockMins(b.at)) : "";
 }
+// What a matter IS in the Registry's own list: the category heading it was printed under
+// ("Post-notice ad-interim stay", "Transfer petitions", "Bail", …), from the fetcher's `sect`.
+// Part A is the circular's "Fresh matters" block, but it also holds post-notice and transfer
+// matters — calling every Part-A item "fresh" mislabelled them (owner, 15 Oct 2026, Court 5
+// item 13: "notice is issued in that case"). Sub-items ride on their main item.
+function itemSect(court,item){
+  const lists=courtUpdates?.by_date?.[todayISO()]?.lists||{};
+  const it=String(item), n=String(Math.floor(parseFloat(item)));
+  for(const t of ["Miscellaneous","Regular"]){ const r=lists[t]?.[String(court)]; if(!r||!r.sect) continue;
+    const v=r.sect[it]||r.sect[n]; if(v) return v; }
+  return "";
+}
 // The words for the court sheet's passover row — built from the engine's plan, so the sentence
 // and the distances on the chips can never say two different things.
-function passoverPlanText(plan){
+function passoverPlanText(plan,court){
+  const withCat=n=>{ const c=court?itemSect(court,n):""; return c?`${n} (${c.toLowerCase()})`:String(n); };
   const q=(plan&&plan.queue)||[]; if(!q.length) return "";
   // Circular: two queues, each described on its own terms
   if(plan.circular && (plan.fresh || plan.an)){
     const one=(p,label,where)=>{ const qq=(p&&p.queue)||[]; if(!qq.length) return "";
-      const list=`${label} pass-over${qq.length>1?"s":""} ${qq.join(", ")}`;
+      const list=`${label} pass-over${qq.length>1?"s":""} ${qq.map(withCat).join(", ")}`;
       const toGo=n=>`${n} item${n===1?"":"s"} to go`;
       if(p.at==="discretion") return `${list}: passed over again — the bench will take ${qq.length>1?"them":"it"} up at its discretion.`;
       if(p.at==="now") return `${list}: being taken now.`;
       return `${list}: taken ${where}${p.gap!=null?` — ${toGo(p.gap)}`:""}.`;
     };
-    return [one(plan.fresh,"Fresh",`after the fresh matters${plan.fresh&&plan.fresh.after!=null?` (after item ${plan.fresh.after})`:""}`),
-            one(plan.an,"After-notice","at the end of the list")].filter(Boolean).join(" ");
+    return [one(plan.fresh,"Part A",`after the Part A matters${plan.fresh&&plan.fresh.after!=null?` (after item ${plan.fresh.after})`:""}`),
+            one(plan.an,"Part B (after notice)","at the end of the list")].filter(Boolean).join(" ");
   }
   const order = q.length>1 ? `, in that order (${q.join(", ")})` : "";
   const toGo = n => `${n} item${n===1?"":"s"} to go`;
@@ -3076,12 +3089,12 @@ function openCourtModal(court,_refetched){
   const showProg=!idle && !isNaN(curNum) && curNum>0 && !ENG.isReservedItem(Math.floor(curNum)) && miscTotal>0 && !onRegular;
   const leftN=showProg ? Math.max(0, listN-doneN) : 0;
   const pct=showProg ? Math.max(2, Math.min(100, Math.round(doneN/listN*100))) : 0;
-  const planLine=passoverPlanText(plan);
+  const planLine=passoverPlanText(plan,court);
   // which part of the circular's order the court is on (only when that order applies)
-  const partLab = (plan.circular && plan.freshEnd!=null) ? (reach<=plan.freshEnd ? "Fresh matters" : "After notice") : "";
+  const partLab = (plan.circular && plan.freshEnd!=null) ? (reach<=plan.freshEnd ? "Part A" : "Part B · after notice") : "";
   // no announced sequence, but the circular gives the order: say it
   const circLine = (!seq.length && plan.circular && plan.freshEnd!=null)
-    ? `Not announced — by the circular: fresh ${seqRanges(plan.seq.slice(0,plan.freshEnd))||"—"}, fresh pass-overs, then after notice ${seqRanges(plan.seq.slice(plan.freshEnd))||"—"}, after-notice pass-overs`
+    ? `Not announced — by the circular: Part A ${seqRanges(plan.seq.slice(0,plan.freshEnd))||"—"}, Part A pass-overs, then Part B (after notice) ${seqRanges(plan.seq.slice(plan.freshEnd))||"—"}, Part B pass-overs`
     : "";
   $("modalRoot").innerHTML=`<div class="ovl" data-close><div class="sheet cs" data-court="${esc(court)}"><button class="sh-x" data-close>&times;</button>
     <div class="cs-hero">
@@ -3140,7 +3153,7 @@ function openCourtModal(court,_refetched){
       const hideDist = done || (sbTime && !k.fixed);
       return `<div class="cs-mine ${hideDist?"":esc(band)}">
         <span class="cs-it${done?" struck":""}${privMark(e)?" priv":""}"${privMark(e)?' title="Private — only you"':""}>${esc(e.itemNo)}</span>
-        <span class="cs-body"><span class="cs-title">${esc(e.caseTitle||("item "+e.itemNo))}${who?` <span class="cs-who">· ${esc(who)}</span>`:""}</span>${sbTime?`<span class="cs-note time"><i class="ti ti-clock"></i> ${esc(sbTime)}</span>`:""}${rmk?`<span class="cs-note rmk">${esc(rmk)}</span>`:""}</span>
+        <span class="cs-body"><span class="cs-title">${esc(e.caseTitle||("item "+e.itemNo))}${who?` <span class="cs-who">· ${esc(who)}</span>`:""}</span>${itemSect(court,e.itemNo)?`<span class="cs-note">${esc(itemSect(court,e.itemNo))}</span>`:""}${sbTime?`<span class="cs-note time"><i class="ti ti-clock"></i> ${esc(sbTime)}</span>`:""}${rmk?`<span class="cs-note rmk">${esc(rmk)}</span>`:""}</span>
         ${hideDist?"":`<span class="cs-dist ${esc(band)}">${esc(k.short||"—")}</span>`}</div>`; }).join("")}`:""}
     <div class="cs-reg">
       <div class="cs-row"><span class="cs-k">Sequence</span><span class="cs-val${seq.length||circLine?"":" dim"}">${seq.length

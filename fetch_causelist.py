@@ -52,7 +52,7 @@ OUTPUT_FILE = "court-updates.json"
 # based change-detection reuses a cached parse when the PDF is unchanged; without
 # this, a parser FIX never reaches already-cached dates (their PDFs don't change).
 # A version mismatch forces a full re-parse of every date in the window.
-PARSER_VERSION = 19  # bumped: SD-Chamber parser v10 ported — case numbers gathered across wrapped rows, items need "No."/"Connected", advocates per side
+PARSER_VERSION = 20  # bumped: each item carries its printed category ("sect": Post-notice ad-interim stay, Transfer petitions, …)
 HEADERS = {"User-Agent": "Mozilla/5.0 (compatible; courtreach-causelist-bot/1.0)"}
 
 COURT_RE = re.compile(r"COURT\s*NO\.?\s*[:\-]?\s*([0-9]+)", re.I)
@@ -907,6 +907,35 @@ def courts_in(text):
 # yet; owner's rule (11 Oct 2026): by PRINTED POSITION — every item before the first "AFTER
 # NOTICE" heading of a court's section is Part A, every item from it on is Part B. An
 # explicit "PART-A"/"PART-B" heading, once the Registry prints one, is taken as it stands.
+# The list's own CATEGORY headings (Feb 2026 circular's heads), as printed between items.
+# Each item is stamped with the one in force, so the app can say what a matter actually IS:
+# "Post-notice ad-interim stay" sits inside the Part-A block but is not a FRESH matter
+# (owner, 15 Oct 2026, Court 5 item 13). Per-item annotations such as "ORDERS/DIRECTIONS" or
+# "LENGTHY LIST OF DATES" are deliberately not here.
+SECT_HEADS = [
+    (re.compile(r"^\[?\s*BAIL\s+MATTERS", re.I), "Bail"),
+    (re.compile(r"^\[?\s*FRESH\s*\(FOR\s+ADMISSION\)", re.I), "Fresh"),
+    (re.compile(r"^\[?\s*FRESHLY\s*/?\s*ADJOURNED", re.I), "Freshly adjourned"),
+    (re.compile(r"^\[?\s*POST[\s-]*NOTICE[\s-]*AD[\s-]*INTERIM\s+STAY", re.I), "Post-notice ad-interim stay"),
+    (re.compile(r"^\[?\s*TRANSFER\s+PETITIONS", re.I), "Transfer petitions"),
+    (re.compile(r"^\[?\s*AFTER\s+NOTICE\s*\(FOR\s+ADMISSION\)", re.I), "After notice"),
+    (re.compile(r"^\[?\s*PUBLIC\s+INTEREST\s+LITIGATIONS?", re.I), "Public interest litigation"),
+    (re.compile(r"^\[?\s*PART[\s-]*HEARD\s+MATTERS", re.I), "Part heard"),
+    (re.compile(r"^\[?\s*EARLY\s+HEARING\s+APPLICATION", re.I), "Early hearing"),
+    (re.compile(r"^\[?\s*DIRECTION\s+MATTERS", re.I), "Direction matters"),
+]
+
+
+def section_of(line):
+    s = (line or "").strip()
+    if len(s) > 80:
+        return None
+    for rx, name in SECT_HEADS:
+        if rx.match(s):
+            return name
+    return None
+
+
 PART_HEAD_RE = re.compile(r"^\[?\s*(?:PART\s*[-\u2013]?\s*([AB])\b|(AFTER\s+NOTICE)\b)", re.I)
 HEADER_SKIP = re.compile(r"DAILY\s+CAUSE\s+LIST", re.I)
 
@@ -1160,8 +1189,11 @@ def pdf_texts(data):
                         continue
                     if in_items:
                         left = " ".join(w["text"] for w in ws if w["x0"] < ADV_COL_X).strip()
-                        if left.startswith("[") or re.match(r"^(?:NOTE|TIME|\(TIME)", left, re.I):
-                            out.append(left); continue   # a note: keep it whole (see docstring)
+                        if left.startswith("[") or re.match(r"^(?:NOTE|TIME|\(TIME)", left, re.I) or section_of(left):
+                            # a note — or a CATEGORY heading ("POST-NOTICE-AD INTERIM STAY
+                            # MATTERS", centred, so its first word starts inside the case-number
+                            # column and used to be swallowed into the case number): keep whole
+                            out.append(left); continue
                         if item is not None:
                             item["case"] += [w["text"] for w in ws if SNO_COL_X <= w["x0"] < CASE_COL_X]
                             item["key"] = key
@@ -1221,7 +1253,7 @@ SECTION_HEAD_RE = re.compile(r"^SUPREME\s+COURT\s+OF\s+INDIA$|^HON'?BLE\b|,\s*RE
 
 def _party_cont(line):
     return (bool(PARTY_CONT_RE.match(line)) and not PARTY_STOP_RE.match(line)
-            and not SECTION_HEAD_RE.search(line) and len(line) <= 70)
+            and not SECTION_HEAD_RE.search(line) and not section_of(line) and len(line) <= 70)
 
 
 def parse_courts(text):
@@ -1244,6 +1276,7 @@ def parse_courts(text):
                                 # verbatim relative-timing note) — "" if undeclared
     note_acc = None            # mid-accumulation of a bracketed note split across lines
     cur_part = {}              # court -> "A" | "B" for THIS list (see PART_HEAD_RE)
+    cur_sect = {}              # court -> the category heading in force (see SECT_HEADS)
     last_item = None           # the item the CURRENT line's text belongs to — a "taken up
                                 # along with" note appears well after the item/Versus/
                                 # respondent lines are already consumed, so this is the only
@@ -1275,7 +1308,7 @@ def parse_courts(text):
         if court is not None:
             same_court = (court == cur)
             cur = court
-            courts.setdefault(cur, {"coram": "", "total": "", "fresh": "", "items": {}, "times": {}, "withItem": {}, "part": {}})
+            courts.setdefault(cur, {"coram": "", "total": "", "fresh": "", "items": {}, "times": {}, "withItem": {}, "part": {}, "sect": {}})
             # collect the bench only until we have it; page headers repeat the
             # court + coram on every page, so re-collecting would duplicate it.
             in_header = not courts[cur]["coram"]
@@ -1333,6 +1366,9 @@ def parse_courts(text):
             else:
                 with_acc = frag
             continue
+        sc = section_of(line)
+        if sc:
+            cur_sect[cur] = sc
         ph = PART_HEAD_RE.match(line)
         if ph:
             cur_part[cur] = ph.group(1).upper() if ph.group(1) else "B"
@@ -1379,6 +1415,7 @@ def parse_courts(text):
                 if key not in courts[cur]["items"]:
                     courts[cur]["items"][key] = re.sub(r"\s+", " ", caseline).strip()[:110]
                     courts[cur]["part"][key] = cur_part.get(cur, "A")
+                    if cur_sect.get(cur): courts[cur]["sect"][key] = cur_sect[cur]
                     if cur_time and in_special_bench:
                         courts[cur]["times"][key] = cur_time
                     pending = (cur, key); await_resp = False; pet_more = 0; resp_more = None
@@ -1399,6 +1436,7 @@ def parse_courts(text):
             if it not in courts[cur]["items"]:
                 courts[cur]["items"][it] = re.sub(r"\s+", " ", im.group(2)).strip()[:110]
                 courts[cur]["part"][it] = cur_part.get(cur, "A")
+                if cur_sect.get(cur): courts[cur]["sect"][it] = cur_sect[cur]
                 if cur_time and in_special_bench:
                     courts[cur]["times"][it] = cur_time
                 pending = (cur, it); await_resp = False; pet_more = 0; resp_more = None
@@ -1422,7 +1460,7 @@ def parse_courts(text):
                     courts[pc]["items"][pit] = (courts[pc]["items"][pit] + " " + re.sub(r"\s+", " ", line).strip())[:160]
                     pet_more += 1
                     continue
-            if await_resp and re.search(r"[A-Za-z]{3}", line) \
+            if await_resp and re.search(r"[A-Za-z]{3}", line) and not section_of(line) \
                     and not re.match(r"^[\[{(]", line):   # skip [CAVEAT] etc.
                 resp = re.sub(r"\s+", " ", line).strip()
                 # an advocate that slipped into the party column: "… AND ORS. AMRISH KUMAR- 2986 [R-1],"
@@ -1728,7 +1766,7 @@ def build_for_date(date_str, prev_day=None, prev_sizes=None):
                 # printout can show the breakup ("Main 50 · Supp 10").
                 ex = merged.setdefault(court, {"coram": "", "total": "", "fresh": "",
                                                "items": {}, "advocates": {}, "times": {},
-                                               "withItem": {}, "part": {}, "suppItems": [],
+                                               "withItem": {}, "part": {}, "sect": {}, "suppItems": [],
                                                "dropped": {}, "main": 0, "supp": 0})
                 before = n_matters(ex["items"], ex["dropped"])
                 # matters DELETED / shifted per the court's DROP NOTE table (see DropTable)
@@ -1740,6 +1778,8 @@ def build_for_date(date_str, prev_day=None, prev_sizes=None):
                     ex["suppItems"] += [k for k in info.get("items", {}) if k not in ex["items"]]
                 for k, v in info.get("part", {}).items():
                     ex["part"].setdefault(k, v)
+                for k, v in info.get("sect", {}).items():
+                    ex["sect"].setdefault(k, v)
                 ex["items"].update(info.get("items", {}))
                 ex["times"].update(info.get("times", {}))
                 # a "taken up with item N" note is self-contained (N is just a number, not

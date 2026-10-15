@@ -981,7 +981,7 @@
               const v = callPos(seq, k); if (v != null && v > curPos && v < curPos + plan.gap) skipped++; }
             gap = Math.max(0, plan.gap - skipped) + queued;
             tail = eff.circular
-              ? (ourPart === "B" ? " · after-notice pass-overs, at the end" : " · fresh pass-overs, after the fresh matters")
+              ? (ourPart === "B" ? " · Part B pass-overs, at the end" : " · Part A pass-overs, after the Part A matters")
               : plan.at === "sequence" ? " · taken after the sequence" : plan.at === "end" ? " · taken at end" : " · in the passover queue";
           }
         }

@@ -295,6 +295,28 @@ now the more complete/correct one (all sampled and checked against the PDF); no 
 advocate code, annotation or heading. When SD-Chamber's own list disagreed on an AoR, the raw row
 showed CourtReach right every time. Watch the first live run after any PARSER_VERSION bump.
 
+**Part A is not "fresh" (owner, 15 Oct 2026, Court 5 item 13: "notice is issued in that case").**
+The circular names Part A "Fresh matters", but the Registry prints more than fresh matters inside
+the Part-A block. Court 5 on 15 Oct: Bail 1–8, Fresh (for admission) 9–11, **Post-notice
+ad-interim stay 12–13**, Transfer petitions 14–23, then the Registry's own Part-B divider
+"[AFTER NOTICE (FOR ADMISSION) …]" from 24. The call order was right (13 is taken in its printed
+place, with 12 and before 14; owner's rule "part by printed position" stands — the Registry's
+divider, not the sub-heading, is where Part B begins) but every Part-A item was labelled
+"fresh". Now: the fetcher stamps each Misc item with its category (`sect`, from `SECT_HEADS`:
+Bail, Fresh, Freshly adjourned, Post-notice ad-interim stay, Transfer petitions, After notice,
+Public interest litigation, Part heard, Early hearing, Direction matters — per-item annotations
+like ORDERS/DIRECTIONS are NOT headings); the court sheet shows the category under each case
+(`itemSect()`), and the wording says "Part A" / "Part B (after notice)" everywhere (header,
+sequence line, pass-over text "Part A pass-over 13 (post-notice ad-interim stay): …", engine
+label "Part A pass-overs, after the Part A matters"). Regular and Registrar lists carry no
+category headings, so they show none. Two parser faults fixed on the way: a centred heading's
+first word sat inside the case-number column and was swallowed into the case number (so the
+heading line never reached the parser), and a heading following a respondent was absorbed into
+the respondent's name ("…KAMAL JAIN POST-NOTICE-AD INTERIM STAY MATTERS"). PARSER_VERSION 20.
+If the owner wants post-notice ad-interim matters treated as Part B for CALL ORDER, that is a
+one-line change in the fetcher (tag `sect == "Post-notice ad-interim stay"` as "B") — but it
+would move them behind the after-notice block in the app's order against the Registry's print.
+
 **Causelist-published item links** ("TO BE TAKEN UP ALONG WITH ITEM NO. 23" — a fact the
 SC's own list states, not a passover, nothing typed in; owner: "our app needs to take into
 account such information", 25 Sep 2026 real example, Court 1 item 58). `classify()` is a
