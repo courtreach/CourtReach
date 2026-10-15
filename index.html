@@ -1940,7 +1940,20 @@ const otherName = l => (l.fromUid===me?.uid ? (l.toName||"") : (l.fromName||""))
 // that day the connection lapses — to track again you re-request for the new date.
 function linkDates(l){ const ds=[...new Set((((l&&l.matters)||[]).map(m=>m&&m.date).filter(Boolean)))]; return ds.length?ds:(l&&l.date?[l.date]:[]); }
 function linkState(l){ if(!l||l.status!=="approved") return (l&&l.status)||"none";
-  const ds=linkDates(l); if(!ds.length) return "active";                 // legacy link, no dates → stays active
+  // The stamped window is the authority (the rules enforce the same one server-side).
+  const now=Date.now();
+  if(l.expiresAt && now>=l.expiresAt) return "expired";
+  if(l.startsAt && now<l.startsAt) return "scheduled";
+  const ds=linkDates(l);
+  if(!ds.length){
+    // No dates AND no window — a request sent without a case used to count as "legacy, stays
+    // active" and so never lapsed: the collaborator stayed on the board every day (owner,
+    // 15 Oct 2026: "why is collaborate still happening ... it is supposed to be just the day
+    // affair"). Such a link is good for the day it was approved, like any other.
+    const at=tsMs(l.decidedAt)||tsMs(l.at); if(!at) return "expired";
+    const d=new Date(at).toLocaleDateString('en-CA'), t=todayISO();
+    return d===t ? "active" : d>t ? "scheduled" : "expired";
+  }
   const t=todayISO(); if(ds.includes(t)) return "active"; if(ds.some(d=>d>t)) return "scheduled"; return "expired"; }
 const linkActive = l => linkState(l)==="active";
 const linkSoonDate = l => { const t=todayISO(), ds=linkDates(l); return ds.filter(d=>d>=t).sort()[0] || ds.sort().slice(-1)[0] || null; };
@@ -3753,8 +3766,12 @@ function requestModal(u){
       if(!c.found) $("rq_err").textContent="Added — but not found in that list yet; details will fill later.";
     };
     $("rq_send").onclick=async()=>{
+      // ALWAYS a one-day window: the dates of the attached cases, or — with none attached —
+      // the date picked above. A request with no window never lapsed (see linkState()).
+      const reqDate=($("rq_date")&&$("rq_date").value)||todayISO();
+      const winDates=cases.length ? cases.map(c=>c.date) : [reqDate];
       try{ await db.set("links/"+linkKey(me.uid,u.id),{fromUid:me.uid, fromName:me.name||"", fromDesig:me.designation||"",
-          toUid:u.id, toName:u.name||"", toDesig:u.designation||"", status:"pending", at:db.now(), matters:cases, ...linkWindow(cases.map(c=>c.date))});
+          toUid:u.id, toName:u.name||"", toDesig:u.designation||"", status:"pending", at:db.now(), date:reqDate, matters:cases, ...linkWindow(winDates)});
         closeModal(); linkFound=null; renderCollab();
       }catch(e){ $("rq_err").textContent="Could not send — "+(e.message||e); }
     };

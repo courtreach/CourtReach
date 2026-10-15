@@ -295,6 +295,18 @@ now the more complete/correct one (all sampled and checked against the PDF); no 
 advocate code, annotation or heading. When SD-Chamber's own list disagreed on an AoR, the raw row
 showed CourtReach right every time. Watch the first live run after any PARSER_VERSION bump.
 
+**Collaboration is a one-day pass — and a request with no case never lapsed (owner, 15 Oct 2026:
+"why is collaborate still happening on my device daily ... the person i gave permission ... i see
+her name on homepage").** A link's window comes from the dates of the cases attached; a request
+sent with NO case got no window and no dates, and both the app (`linkState`: "legacy link, no
+dates → stays active") and the rule (`linkValid`: no `expiresAt` → "grandfathered") treated that
+as permanent. Fixed: (1) the request form always stamps a window — the attached cases' dates, or
+the Date picked when none — and `date`; (2) `linkState` honours `startsAt`/`expiresAt` and a link
+with neither is good only for the day it was approved (`decidedAt`/`at`); (3) the rule gives a
+window-less link 24 h from `decidedAt`. Existing permanent links lapse on the paste of the rules
+and, in the app, immediately. The peer's chip on the board strip, the Collaborating tab and the
+route rail all read `activeLinks()`, so they drop together.
+
 **Part A is not "fresh" (owner, 15 Oct 2026, Court 5 item 13: "notice is issued in that case").**
 The circular names Part A "Fresh matters", but the Registry prints more than fresh matters inside
 the Part-A block. Court 5 on 15 Oct: Bail 1–8, Fresh (for admission) 9–11, **Post-notice
