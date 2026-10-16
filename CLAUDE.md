@@ -295,6 +295,15 @@ now the more complete/correct one (all sampled and checked against the PDF); no 
 advocate code, annotation or heading. When SD-Chamber's own list disagreed on an AoR, the raw row
 showed CourtReach right every time. Watch the first live run after any PARSER_VERSION bump.
 
+**Day-sheet sync on time (owner, 16 Oct 2026: "there is no court 5 item 28 in the day sheet but
+its showing in the app").** Not a sync bug: the last sync had run at 03:05 IST and GitHub's timed
+runs for 08:00 / 10:25 IST were landing around 13:10 / 15:00 (history: every morning slot hours
+late), so the board kept an entry removed from the day sheet after 03:05. A manual run cleared it.
+Fix: the worker's `scheduled()` now also calls `dispatchDaysheetSync(env)`, which starts the
+GitHub workflow through the API at the IST minutes in `DAYSHEET_SYNC_AT` (08:30 … 16:25) — needs
+the `GH_DISPATCH_TOKEN` secret (fine-grained token, Actions: read and write on courtreach/CourtReach;
+steps in DAYSHEET-SYNC-SETUP.md); without it, inert. GitHub's own cron remains as a backstop.
+
 **A special-bench section starts only at its own label (owner, 16 Oct 2026: Court 12 item 73
 "not showing as per sequence and instead is showing for 10.30").** `SPECIAL_BENCH_RE` used to match
 "SPECIAL BENCH" anywhere, so a NOTE such as "[THIS BENCH WILL RE-ASSEMBLE AFTER HEARING IN SPECIAL

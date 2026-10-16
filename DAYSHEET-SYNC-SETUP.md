@@ -83,3 +83,22 @@ delete them by hand in CourtReach if you want them gone immediately.
   this?" without every junior and clerk needing their own login.
 - An entry with no court/item yet (an oral mentioning, a matter still awaiting
   numbers) has nothing to list and is skipped until the day sheet has both.
+
+
+## On-time runs through the CourtReach worker (16 Oct 2026)
+
+GitHub's own timed runs are unreliable: the 08:00 and 10:25 IST runs were landing hours late
+(around 13:10 and 15:00), so on court mornings the board showed the day sheet as it stood
+overnight. The CourtReach Cloudflare worker, which already wakes every minute on weekdays
+08:30–17:29 IST, now STARTS the sync through GitHub's API at 08:30, 09:00, 09:30, 10:00, 10:15,
+10:25 and every half hour to 16:25 IST. A run started that way begins immediately. GitHub's own
+schedule stays as a backstop (and covers evenings and weekends).
+
+One-time setup (owner, ~3 minutes):
+1. GitHub → Settings → Developer settings → Personal access tokens → Fine-grained tokens →
+   Generate new token. Resource owner: `courtreach`. Repository access: only
+   `courtreach/CourtReach`. Permissions → Repository → **Actions: Read and write** (nothing else).
+   Expiry: 1 year (note the date).
+2. Cloudflare → Workers → the CourtReach worker → Settings → Variables and Secrets → Add →
+   type **Secret**, name `GH_DISPATCH_TOKEN`, value = the token → Deploy.
+Without the secret the worker skips this silently.
