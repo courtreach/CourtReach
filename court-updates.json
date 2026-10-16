@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-10-15T21:29:27.988915Z",
-  "parser_version": 20,
+  "generated_at": "2026-10-16T05:50:21.217584Z",
+  "parser_version": 21,
   "window": [
     "2026-10-16",
     "2026-10-19",
@@ -3497,12 +3497,7 @@
                 ]
               }
             },
-            "times": {
-              "53": "10:30 AM",
-              "54": "10:30 AM",
-              "55": "10:30 AM",
-              "56": "10:30 AM"
-            },
+            "times": {},
             "withItem": {},
             "part": {
               "1": "A",
@@ -5395,7 +5390,7 @@
           },
           "5": {
             "coram": "HON'BLE MR. JUSTICE J.B. PARDIWALA HON'BLE MR. JUSTICE K. VINOD CHANDRAN",
-            "total": "43",
+            "total": "64",
             "fresh": "",
             "items": {
               "1": "MA 2038/2026 in SLP(Crl) No. 14641/2025 ANURAG KHATIK VERSUS STATE OF CHHATTISGARH",
@@ -5481,7 +5476,8 @@
               "301": "W.P.(C) No. 295/2012 S.RAJASEEKARAN VERSUS UNION OF INDIA AND ORS. AND ORS.",
               "301.1": "Connected Diary No. 39789-2026 KISHAN CHAND JAIN VERSUS V. UMASHANKAR",
               "301.2": "Connected Diary No. 40407-2026 S. RAJASEKARAN VERSUS UNION OF INDIA AND ORS.",
-              "302": "C.A. No. 583/2026 MS CORE HOTELS VENTURES PVT LTD VERSUS BANK OF BARODA AND ORS."
+              "302": "C.A. No. 583/2026 MS CORE HOTELS VENTURES PVT LTD VERSUS BANK OF BARODA AND ORS.",
+              "303.1": "Connected MA 3028/2026 in C.A. No. 13119/2026 R VERSUS FOR CLARIFICATION/DIRECTION ON IA 315671/2026"
             },
             "advocates": {
               "1": {
@@ -6938,10 +6934,29 @@
                     "p": "R-1"
                   }
                 ]
+              },
+              "303.1": {
+                "pet": "DIVYA SWAMI",
+                "resp": "D. L. CHIDANANDA",
+                "petAll": [
+                  {
+                    "n": "DIVYA SWAMI",
+                    "p": "P-1"
+                  }
+                ],
+                "respAll": [
+                  {
+                    "n": "D. L. CHIDANANDA",
+                    "p": "R-1"
+                  },
+                  {
+                    "n": "A VELAN",
+                    "p": "R-1"
+                  }
+                ]
               }
             },
             "times": {
-              "53": "10:30 AM",
               "301": "2:00 PM"
             },
             "withItem": {
@@ -7033,7 +7048,8 @@
               "301": "B",
               "301.1": "B",
               "301.2": "B",
-              "302": "B"
+              "302": "B",
+              "303.1": "B"
             },
             "sect": {
               "1": "Bail",
@@ -7115,7 +7131,8 @@
               "301": "Public interest litigation",
               "301.1": "Public interest litigation",
               "301.2": "Public interest litigation",
-              "302": "Part heard"
+              "302": "Part heard",
+              "303.1": "Fresh"
             },
             "suppItems": [
               "53",
@@ -7137,16 +7154,21 @@
               "301",
               "301.1",
               "301.2",
-              "302"
+              "302",
+              "303.1"
             ],
             "dropped": {
+              "25": {
+                "to": "303",
+                "reason": "DELETED."
+              },
               "45": {
                 "to": "301",
                 "reason": "DELETED."
               }
             },
             "main": 43,
-            "supp": 0
+            "supp": 21
           },
           "6": {
             "coram": "HON'BLE MR. JUSTICE DIPANKAR DATTA HON'BLE MR. JUSTICE SHEEL NAGU",
@@ -10894,7 +10916,6 @@
               }
             },
             "times": {
-              "56": "10:30 AM",
               "301": "1:00 PM"
             },
             "withItem": {
@@ -15210,10 +15231,7 @@
                 ]
               }
             },
-            "times": {
-              "73": "10:30 AM",
-              "74": "10:30 AM"
-            },
+            "times": {},
             "withItem": {
               "75": "36"
             },
@@ -24075,7 +24093,7 @@
   "sources": {
     "2026-10-16": {
       "M_J_1": 853596,
-      "M_J_2": 623059,
+      "M_J_2": 626664,
       "M_C_1": 567240,
       "M_C_2": 508703,
       "M_S_1": 532037,
