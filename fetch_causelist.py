@@ -52,7 +52,7 @@ OUTPUT_FILE = "court-updates.json"
 # based change-detection reuses a cached parse when the PDF is unchanged; without
 # this, a parser FIX never reaches already-cached dates (their PDFs don't change).
 # A version mismatch forces a full re-parse of every date in the window.
-PARSER_VERSION = 20  # bumped: each item carries its printed category ("sect": Post-notice ad-interim stay, Transfer petitions, …)
+PARSER_VERSION = 21  # bumped: a special-bench section starts only at its own label, never at a note; was 20: each item carries its printed category ("sect": Post-notice ad-interim stay, Transfer petitions, …)
 HEADERS = {"User-Agent": "Mozilla/5.0 (compatible; courtreach-causelist-bot/1.0)"}
 
 COURT_RE = re.compile(r"COURT\s*NO\.?\s*[:\-]?\s*([0-9]+)", re.I)
@@ -81,7 +81,12 @@ SKIP_CORAM = re.compile(r"NOTE|APPRECIATED|ADJOURNMENT|ASSEMBLE|WILL SIT|NORMAL"
 # SPECIAL BENCH MATTER LISTED AT 2:00 P.M. IN THIS COURT, IS OVER ]" — captured
 # and shown verbatim rather than guessed into a computed clock time, since it
 # genuinely depends on when the first bench finishes.
-SPECIAL_BENCH_RE = re.compile(r"SPECIAL\s+BENCH", re.I)
+# The section LABEL, on a line of its own: "[SPECIAL BENCH]" / "[ SPECIAL BENCH ]". Any other line
+# containing the words is a NOTE about a special bench elsewhere — "[THIS BENCH WILL RE-ASSEMBLE
+# AFTER HEARING IN SPECIAL BENCH MATTER LISTED IN COURT NO. 5 …]" — and matching those made the
+# regular bench's own "(TIME : 10:30 AM)" a fixed time for every item that followed (owner,
+# 16 Oct 2026: Court 12 items 73 and 74 showed "at 10:30" instead of their place in the sequence).
+SPECIAL_BENCH_RE = re.compile(r"^\s*\[?\s*SPECIAL\s+BENCH\s*\]?\s*$", re.I)
 TIME_RE = re.compile(r"\(\s*TIME\s*:\s*([\d.:]+\s*[AP]\.?M\.?)\s*\)", re.I)
 # The relative-timing note is bracketed but the bracket does NOT reliably close on
 # the same line — real example wraps "...LISTED AT 2:00" / "P.M. IN THIS COURT,

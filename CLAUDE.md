@@ -295,6 +295,16 @@ now the more complete/correct one (all sampled and checked against the PDF); no 
 advocate code, annotation or heading. When SD-Chamber's own list disagreed on an AoR, the raw row
 showed CourtReach right every time. Watch the first live run after any PARSER_VERSION bump.
 
+**A special-bench section starts only at its own label (owner, 16 Oct 2026: Court 12 item 73
+"not showing as per sequence and instead is showing for 10.30").** `SPECIAL_BENCH_RE` used to match
+"SPECIAL BENCH" anywhere, so a NOTE such as "[THIS BENCH WILL RE-ASSEMBLE AFTER HEARING IN SPECIAL
+BENCH MATTER LISTED IN COURT NO. 5 …]" switched the parser into a special-bench section and every
+later item took the regular bench's "(TIME : 10:30 AM)" as a fixed time — so it was vacated from
+the sequence and shown "at 10:30". On 16 Oct: Court 12 #73–74, Court 3 #53–56, Court 5 #53, Court 8
+#56. The genuine label is always a line of its own, "[SPECIAL BENCH]" / "[ SPECIAL BENCH ]" (every
+other occurrence across the cached lists is a note), and the rule is now anchored to that. Real
+special-bench times (Court 5 #301 2:00 PM, Court 8 #301 1:00 PM) unaffected. PARSER_VERSION 21.
+
 **Route rail plans the morning from the cause list (owner, 16 Oct 2026: "should suggest in terms
 of the causelist and the circular sequence which courts to go to first. Then ofcourse once a
 sequence is published or when the court starts it can keep on updating").** Engine: a court "Not
