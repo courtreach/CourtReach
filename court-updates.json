@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-16T05:50:21.217584Z",
+  "generated_at": "2026-10-16T07:26:34.823194Z",
   "parser_version": 21,
   "window": [
     "2026-10-16",
@@ -23,7 +23,6 @@
         "Chamber (main)",
         "Chamber (supp)",
         "Single Judge (main)",
-        "Single Judge (supp)",
         "Registrar (main)",
         "Registrar (supp)"
       ],
@@ -21214,8 +21213,7 @@
               "1620": "T.P.(Crl.) No. 1130/2026 KANCHAN RANI AND ANR. VERSUS ROHIT KUMAR AND ORS.",
               "1621": "T.P.(Crl.) No. 1117/2026 PRIYADARSHINI TIRPUDE SINGH AND ORS. VERSUS AZAD SINGH",
               "1622": "Diary No. 42863-2026 NUZHAT KHANAM AND ANR. VERSUS MD. IRSHAD KHAN",
-              "1623": "T.P.(C) No. 2916/2026 MAMTA RANI AND ANR. VERSUS DHEERAJ VERMA",
-              "1624": "T.P.(C) No. 3214/2026 YOGITA GOSWAMI VERSUS VARUN CHATURVEDI"
+              "1623": "T.P.(C) No. 2916/2026 MAMTA RANI AND ANR. VERSUS DHEERAJ VERMA"
             },
             "advocates": {
               "1601": {
@@ -21424,15 +21422,6 @@
                     "p": ""
                   }
                 ]
-              },
-              "1624": {
-                "pet": "PALLAVI PRATAP",
-                "petAll": [
-                  {
-                    "n": "PALLAVI PRATAP",
-                    "p": ""
-                  }
-                ]
               }
             },
             "times": {},
@@ -21460,8 +21449,7 @@
               "1620": "A",
               "1621": "A",
               "1622": "A",
-              "1623": "A",
-              "1624": "A"
+              "1623": "A"
             },
             "sect": {
               "1601": "Fresh",
@@ -21486,12 +21474,9 @@
               "1620": "Fresh",
               "1621": "Fresh",
               "1622": "Transfer petitions",
-              "1623": "Transfer petitions",
-              "1624": "Fresh"
+              "1623": "Transfer petitions"
             },
-            "suppItems": [
-              "1624"
-            ],
+            "suppItems": [],
             "main": 0,
             "supp": 0
           },
@@ -21521,12 +21506,7 @@
               "1619": "T.P.(Crl.) No. 1126/2026 PIYUSH KUMAR AND ORS. VERSUS PAYOSHNI SINGH",
               "1620": "T.P.(Crl.) No. 1128/2026 MUSKAN TANVEER VERSUS MOHAMMAD ULFATHUNNISA BEGUM",
               "1621": "T.P.(Crl.) No. 1137/2026 KARTIK KAPOOR AND ORS. VERSUS STATE OF TELANGANA AND ANR.",
-              "1622": "T.P.(Crl.) No. 539/2026 MUNNI DEVI UPADHYAY VERSUS SEEMA UPADHYAY AND ORS.",
-              "1623": "T.P.(C) No. 3189/2026 ASHISH KAMAL SARAF VERSUS AANCHAL ASHISH SARAF",
-              "1624": "T.P.(C) No. 3111/2026 SHARON ALOYSIUS CHOUDHARY VERSUS ISHAN CHOUDHARY",
-              "1625": "T.P.(C) No. 3179/2026 REKHA IMNATLAL RAI VERSUS AMIT KUMAR ASHOK KUMAR RAI",
-              "1626": "T.P.(Crl.) No. 1148/2026 SUKRIT DAS @ SUKREET DASS AND ORS. VERSUS SHEENAM",
-              "1627": "Diary No. 64120-2026 IQBAL SINGH VERSUS ARUN SHARMA AND ANR."
+              "1622": "T.P.(Crl.) No. 539/2026 MUNNI DEVI UPADHYAY VERSUS SEEMA UPADHYAY AND ORS."
             },
             "advocates": {
               "1601": {
@@ -21733,59 +21713,6 @@
                     "p": "R-1"
                   }
                 ]
-              },
-              "1623": {
-                "pet": "RISHI MATOLIYA",
-                "resp": "ADITYA SINGH",
-                "petAll": [
-                  {
-                    "n": "RISHI MATOLIYA",
-                    "p": ""
-                  }
-                ],
-                "respAll": [
-                  {
-                    "n": "ADITYA SINGH",
-                    "p": "CAVEAT",
-                    "tag": "caveat"
-                  }
-                ]
-              },
-              "1624": {
-                "pet": "VIKAS UPADHYAY",
-                "petAll": [
-                  {
-                    "n": "VIKAS UPADHYAY",
-                    "p": ""
-                  }
-                ]
-              },
-              "1625": {
-                "pet": "NIDHI MOHAN PARASHAR",
-                "petAll": [
-                  {
-                    "n": "NIDHI MOHAN PARASHAR",
-                    "p": ""
-                  }
-                ]
-              },
-              "1626": {
-                "pet": "SHIVENDRA SINGH",
-                "petAll": [
-                  {
-                    "n": "SHIVENDRA SINGH",
-                    "p": ""
-                  }
-                ]
-              },
-              "1627": {
-                "pet": "KARTIKEYA SINGH",
-                "petAll": [
-                  {
-                    "n": "KARTIKEYA SINGH",
-                    "p": ""
-                  }
-                ]
               }
             },
             "times": {},
@@ -21812,12 +21739,7 @@
               "1619": "A",
               "1620": "A",
               "1621": "A",
-              "1622": "A",
-              "1623": "A",
-              "1624": "A",
-              "1625": "A",
-              "1626": "A",
-              "1627": "A"
+              "1622": "A"
             },
             "sect": {
               "1601": "Fresh",
@@ -21841,20 +21763,9 @@
               "1619": "Fresh",
               "1620": "Fresh",
               "1621": "Fresh",
-              "1622": "Transfer petitions",
-              "1623": "Fresh",
-              "1624": "Fresh",
-              "1625": "Fresh",
-              "1626": "Fresh",
-              "1627": "Fresh"
+              "1622": "Transfer petitions"
             },
-            "suppItems": [
-              "1623",
-              "1624",
-              "1625",
-              "1626",
-              "1627"
-            ],
+            "suppItems": [],
             "main": 0,
             "supp": 0
           },
@@ -24097,7 +24008,6 @@
       "M_C_1": 567240,
       "M_C_2": 508703,
       "M_S_1": 532037,
-      "M_S_2": 508318,
       "M_R_1": 530587,
       "M_R_2": 505956
     }
