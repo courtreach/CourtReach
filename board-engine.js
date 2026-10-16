@@ -856,6 +856,25 @@
     }
     const seqTxt = (bc.sequence && bc.sequence.trim()) ? bc.sequence : ((ctx.seqByCourt || {})[String(e.courtNo)] || "");
     if (/not in session/i.test(bc.status || "")) {
+      // BEFORE THE COURT SITS: our place in its real call order — the announced sequence if
+      // there is one, otherwise the circular's order built from the cause list (Part A main,
+      // Part A supp, Part B …), with linked, time-fixed and deleted items holding no slot —
+      // so the route rail can plan the morning from the cause list (owner, 16 Oct 2026: "The
+      // Court rail ... should suggest in terms of the causelist and the circular sequence
+      // which courts to go to first"). Used to count only an announced sequence, so before
+      // one was published every court read "not sitting" and the rail was empty.
+      const oursN = Math.floor(parseFloat(ours));
+      if (!isNaN(oursN) && !isReservedItem(oursN)) {
+        const effP = effSeq(ctx, e.courtNo, seqTxt);
+        if (effP.seq.length || miscTotalFor(ctx, e.courtNo) != null) {
+          const op = orderPos(effP.seq, ours);
+          if (op != null) {
+            const r = preStartResult(op), planned = !seqInfo(seqTxt).seq.length;
+            if (planned) r.label = op === 0 ? "opens · first by the cause list" : "opens · ~" + op + " ahead by the cause list";
+            return Object.assign(r, { planned });
+          }
+        }
+      }
       const pg = preStartGap(seqTxt, ours);
       if (pg != null) return preStartResult(pg);
       return { tier: "idle", label: "court not sitting", short: "not sitting" };

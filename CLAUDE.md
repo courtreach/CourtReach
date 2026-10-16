@@ -295,6 +295,20 @@ now the more complete/correct one (all sampled and checked against the PDF); no 
 advocate code, annotation or heading. When SD-Chamber's own list disagreed on an AoR, the raw row
 showed CourtReach right every time. Watch the first live run after any PARSER_VERSION bump.
 
+**Route rail plans the morning from the cause list (owner, 16 Oct 2026: "should suggest in terms
+of the causelist and the circular sequence which courts to go to first. Then ofcourse once a
+sequence is published or when the court starts it can keep on updating").** Engine: a court "Not
+in Session" now places our matter by `orderPos(effSeq(...).seq)` — the announced sequence if any,
+else the circular's order from `miscParts`, linked / time-fixed / deleted items vacated —
+returning `preStart` with `planned:true` when no sequence was announced (label "~N ahead by the
+cause list"). It used to count only an announced sequence, so before one existed every court read
+"not sitting" and the rail was empty. App `renderRail()`: ranks by `railEta()` — pre-start = time
+to 10:30 (`COURT_START_MIN`) + the court's mentioning list (`mentionCount`, ½ min each) + items
+ahead × `MIN_PER_ITEM`; time-fixed = minutes away; live = `reachMinsFor` (pace). Pre-start stops
+are neutral-coloured ("first" / "N ahead") under a "Plan" tag; live stops keep the urgency
+colours. Today only — the rail is blank for another date (it used to classify that date's matters
+against today's live board). Reserved series (800s etc.) keep the old pre-start rule.
+
 **Collaboration is a one-day pass — and a request with no case never lapsed (owner, 15 Oct 2026:
 "why is collaborate still happening on my device daily ... the person i gave permission ... i see
 her name on homepage").** A link's window comes from the dates of the cases attached; a request

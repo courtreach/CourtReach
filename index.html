@@ -202,6 +202,9 @@ header.top{display:flex;align-items:center;justify-content:space-between;gap:6px
 .rail-stop.later .rail-dist{color:#1e6b3a;background:var(--later-bg)}
 .rail-stop.now{animation:railglow 1.4s ease-in-out infinite}
 @keyframes railglow{0%,100%{box-shadow:0 1px 2px rgba(20,26,34,.06)}50%{box-shadow:0 0 0 3px rgba(193,54,43,.22)}}
+/* a stop PLANNED from the cause list before the court sits: neutral, no urgency colour */
+.rail-stop.plan .rail-dist{color:var(--ink);background:var(--panel2)}
+.rail-tag{display:inline-flex;align-items:center;font-size:10.5px;font-weight:800;letter-spacing:.4px;text-transform:uppercase;color:var(--mut);margin-right:2px;flex:none}
 .rail-empty{font-size:12px;color:var(--mut);padding:7px 1px 2px}
 .trial-banner{margin-top:8px;background:var(--soon-bg);color:#7a4f0d;font-size:12px;font-weight:600;
   padding:7px 11px;border-radius:10px;text-align:center}
@@ -2463,26 +2466,50 @@ function reachMinsFor(court,k){
   if(v==null) return g*MIN_PER_ITEM;
   return g/Math.max(v,0.2);
 }
-// Courts where we have a matter that's now/soon/later, ranked by ETA (walk-aware pace),
-// soonest first — the strip of "stops" to reach in order. One card whichever is on now.
+// Courts where we have a matter, ranked by when it is expected to come up — the order to go
+// in. Two sources, one ranking (owner, 16 Oct 2026: "The Court rail system on top should
+// suggest in terms of the causelist and the circular sequence which courts to go to first.
+// Then ofcourse once a sequence is published or when the court starts it can keep on
+// updating"):
+//   • before a court sits, the engine places the matter in that court's call order — the
+//     announced sequence if any, otherwise the circular's order from the cause list — and the
+//     wait is the time to the court's start, its mentioning list, then the items ahead;
+//   • once the court sits (or a time is fixed), the live distance and the court's own pace.
+// Only today: another date's courts have not sat, and the live board says nothing about them.
+const COURT_START_MIN=630;       // 10:30 — the courts' usual start
+const MENTION_MIN=0.5;           // a mentioning item takes about half a minute
+function mentionCount(court){
+  const ml=courtUpdates?.by_date?.[todayISO()]?.mentioning?.[String(parseInt(court,10))];
+  return ml?Object.keys(ml).length:0;
+}
+function railEta(court,k){
+  if(!k) return null;
+  if(k.fixed && k.minsAway!=null) return Math.max(0,k.minsAway);
+  if(k.preStart && k.gap!=null)
+    return Math.max(0,COURT_START_MIN-nowMinsIST()) + mentionCount(court)*MENTION_MIN + k.gap*MIN_PER_ITEM;
+  return reachMinsFor(court,k);
+}
 function renderRail(){
   const rail=$("routeRail"); if(!rail) return;
+  if(boardDate!==todayISO()){ rail.innerHTML=""; return; }
   if(!board.length){ rail.innerHTML=`<div class="rail-empty">${boardErr?"Can't reach the board.":"Reading the board…"}</div>`; return; }
-  const bc=boardByCourt();
   const cands=activeMatters().map(e=>({e,k:classify(e)}))
-    .filter(x=>["now","soon","later"].includes(x.k.tier) && !x.k.done && !x.k.over)
-    .map(x=>({court:x.e.courtNo, e:x.e, k:x.k, mins:reachMinsFor(x.e.courtNo,x.k)}))
+    .filter(x=>["now","soon","later"].includes(x.k.tier) && !x.k.done && !x.k.over && !(x.k.special && x.k.gap==null && !x.k.fixed))
+    .map(x=>({court:x.e.courtNo, e:x.e, k:x.k, mins:railEta(x.e.courtNo,x.k)}))
     .sort((a,b)=>((a.mins==null?9999:a.mins)-(b.mins==null?9999:b.mins)) || ((a.k.gap??999)-(b.k.gap??999)));
   const seen=new Set(), stops=[];
   for(const c of cands){ const key=String(c.court); if(seen.has(key)) continue; seen.add(key); stops.push(c); if(stops.length>=5) break; }
-  if(!stops.length){ rail.innerHTML=""; return; }        // nothing close — say nothing, rather than announce it
-  const band=g=> g==null?"later" : g<=2?"now" : g<=4?"soon" : "later";
-  const distLab=k=> k.ment ? "WATCH" : (k.gap===0||k.short==="NOW") ? "NOW" : k.gap===1 ? "NEXT"
+  if(!stops.length){ rail.innerHTML=""; return; }        // nothing to plan — say nothing, rather than announce it
+  const band=s=> s.k.preStart ? "plan" : (s.k.ment ? "later" : (g=> g==null?"later" : g<=2?"now" : g<=4?"soon" : "later")(s.k.gap));
+  const distLab=k=> k.preStart ? (k.gap===0 ? "first" : k.gap+" ahead")
+                 : k.ment ? "WATCH" : (k.gap===0||k.short==="NOW") ? "NOW" : k.gap===1 ? "NEXT"
                  : (k.gap!=null ? k.gap+" away" : (k.short||"—"));
-  const chip=s=>`<button class="rail-stop ${band(s.k.ment?null:s.k.gap)}" data-court="${esc(s.court)}">
+  const chip=s=>`<button class="rail-stop ${band(s)}" data-court="${esc(s.court)}">
     <span class="rail-ct">C<span class="cd">${esc(s.court)}</span></span><span class="rail-div"></span>
     <span class="rail-dist">${esc(distLab(s.k))}</span></button>`;
-  rail.innerHTML=stops.map((s,i)=>`<span class="rail-unit">${i?'<span class="rail-arrow"><i class="ti ti-chevron-right"></i></span>':''}${chip(s)}</span>`).join("");
+  // before the courts sit the order is a plan from the cause list — say so
+  const tag=stops.some(s=>s.k.preStart)?`<span class="rail-tag">Plan</span>`:"";
+  rail.innerHTML=tag+stops.map((s,i)=>`<span class="rail-unit">${i?'<span class="rail-arrow"><i class="ti ti-chevron-right"></i></span>':''}${chip(s)}</span>`).join("");
 }
 
 // The published SEQUENCE marquee (relay ?seq) — the court-wise call order. Throttled;
