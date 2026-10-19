@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-17T07:09:25.278306Z",
+  "generated_at": "2026-10-19T15:48:57.409503Z",
   "parser_version": 21,
   "window": [
     "2026-10-19",
@@ -16,6 +16,95 @@
     "2026-11-03"
   ],
   "by_date": {
+    "2026-10-21": {
+      "lists_found": [
+        "Miscellaneous (main)"
+      ],
+      "lists": {
+        "Miscellaneous": {
+          "5": {
+            "coram": "HON'BLE MR. JUSTICE JOYMALYA BAGCHI HON'BLE MRS. JUSTICE V. MOHANA",
+            "total": "2",
+            "fresh": "",
+            "items": {
+              "1": "SLP(C) No. 37476/2026 YUVAJANA SRAMIKA RYTHU CONGRESS PARTY VERSUS THE STATE OF ANDHRA PRADESH AND ORS.",
+              "2": "SLP(Crl) No. 20437/2026 PINARAYI VIJAYAN VERSUS K M SHAJAHAN AND ORS.",
+              "2.1": "Connected SLP(Crl) No. 20425/2026 VEENA T VERSUS K.M. SHAJAHAN AND ORS.",
+              "2.2": "Connected SLP(Crl) No. 20471/2026 MOHAMMED RIYAS PA AND ANR. VERSUS KM SHAJAHAN AND ORS.",
+              "2.3": "Connected SLP(Crl) No. 20504/2026 VARISH K AND ORS. VERSUS KM SHAJAHAN AND ORS."
+            },
+            "advocates": {
+              "1": {
+                "pet": "MAHFOOZ AHSAN NAZKI",
+                "petAll": [
+                  {
+                    "n": "MAHFOOZ AHSAN NAZKI",
+                    "p": ""
+                  }
+                ]
+              },
+              "2": {
+                "pet": "KRISHNA DEV JAGARLAMUDI",
+                "petAll": [
+                  {
+                    "n": "KRISHNA DEV JAGARLAMUDI",
+                    "p": ""
+                  }
+                ]
+              },
+              "2.1": {
+                "pet": "NIKILESH RAMACHANDRAN",
+                "petAll": [
+                  {
+                    "n": "NIKILESH RAMACHANDRAN",
+                    "p": ""
+                  }
+                ]
+              },
+              "2.2": {
+                "pet": "SAHIL SHARMA",
+                "petAll": [
+                  {
+                    "n": "SAHIL SHARMA",
+                    "p": ""
+                  }
+                ]
+              },
+              "2.3": {
+                "pet": "DHARMAPRABHAS LAW ASSOCIATES",
+                "petAll": [
+                  {
+                    "n": "DHARMAPRABHAS LAW ASSOCIATES",
+                    "p": ""
+                  }
+                ]
+              }
+            },
+            "times": {},
+            "withItem": {},
+            "part": {
+              "1": "A",
+              "2": "A",
+              "2.1": "A",
+              "2.2": "A",
+              "2.3": "A"
+            },
+            "sect": {
+              "1": "Fresh",
+              "2": "Fresh",
+              "2.1": "Fresh",
+              "2.2": "Fresh",
+              "2.3": "Fresh"
+            },
+            "suppItems": [],
+            "main": 2,
+            "supp": 0
+          }
+        }
+      },
+      "notes": [],
+      "specialBenches": []
+    },
     "2026-10-26": {
       "lists_found": [
         "Registrar (main)"
@@ -3256,6 +3345,9 @@
     }
   },
   "sources": {
+    "2026-10-21": {
+      "M_J_1": 506444
+    },
     "2026-10-26": {
       "M_R_1": 528277
     },
