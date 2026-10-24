@@ -1,0 +1,25 @@
+{
+  "name": "CourtReach",
+  "short_name": "CourtReach",
+  "description": "Live Supreme Court board tracker — track your cases and see the moment each one is reaching.",
+  "start_url": "./courtreach.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#141a22",
+  "theme_color": "#141a22",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "icon-192-v2.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512-v2.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
